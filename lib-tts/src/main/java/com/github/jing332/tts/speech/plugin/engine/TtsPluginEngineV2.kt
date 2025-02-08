@@ -123,6 +123,7 @@ open class TtsPluginEngineV2(val context: Context, val plugin: Plugin) {
             @ScriptInterface
             fun write(data: ByteArray) {
                 pos.write(data)
+                pos.flush()
             }
 
             @ScriptInterface

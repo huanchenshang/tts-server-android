@@ -1,10 +1,11 @@
 plugins {
     alias(libs.plugins.android.library)
     alias(libs.plugins.kotlin.android)
+    alias(libs.plugins.androidApplication)
 }
 
 android {
-    namespace = "com.github.jing332.script_engine"
+    namespace = "com.github.jing332.server"
     compileSdk = 34
 
     defaultConfig {
@@ -24,37 +25,17 @@ android {
         }
     }
     compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_1_8
-        targetCompatibility = JavaVersion.VERSION_1_8
+        sourceCompatibility = JavaVersion.VERSION_11
+        targetCompatibility = JavaVersion.VERSION_11
     }
     kotlinOptions {
-        jvmTarget = "1.8"
-    }
-    buildFeatures {
-        compose = true
-    }
-
-
-    packaging {
-        resources {
-            excludes += setOf("META-INF/INDEX.LIST", "META-INF/*.md")
-        }
+        jvmTarget = "11"
     }
 }
 
 dependencies {
-//    api(fileTree("include" to listOf("*.jar"), "dir" to "libs"))
-//    implementation("io.apisense:rhino-android:1.3.0")
-
-    api(project(":lib-common"))
-    api(project(":lib-compose"))
-
-    implementation(libs.hutool.crypto)
-    implementation(libs.bundles.network)
-
-    implementation(libs.bundles.compose)
-    implementation(libs.coreKtx)
-    implementation(libs.appcompat)
+    implementation(project(":lib-common"))
+    implementation(libs.bundles.ktor)
 
     testImplementation(libs.junit)
     androidTestImplementation(libs.ext.junit)

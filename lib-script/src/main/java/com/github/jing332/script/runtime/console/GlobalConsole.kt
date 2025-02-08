@@ -1,5 +1,6 @@
 package com.github.jing332.script.runtime.console
 
+import com.github.jing332.common.toLogLevelChar
 import io.github.oshai.kotlinlogging.KLogger
 import io.github.oshai.kotlinlogging.KotlinLogging
 

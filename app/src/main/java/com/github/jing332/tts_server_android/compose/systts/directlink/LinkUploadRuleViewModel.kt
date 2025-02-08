@@ -33,4 +33,8 @@ class LinkUploadRuleViewModel(val app: Application) : AndroidViewModel(app) {
     fun debug(): List<DirectUploadFunction> {
         return engine.obtainFunctionList()
     }
+
+    override fun onCleared() {
+        super.onCleared()
+    }
 }

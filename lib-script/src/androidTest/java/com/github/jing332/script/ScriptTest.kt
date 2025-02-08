@@ -5,6 +5,7 @@ import androidx.test.platform.app.InstrumentationRegistry
 import com.github.jing332.script.rhino.RhinoScriptEngine
 import com.github.jing332.script.runtime.RhinoScriptRuntime
 import com.github.jing332.script.simple.SimpleScriptEngine
+import com.github.jing332.script.source.ReaderScriptSource
 import com.github.jing332.script.source.StringScriptSource
 import com.github.jing332.script.source.toScriptSource
 import org.junit.Test
@@ -16,20 +17,20 @@ import org.mozilla.javascript.Function
 import org.mozilla.javascript.ScriptRuntime
 import org.mozilla.javascript.Scriptable
 import org.mozilla.javascript.ScriptableObject
+import splitties.init.appCtx
+import kotlin.system.measureTimeMillis
 
 @RunWith(AndroidJUnit4::class)
 class ScriptTest {
-    private fun eval(code: String): RhinoScriptEngine {
+    private fun eval(code: String): Any? {
         val engine = RhinoScriptEngine()
-        try {
+        return try {
             engine.execute(StringScriptSource(code))
         } catch (e: EvaluatorException) {
             throw Exception("${e.sourceName()}, ${e.lineNumber()}, ${e.columnNumber()}").apply {
                 initCause(e)
             }
         }
-
-        return engine
     }
 
     @Test
@@ -37,7 +38,7 @@ class ScriptTest {
         val code = """
            var ws = new Websocket("wss://echo.websocket.org")
            println(ws.readyState)
-           var running = true
+           let latch = new java.util.concurrent.CountDownLatch(1);
            
            ws.on("open", function() {
                println("open")
@@ -51,17 +52,15 @@ class ScriptTest {
            
            ws.on("closed", function() {
                println("closed")
-               running = false
+               latch.countDown()
            })
            
            ws.on("failure", function(reason) {
                println("failure: " + reason)
-               running = false
+               latch.countDown()
            })
            
-           while (running){
-           }
-
+           latch.await()
         """.trimIndent()
         eval(code)
     }
@@ -184,5 +183,21 @@ class ScriptTest {
         """.trimIndent().toScriptSource()
         )
         println((e.get("OBJ") as ScriptableObject).get("name"))
+    }
+
+    @Test
+    fun testRequire() {
+        val code = """
+//            require("https://cdn.bootcdn.net/ajax/libs/crypto-js/4.2.0/crypto-js.min.js")
+            require("crypto")
+        """.trimIndent().toScriptSource()
+        val e = RhinoScriptEngine()
+//        val reader = appCtx.assets.open("js/crypto.js").reader()
+//        e.execute(ReaderScriptSource(reader))
+        measureTimeMillis {
+            e.execute(code)
+        }.run {
+            println("time: $this")
+        }
     }
 }

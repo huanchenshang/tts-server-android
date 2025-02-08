@@ -62,7 +62,6 @@ class LinkUploadRuleActivity : AppCompatActivity() {
                 }
             }
 
-
         CodeEditorScreen(
             title = { Text(stringResource(id = R.string.direct_link_settings)) },
             onBack = { finishAfterTransition() },

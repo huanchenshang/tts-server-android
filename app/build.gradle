@@ -5,6 +5,7 @@ plugins {
     id("kotlin-parcelize")
     id("com.google.devtools.ksp")
     id("com.mikepenz.aboutlibraries.plugin")
+    alias(libs.plugins.compose.compiler)
 }
 
 static def buildTime() {
@@ -89,7 +90,7 @@ android {
     }
     packagingOptions {
         resources {
-            excludes += ['META-INF/INDEX.LIST', 'META-INF/*.md']
+            excludes += ['META-INF/INDEX.LIST', 'META-INF/*.md', 'META-INF/*.versions.properties']
         }
     }
 
@@ -161,9 +162,6 @@ android {
         compose true
     }
 
-    composeOptions {
-        kotlinCompilerExtensionVersion = libs.versions.composeComplile.get()
-    }
 }
 
 dependencies {
@@ -173,6 +171,7 @@ dependencies {
     implementation(project(":lib-compose"))
     implementation(project(":lib-script"))
     implementation(project(":lib-tts"))
+    implementation(project(":lib-server"))
 
 
     implementation fileTree(include: ['*.jar', '*.aar'], dir: 'libs')

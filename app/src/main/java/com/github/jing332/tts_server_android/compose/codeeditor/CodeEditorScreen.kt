@@ -43,6 +43,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.github.jing332.common.utils.longToast
 import com.github.jing332.compose.ComposeExtensions.clickableRipple
 import com.github.jing332.compose.widgets.CheckedMenuItem
 import com.github.jing332.compose.widgets.LongClickIconButton
@@ -52,7 +53,6 @@ import com.github.jing332.tts_server_android.ui.AppActivityResultContracts
 import com.github.jing332.tts_server_android.ui.FilePickerActivity
 import com.github.jing332.tts_server_android.ui.view.AppDialogs.displayErrorDialog
 import io.github.rosemoe.sora.widget.CodeEditor
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
 
@@ -95,18 +95,32 @@ fun CodeEditorScreen(
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
     LaunchedEffect(vm) {
-        runCatching {
-            scope.launch(Dispatchers.IO) {
-                vm.startSyncServer(
-                    port = CodeEditorConfig.remoteSyncPort.value,
-                    onPush = { codeEditor?.setText(it) },
-                    onPull = { codeEditor?.text.toString() },
-                    onDebug = onDebug,
-                    onAction = onRemoteAction
-                )
+        if (CodeEditorConfig.isRemoteSyncEnabled.value)
+            vm.startSyncServer(
+                port = CodeEditorConfig.remoteSyncPort.value,
+                onPush = { codeEditor?.setText(it) },
+                onPull = { codeEditor?.text.toString() },
+                onDebug = onDebug,
+                onAction = onRemoteAction
+            )
+
+        scope.launch {
+            vm.error.collect {
+                when (it) {
+                    Error.Empty -> {}
+                    is Error.Other -> {
+                        context.displayErrorDialog(t = it.e)
+                    }
+
+                    Error.PortConflict -> {
+                        context.longToast("RemoteSync: port conflict!")
+                    }
+
+                    is Error.Socket -> {
+                        context.longToast("RemoteSync: ${it.message}")
+                    }
+                }
             }
-        }.onFailure {
-            context.displayErrorDialog(it, context.getString(R.string.remote_sync_service))
         }
     }
 

@@ -3,6 +3,7 @@ plugins {
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.serialization)
     alias(libs.plugins.androidApplication)
+    alias(libs.plugins.compose.compiler)
 }
 
 android {
@@ -28,10 +29,6 @@ android {
 
     buildFeatures {
         compose = true
-    }
-
-    composeOptions {
-        kotlinCompilerExtensionVersion = libs.versions.composeComplile.get()
     }
 
     compileOptions {

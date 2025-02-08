@@ -1,5 +1,6 @@
 package com.github.jing332.script.runtime
 
+import android.content.Context
 import com.github.jing332.script.runtime.console.Console
 import com.github.jing332.script.runtime.console.GlobalConsole
 import com.github.jing332.script.withRhinoContext

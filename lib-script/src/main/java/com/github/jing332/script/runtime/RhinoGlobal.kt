@@ -12,6 +12,7 @@ import org.mozilla.javascript.ScriptableObject
 import org.mozilla.javascript.Undefined
 import org.mozilla.javascript.commonjs.module.RequireBuilder
 import org.mozilla.javascript.commonjs.module.provider.SoftCachingModuleScriptProvider
+import splitties.init.appCtx
 
 class RhinoGlobal(cx: Context) : ImporterTopLevel(cx) {
     init {
@@ -33,10 +34,10 @@ class RhinoGlobal(cx: Context) : ImporterTopLevel(cx) {
     }
 
     private fun initRequireBuilder(context: Context, scope: Scriptable) {
-        val provider = ModuleSourceProvider()
+        val provider = ModuleSourceProvider(appCtx, "js")
         RequireBuilder()
             .setModuleScriptProvider(SoftCachingModuleScriptProvider(provider))
-            .setSandboxed(true)
+            .setSandboxed(false)
             .createRequire(context, scope)
             .install(scope)
     }

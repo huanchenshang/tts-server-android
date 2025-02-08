@@ -1,5 +1,7 @@
 package com.github.jing332.script.runtime.console
 
+import com.github.jing332.common.LogEntry
+
 abstract class ConsoleImpl : AbstractConsole(), LogListenerManager {
     private val listeners = mutableListOf<LogListener>()
 
