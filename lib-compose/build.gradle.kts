@@ -56,8 +56,8 @@ dependencies {
 
     val composeBom = platform(libs.compose.bom)
 //    def composeBom = platform("dev.chrisbanes.compose:compose-bom:2024.01.00-alpha01")
-    implementation(composeBom)
-    androidTestImplementation(composeBom)
+    api(composeBom)
+    androidTestApi(composeBom)
     api(libs.bundles.compose)
     api(libs.bundles.compose.material3)
 

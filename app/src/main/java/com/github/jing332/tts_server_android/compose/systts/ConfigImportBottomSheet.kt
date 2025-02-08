@@ -55,7 +55,7 @@ import com.github.jing332.tts_server_android.ui.view.AppDialogs.displayErrorDial
 import com.github.jing332.common.utils.ClipboardUtils
 import com.github.jing332.common.utils.FileUtils.readAllText
 import com.github.jing332.common.utils.longToast
-import com.github.jing332.tts_server_android.utils.toJsonListString
+import com.github.jing332.common.utils.toJsonListString
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext

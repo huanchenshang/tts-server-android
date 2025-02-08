@@ -116,7 +116,7 @@
     <string name="systts_http_request_header">请求头</string>
     <string name="systts_sample_test_text">单击右侧按钮即可测试并播放</string>
     <string name="systts_decode_audio">解码音频</string>
-    <string name="systts_add_internal_tts">添加内置TTS</string>
+    <string name="systts_add_ms_tts">添加内置TTS</string>
     <string name="systts_add_custom_tts">添加自定义TTS</string>
     <string name="off_multi_voice_use_global">请关闭多语音选项以使用单语音模式</string>
     <string name="use_dns_lookup_ip">使用DNS解析接口IP</string>
@@ -434,4 +434,6 @@
     <string name="clear_text_content">清空文本内容</string>
     <string name="exclude_from_recent">后台隐藏</string>
     <string name="exclude_from_recent_summary">在[最近任务]中隐藏本应用</string>
+    <string name="not_support_audition">不支持试听！</string>
+    <string name="systts_log_direct_play">直接播放：%1$s</string>
 </resources>

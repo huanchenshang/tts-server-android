@@ -25,14 +25,9 @@ class InputStreamDataSource(
     @Throws(IOException::class)
     override fun open(dataSpec: DataSpec): Long {
         this.dataSpec = dataSpec
+        transferInitializing(dataSpec)
         bufferedSource.skip(dataSpec.position)
-
-        if (dataSpec.length == C.LENGTH_UNSET.toLong()) {
-            bytesRemaining = inputStream.available().toLong()
-            if (bytesRemaining == 0L) bytesRemaining = C.LENGTH_UNSET.toLong()
-        } else {
-            bytesRemaining = dataSpec.length
-        }
+        bytesRemaining = dataSpec.length
 
         opened = true
         return bytesRemaining
@@ -60,9 +55,11 @@ class InputStreamDataSource(
             }
             return C.RESULT_END_OF_INPUT
         }
-        if (bytesRemaining != C.LENGTH_UNSET.toLong())
+        if (bytesRemaining != C.LENGTH_UNSET.toLong()) {
             bytesRemaining -= bytesRead.toLong()
+        }
 
+        bytesTransferred(bytesRead)
         return bytesRead
     }
 

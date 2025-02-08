@@ -1,20 +1,19 @@
 package com.github.jing332.tts_server_android.model.rhino.speech_rule
 
 import android.content.Context
+import com.github.jing332.database.entities.SpeechRule
+import com.github.jing332.database.entities.TagsDataMap
+import com.github.jing332.database.entities.systts.SpeechRuleInfo
+import com.github.jing332.script.runtime.console.ConsoleImpl
+import com.github.jing332.script.simple.SimpleScriptEngine
+import com.github.jing332.script.source.toScriptSource
 import com.github.jing332.tts_server_android.R
-import com.github.jing332.tts_server_android.data.entities.SpeechRule
-import com.github.jing332.tts_server_android.data.entities.TagsDataMap
-import com.github.jing332.tts_server_android.data.entities.systts.SpeechRuleInfo
-import com.github.jing332.script_engine.core.BaseScriptEngine
-import com.github.jing332.script_engine.core.Logger
+import org.mozilla.javascript.NativeObject
 
 class SpeechRuleEngine(
     val context: Context,
-    private val rule: SpeechRule,
-    override var code: String = rule.code,
-    override val logger: com.github.jing332.script_engine.core.Logger = com.github.jing332.script_engine.core.Logger.global
-) :
-    com.github.jing332.script_engine.core.BaseScriptEngine(ttsrvObject = ScriptEngineContext(context = context, "ReadRule")) {
+    private val rule: SpeechRule
+) {
     companion object {
         const val OBJ_JS = "SpeechRuleJS"
 
@@ -36,8 +35,18 @@ class SpeechRuleEngine(
         }
     }
 
+    val engine = SimpleScriptEngine(context, rule.ruleId)
+    val console: ConsoleImpl
+        get() = (engine.runtime?.console as? ConsoleImpl)
+            ?: throw IllegalStateException("runtime.console is null")
+
+
     private val objJS
-        get() = findObject(OBJ_JS)
+        get() = engine.get(OBJ_JS) as NativeObject
+
+    fun eval() {
+        engine.execute(rule.code.toScriptSource())
+    }
 
     @Suppress("UNCHECKED_CAST")
     fun evalInfo() {
@@ -64,7 +73,7 @@ class SpeechRuleEngine(
     }
 
     fun getTagName(tag: String, tagMap: Map<String, String>): String {
-        return rhino.invokeMethod(objJS, FUNC_GET_TAG_NAME, tag, tagMap).toString()
+        return engine.invokeMethod(objJS, FUNC_GET_TAG_NAME, tag, tagMap).toString()
     }
 
     data class TagData(val id: String, val value: String)
@@ -99,7 +108,7 @@ class SpeechRuleEngine(
         tagsDataMap: Map<String, Map<String, List<Map<String, String>>>>
     ): List<TextWithTag> {
         val resultList: MutableList<TextWithTag> = mutableListOf()
-        rhino.invokeMethod(objJS, FUNC_HANDLE_TEXT, text, tagsDataMap)
+        engine.invokeMethod(objJS, FUNC_HANDLE_TEXT, text, tagsDataMap)
             ?.run { this as List<*> }
             ?.let { list ->
                 list.forEach {
@@ -120,7 +129,7 @@ class SpeechRuleEngine(
 
     @Suppress("UNCHECKED_CAST")
     fun splitText(text: String): List<CharSequence> {
-        return rhino.invokeMethod(
+        return engine.invokeMethod(
             objJS,
             FUNC_SPLIT_TEXT,
             text

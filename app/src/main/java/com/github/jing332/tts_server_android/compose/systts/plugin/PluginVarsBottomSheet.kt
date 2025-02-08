@@ -10,7 +10,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.github.jing332.compose.widgets.AppBottomSheet
-import com.github.jing332.tts_server_android.data.entities.plugin.Plugin
+import com.github.jing332.database.entities.plugin.Plugin
 
 @Composable
 internal fun PluginVarsBottomSheet(

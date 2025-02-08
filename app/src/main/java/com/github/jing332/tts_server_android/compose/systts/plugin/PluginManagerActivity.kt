@@ -8,7 +8,6 @@ import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -16,11 +15,8 @@ import androidx.navigation.compose.rememberNavController
 import com.github.jing332.tts_server_android.compose.LocalNavController
 import com.github.jing332.tts_server_android.compose.navigate
 import com.github.jing332.tts_server_android.compose.theme.AppTheme
-import com.github.jing332.tts_server_android.data.appDb
-import com.github.jing332.tts_server_android.data.entities.SpeechRule
-import com.github.jing332.tts_server_android.data.entities.plugin.Plugin
-import com.github.jing332.tts_server_android.data.entities.systts.SystemTts
-import com.github.jing332.tts_server_android.model.speech.tts.PluginTTS
+import com.github.jing332.database.dbm
+import com.github.jing332.database.entities.plugin.Plugin
 
 class PluginManagerActivity : AppCompatActivity() {
     private var jsCode by mutableStateOf("")
@@ -58,7 +54,7 @@ class PluginManagerActivity : AppCompatActivity() {
                                 stackEntry.arguments?.getParcelable(NavRoutes.PluginEdit.KEY_DATA)
                                     ?: Plugin()
 
-                            PluginEditScreen(plugin, onSave = { appDb.pluginDao.insert(it) })
+                            PluginEditorScreen(plugin, onSave = { dbm.pluginDao.insert(it) })
                         }
                     }
                 }

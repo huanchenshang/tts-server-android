@@ -116,7 +116,7 @@
     <string name="systts_http_request_header">هدر درخواست</string>
     <string name="systts_sample_test_text">برای تست و بازی روی دکمه سمت راست کلیک کنید</string>
     <string name="systts_decode_audio">رمزگشایی صدا</string>
-    <string name="systts_add_internal_tts">موتور داخلی را اضافه کنید</string>
+    <string name="systts_add_ms_tts">موتور داخلی را اضافه کنید</string>
     <string name="systts_add_custom_tts">موتور سفارشی را اضافه کنید</string>
     <string name="off_multi_voice_use_global">لطفاً گزینه چند صدایی را برای استفاده از حالت تک صدایی خاموش کنید</string>
     <string name="use_dns_lookup_ip">از DNS برای حل IP رابط استفاده کنید</string>
@@ -440,4 +440,6 @@
     <string name="write_plugin_log_to_file">لاگ افزونه را در فایل بنویسید</string>
     <string name="add_shortcut_if_fail_tips">اگر ناموفق بود، لطفاً [اضافه کردن مجوز میانبر] را بدهید</string>
     <string name="clear_text_content">محتوای متن را پاک کنید</string>
+    <string name="not_support_audition">不支持试听！</string>
+    <string name="systts_log_direct_play">直接播放：%1$s</string>
 </resources>

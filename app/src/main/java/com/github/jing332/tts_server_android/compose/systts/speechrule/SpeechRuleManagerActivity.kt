@@ -16,8 +16,8 @@ import androidx.navigation.compose.rememberNavController
 import com.github.jing332.tts_server_android.compose.LocalNavController
 import com.github.jing332.tts_server_android.compose.navigate
 import com.github.jing332.tts_server_android.compose.theme.AppTheme
-import com.github.jing332.tts_server_android.data.appDb
-import com.github.jing332.tts_server_android.data.entities.SpeechRule
+import com.github.jing332.database.dbm
+import com.github.jing332.database.entities.SpeechRule
 
 class SpeechRuleManagerActivity : AppCompatActivity() {
     private var jsCode by mutableStateOf("")
@@ -56,7 +56,7 @@ class SpeechRuleManagerActivity : AppCompatActivity() {
                                     ?: SpeechRule()
                             }
                             SpeechRuleEditScreen(rule, onSave = {
-                                appDb.speechRuleDao.insert(it)
+                                dbm.speechRuleDao.insert(it)
                             })
                         }
                     }

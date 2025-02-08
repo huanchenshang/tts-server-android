@@ -33,7 +33,14 @@ class ExoAudioDecoder(val context: Context) {
                 enableFloatOutput: Boolean,
                 enableAudioTrackPlaybackParams: Boolean
             ): AudioSink? {
-                return DecoderAudioSink { callback?.onReadPcmAudio(it) }
+                return DecoderAudioSink(
+                    onPcmBuffer = {
+                        callback?.onReadPcmAudio(it)
+                    },
+                    onEndOfStream = {
+
+                    }
+                )
             }
         }
 
@@ -92,7 +99,7 @@ class ExoAudioDecoder(val context: Context) {
 
         throwable?.let {
             throw AudioDecoderException(
-                message = "ExoPlayer解码失败：${it.message}",
+                message = "ExoDecoder failed：${it.message}",
                 cause = it
             )
         }

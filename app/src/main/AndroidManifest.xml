@@ -15,7 +15,7 @@
     <uses-permission android:name="android.permission.SCHEDULE_EXACT_ALARM" />
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.READ_MEDIA_AUDIO" />
-    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
     <uses-permission android:name="android.permission.REQUEST_IGNORE_BATTERY_OPTIMIZATIONS" />
@@ -38,8 +38,8 @@
         tools:ignore="UnusedAttribute">
         <activity
             android:name=".ui.view.ErrorDialogActivity"
-            android:theme="@style/TranslucentTheme"
-            android:exported="false" />
+            android:exported="false"
+            android:theme="@style/TranslucentTheme" />
         <activity
             android:name=".compose.systts.plugin.PluginPreviewActivity"
             android:exported="false" />
@@ -183,6 +183,12 @@
                 <category android:name="android.intent.category.DEFAULT" />
             </intent-filter>
         </activity>
+
+        <activity
+            android:name=".compose.DebugSystemTtsActivity"
+            android:exported="true"
+            android:label="@string/debug"
+            android:taskAffinity="debug.tts" />
 
         <service
             android:name="androidx.appcompat.app.AppLocalesMetadataHolderService"

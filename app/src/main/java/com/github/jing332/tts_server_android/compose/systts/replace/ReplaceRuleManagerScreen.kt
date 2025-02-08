@@ -51,10 +51,10 @@ import com.github.jing332.tts_server_android.compose.navigate
 import com.github.jing332.tts_server_android.compose.systts.sizeToToggleableState
 import com.github.jing332.compose.widgets.LazyListIndexStateSaver
 import com.github.jing332.compose.widgets.TextFieldDialog
-import com.github.jing332.tts_server_android.data.appDb
-import com.github.jing332.tts_server_android.data.entities.replace.GroupWithReplaceRule
-import com.github.jing332.tts_server_android.data.entities.replace.ReplaceRule
-import com.github.jing332.tts_server_android.data.entities.replace.ReplaceRuleGroup
+import com.github.jing332.database.dbm
+import com.github.jing332.database.entities.replace.GroupWithReplaceRule
+import com.github.jing332.database.entities.replace.ReplaceRule
+import com.github.jing332.database.entities.replace.ReplaceRuleGroup
 import com.github.jing332.tts_server_android.service.systts.SystemTtsService
 import com.github.jing332.tts_server_android.utils.MyTools
 import okhttp3.internal.toLongOrDefault
@@ -94,7 +94,7 @@ internal fun ManagerScreen(vm: ReplaceRuleManagerViewModel = viewModel(), finish
             onTextChange = { text = it },
             onDismissRequest = { showAddGroupDialog = false },
             onConfirm = {
-                appDb.replaceRuleDao.insertGroup(ReplaceRuleGroup(name = text))
+                dbm.replaceRuleDao.insertGroup(ReplaceRuleGroup(name = text))
             }
         )
     }
@@ -108,7 +108,7 @@ internal fun ManagerScreen(vm: ReplaceRuleManagerViewModel = viewModel(), finish
             },
             group = group,
             onGroupChange = { group = it },
-            onConfirm = { appDb.replaceRuleDao.updateGroup(group) }
+            onConfirm = { dbm.replaceRuleDao.updateGroup(group) }
         )
     }
 
@@ -241,22 +241,22 @@ internal fun ManagerScreen(vm: ReplaceRuleManagerViewModel = viewModel(), finish
                 val fromKey = from.key.toString()
                 val toKey = to.key.toString()
                 if (fromKey.startsWith("g_") && toKey.startsWith("g_")) {
-                    val src = appDb.replaceRuleDao.getGroup(fromKey.substring(2).toLong())
+                    val src = dbm.replaceRuleDao.getGroup(fromKey.substring(2).toLong())
                         ?: return@rememberReorderableLazyListState
-                    val target = appDb.replaceRuleDao.getGroup(toKey.substring(2).toLong())
+                    val target = dbm.replaceRuleDao.getGroup(toKey.substring(2).toLong())
                         ?: return@rememberReorderableLazyListState
 
-                    appDb.replaceRuleDao.updateGroup(
+                    dbm.replaceRuleDao.updateGroup(
                         src.copy(order = target.order),
                         target.copy(order = src.order)
                     )
                 } else {
-                    val src = appDb.replaceRuleDao.get(fromKey.toLongOrDefault(Long.MIN_VALUE))
+                    val src = dbm.replaceRuleDao.get(fromKey.toLongOrDefault(Long.MIN_VALUE))
                         ?: return@rememberReorderableLazyListState
-                    val target = appDb.replaceRuleDao.get(toKey.toLongOrDefault(Long.MIN_VALUE))
+                    val target = dbm.replaceRuleDao.get(toKey.toLongOrDefault(Long.MIN_VALUE))
                         ?: return@rememberReorderableLazyListState
 
-                    appDb.replaceRuleDao.update(
+                    dbm.replaceRuleDao.update(
                         src.copy(order = target.order),
                         target.copy(order = src.order)
                     )
@@ -288,10 +288,10 @@ internal fun ManagerScreen(vm: ReplaceRuleManagerViewModel = viewModel(), finish
                             onToggleableStateChange = { enabled ->
                                 groupWithRules.list.map {
                                     if (it.isEnabled != enabled)
-                                        appDb.replaceRuleDao.update(it.copy(isEnabled = enabled))
+                                        dbm.replaceRuleDao.update(it.copy(isEnabled = enabled))
                                 }
                             },
-                            onClick = { appDb.replaceRuleDao.updateGroup(g.copy(isExpanded = !g.isExpanded)) },
+                            onClick = { dbm.replaceRuleDao.updateGroup(g.copy(isExpanded = !g.isExpanded)) },
                             onEdit = { showGroupEditDialog = g },
                             onDelete = {
                                 vm.deleteGroup(groupWithRules)
@@ -315,7 +315,7 @@ internal fun ManagerScreen(vm: ReplaceRuleManagerViewModel = viewModel(), finish
                                     .detectReorderAfterLongPress(reorderState),
                                 isEnabled = rule.isEnabled,
                                 onCheckedChange = { enabled ->
-                                    appDb.replaceRuleDao.update(rule.copy(isEnabled = enabled))
+                                    dbm.replaceRuleDao.update(rule.copy(isEnabled = enabled))
                                     if (enabled) SystemTtsService.notifyUpdateConfig(isOnlyReplacer = true)
                                 },
                                 onClick = { },

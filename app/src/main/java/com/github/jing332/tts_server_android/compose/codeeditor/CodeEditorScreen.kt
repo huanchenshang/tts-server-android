@@ -55,6 +55,9 @@ import io.github.rosemoe.sora.widget.CodeEditor
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
+
+fun CodeEditor.string(): String = this.text.toString()
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CodeEditorScreen(
@@ -157,7 +160,12 @@ fun CodeEditorScreen(
                                             )
                                         }
                                     },
-                                    leadingIcon = { Icon(Icons.AutoMirrored.Filled.InsertDriveFile, null) }
+                                    leadingIcon = {
+                                        Icon(
+                                            Icons.AutoMirrored.Filled.InsertDriveFile,
+                                            null
+                                        )
+                                    }
                                 )
 
                             var syncEnabled by remember { CodeEditorConfig.isRemoteSyncEnabled }

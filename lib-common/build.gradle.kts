@@ -36,6 +36,7 @@ dependencies {
     api(libs.hutool.crypto)
     api(libs.bundles.network)
     api(libs.bundles.media3)
+    api(libs.kotlin.result)
 
     implementation(libs.coreKtx)
     implementation(libs.appcompat)

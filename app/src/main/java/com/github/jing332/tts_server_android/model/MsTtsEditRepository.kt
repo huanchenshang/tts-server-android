@@ -6,7 +6,6 @@ import com.github.jing332.tts_server_android.app
 import com.github.jing332.tts_server_android.bean.EdgeVoiceBean
 import com.github.jing332.tts_server_android.constant.AppConst
 import com.github.jing332.tts_server_android.constant.CnLocalMap
-import com.github.jing332.tts_server_android.constant.MsTtsApiType
 import com.github.jing332.lib_gojni.TtsGoNative
 import com.github.jing332.common.utils.FileUtils
 import java.io.File
@@ -27,7 +26,7 @@ class MsTtsEditRepository() {
      * 根据api获取数据
      */
     @Suppress("UNUSED_PARAMETER")
-    suspend fun voicesByApi(@MsTtsApiType api: Int): List<GeneralVoiceData> {
+    suspend fun voicesByApi(api: Int): List<GeneralVoiceData> {
         return withDefault {
             edgeVoices()
         }

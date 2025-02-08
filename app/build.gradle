@@ -167,14 +167,21 @@ android {
 }
 
 dependencies {
+    coreLibraryDesugaring(libs.desugar)
     api(project(":lib-common"))
     implementation(project(":lib-gojni"))
-    implementation(project(":lib-script-engine"))
+    implementation(project(":lib-compose"))
+    implementation(project(":lib-script"))
+    implementation(project(":lib-tts"))
 
-    coreLibraryDesugaring(libs.desugar)
 
     implementation fileTree(include: ['*.jar', '*.aar'], dir: 'libs')
     implementation 'androidx.legacy:legacy-support-v4:1.0.0'
+
+    implementation(libs.logging)
+    implementation(libs.slf4j.api)
+//    implementation(libs.slf4j.simple)
+    implementation(libs.logback.android)
 
     implementation libs.activityKtx
     implementation libs.bundles.andorid.base

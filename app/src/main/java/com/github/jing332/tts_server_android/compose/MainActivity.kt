@@ -81,7 +81,6 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.github.jing332.common.DateFormatConst
-import com.github.jing332.common.utils.clone
 import com.github.jing332.common.utils.longToast
 import com.github.jing332.common.utils.performLongPress
 import com.github.jing332.common.utils.toast
@@ -94,19 +93,19 @@ import com.github.jing332.tts_server_android.compose.forwarder.systts.SystemTtsF
 import com.github.jing332.tts_server_android.compose.nav.NavRoutes
 import com.github.jing332.tts_server_android.compose.settings.SettingsScreen
 import com.github.jing332.tts_server_android.compose.systts.SystemTtsScreen
-import com.github.jing332.tts_server_android.compose.systts.list.edit.TtsEditContainerScreen
+import com.github.jing332.tts_server_android.compose.systts.list.ui.widgets.TtsEditContainerScreen
 import com.github.jing332.tts_server_android.compose.theme.AppTheme
 import com.github.jing332.tts_server_android.conf.AppConfig
-import com.github.jing332.tts_server_android.constant.AppConst
-import com.github.jing332.tts_server_android.data.appDb
-import com.github.jing332.tts_server_android.data.entities.systts.SystemTts
-import com.github.jing332.tts_server_android.model.speech.tts.ITextToSpeechEngine
+import com.github.jing332.database.dbm
+import com.github.jing332.database.entities.systts.EmptyConfiguration
+import com.github.jing332.database.entities.systts.SystemTtsV2
 import com.github.jing332.tts_server_android.service.systts.SystemTtsService
 import com.github.jing332.tts_server_android.ui.AppHelpDocumentActivity
 import com.github.jing332.tts_server_android.utils.MyTools.killBattery
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.google.accompanist.permissions.isGranted
 import com.google.accompanist.permissions.rememberPermissionState
+import io.github.oshai.kotlinlogging.KotlinLogging
 import kotlinx.coroutines.launch
 
 
@@ -124,6 +123,10 @@ fun Context.asActivity(): Activity {
 private var updateCheckTrigger by mutableStateOf(false)
 
 class MainActivity : AppCompatActivity() {
+    companion object{
+        private val logger = KotlinLogging.logger { this::class.java.name }
+    }
+
     @OptIn(ExperimentalPermissionsApi::class)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -260,32 +263,25 @@ private fun MainScreen(finish: () -> Unit) {
                 composable(NavRoutes.Settings.id) { SettingsScreen(drawerState) }
 
                 composable(NavRoutes.TtsEdit.id) { stackEntry ->
-                    val systts: SystemTts =
+                    val systemTts: SystemTtsV2 =
                         stackEntry.arguments?.getParcelable(NavRoutes.TtsEdit.DATA)
                             ?: return@composable
-                    var stateSystts by rememberSaveable {
-                        mutableStateOf(systts.run {
-                            if (tts.locale.isBlank()) {
-                                copy(
-                                    tts = tts.clone<ITextToSpeechEngine>()!!
-                                        .apply { locale = AppConst.localeCode }
-                                )
-                            } else
-                                this
-                        })
-                    }
+                    var stateSystemTts by rememberSaveable { mutableStateOf(systemTts) }
+
+
                     TtsEditContainerScreen(
                         modifier = Modifier
                             .fillMaxSize(),
-                        systts = stateSystts,
+                        systts = stateSystemTts,
                         onSysttsChange = {
-                            stateSystts = it
+                            stateSystemTts = it
+
                             println("UpdateSystemTTS: $it")
                         },
                         onSave = {
                             navController.popBackStack()
-                            appDb.systemTtsDao.insertTts(stateSystts)
-                            if (stateSystts.isEnabled) SystemTtsService.notifyUpdateConfig()
+                            dbm.systemTtsV2.insert(stateSystemTts)
+                            if (stateSystemTts.isEnabled) SystemTtsService.notifyUpdateConfig()
                         },
                         onCancel = {
                             navController.popBackStack()

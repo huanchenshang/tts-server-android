@@ -27,25 +27,32 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
+import androidx.lifecycle.viewmodel.compose.viewModel
+import com.github.jing332.compose.ComposeExtensions.clickableRipple
+import com.github.jing332.compose.widgets.AppDialog
+import com.github.jing332.database.entities.plugin.Plugin
+import com.github.jing332.database.entities.systts.SystemTtsV2
+import com.github.jing332.database.entities.systts.TtsConfigurationDTO
+import com.github.jing332.database.entities.systts.source.PluginTtsSource
 import com.github.jing332.tts_server_android.App
 import com.github.jing332.tts_server_android.AppLocale
 import com.github.jing332.tts_server_android.R
-import com.github.jing332.tts_server_android.compose.systts.list.edit.ui.PluginTtsUI
+import com.github.jing332.tts_server_android.compose.systts.list.ui.PluginTtsUI
+import com.github.jing332.tts_server_android.compose.systts.list.ui.PluginTtsViewModel
 import com.github.jing332.tts_server_android.compose.theme.AppTheme
-import com.github.jing332.compose.widgets.AppDialog
 import com.github.jing332.tts_server_android.constant.AppConst
-import com.github.jing332.tts_server_android.data.entities.systts.SystemTts
-import com.github.jing332.tts_server_android.model.speech.tts.PluginTTS
 import com.github.jing332.tts_server_android.ui.view.ErrorDialogActivity
-import  com.github.jing332.compose.ComposeExtensions.clickableRipple
+import io.github.oshai.kotlinlogging.KotlinLogging
 
 @Suppress("DEPRECATION")
 class PluginPreviewActivity : AppCompatActivity() {
     companion object {
-        const val KEY_DATA = "data"
+        const val KEY_SOURCE = "source"
+        const val KEY_PLUGIN = "plugin"
         const val ACTION_FINISH = "finish"
+
+        private val logger = KotlinLogging.logger { PluginPreviewActivity::class.java.name }
     }
 
     private val mReceiver by lazy { MyBroadcastReceiver() }
@@ -69,23 +76,40 @@ class PluginPreviewActivity : AppCompatActivity() {
 
         AppConst.localBroadcast.registerReceiver(mReceiver, IntentFilter(ACTION_FINISH))
 
-        val tts = intent.getParcelableExtra<PluginTTS>(KEY_DATA)
-        if (tts == null) {
+        var source = intent.getParcelableExtra<PluginTtsSource>(KEY_SOURCE)
+        val plugin = intent.getParcelableExtra<Plugin>(KEY_PLUGIN)
+        logger.atDebug {
+            message = "loading preview plugin ui"
+            payload = mapOf("source" to source, "plugin" to plugin)
+        }
+        if (source == null || plugin == null) {
             finish()
             return
         }
-        if (tts.locale.isBlank()) {
+
+        if (source.locale.isBlank()) {
             val l = AppLocale.getAppLocale(this)
-            tts.locale = "${l.language}-${l.country}" // eg: en-US, zh-CN
+            source = source.copy(locale = "${l.language}-${l.country}")// eg: en-US, zh-CN)
         }
+
         setContent {
             AppTheme {
-                var systts by rememberSaveable { mutableStateOf(SystemTts(tts = tts)) }
-                PluginPreviewScreen(systts = systts, onSysttsChange = { systts = it }, onSave = {
-                    intent.putExtra(KEY_DATA, systts.tts)
-                    setResult(RESULT_OK, intent)
-                    finish()
-                })
+                var systts by rememberSaveable {
+                    mutableStateOf(
+                        SystemTtsV2(
+                            config = TtsConfigurationDTO(source = source)
+                        )
+                    )
+                }
+                PluginPreviewScreen(
+                    plugin = plugin,
+                    systts = systts,
+                    onSysttsChange = { systts = it },
+                    onSave = {
+                        intent.putExtra(KEY_SOURCE, systts.ttsConfig.source as PluginTtsSource)
+                        setResult(RESULT_OK, intent)
+                        finish()
+                    })
             }
         }
     }
@@ -93,11 +117,11 @@ class PluginPreviewActivity : AppCompatActivity() {
     @OptIn(ExperimentalMaterial3Api::class)
     @Composable
     private fun PluginPreviewScreen(
-        systts: SystemTts,
-        onSysttsChange: (SystemTts) -> Unit,
+        plugin: Plugin,
+        systts: SystemTtsV2,
+        onSysttsChange: (SystemTtsV2) -> Unit,
         onSave: () -> Unit
     ) {
-        val context = LocalContext.current
         Scaffold(
             modifier = Modifier.fillMaxSize(),
             topBar = {
@@ -181,6 +205,9 @@ class PluginPreviewActivity : AppCompatActivity() {
                 )
             }) { paddingValues ->
             val ui = remember { PluginTtsUI() }
+            val pluginVM: PluginTtsViewModel = viewModel()
+            pluginVM.onGetPlugin = { plugin }
+
             ui.EditContentScreen(
                 modifier = Modifier
                     .fillMaxSize()
@@ -188,7 +215,8 @@ class PluginPreviewActivity : AppCompatActivity() {
                     .verticalScroll(rememberScrollState()),
                 systts = systts,
                 onSysttsChange = onSysttsChange,
-                showBasicInfo = false
+                showBasicInfo = false,
+                vm = pluginVM
             )
         }
     }

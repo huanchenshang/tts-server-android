@@ -117,7 +117,7 @@
     <string name="systts_http_request_header">Http Request header</string>
     <string name="systts_sample_test_text">click the button on the right to test and play</string>
     <string name="systts_decode_audio">Decode audio</string>
-    <string name="systts_add_internal_tts">Add built-in TTS</string>
+    <string name="systts_add_ms_tts">Add built-in TTS</string>
     <string name="systts_add_custom_tts">Add custom TTS</string>
     <string name="off_multi_voice_use_global">Please turn off the multi-voice option to use single-voice model</string>
     <string name="use_dns_lookup_ip">Use DNS to resolve the API IP</string>
@@ -436,4 +436,6 @@
     <string name="clear_text_content">Clear the text</string>
     <string name="exclude_from_recent">Exclude From Recent</string>
     <string name="exclude_from_recent_summary">Hide this application in [Recent Tasks].</string>
+    <string name="not_support_audition">不支持试听！</string>
+    <string name="systts_log_direct_play">直接播放：%1$s</string>
 </resources>

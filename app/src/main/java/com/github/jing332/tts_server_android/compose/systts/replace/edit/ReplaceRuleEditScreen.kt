@@ -53,16 +53,16 @@ import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.github.jing332.compose.widgets.AppSpinner
+import com.github.jing332.compose.widgets.TextCheckBox
+import com.github.jing332.database.dbm
+import com.github.jing332.database.entities.replace.ReplaceRule
+import com.github.jing332.database.entities.replace.ReplaceRuleGroup
+import com.github.jing332.database.entities.systts.SystemTtsV2
 import com.github.jing332.tts_server_android.R
 import com.github.jing332.tts_server_android.compose.LocalNavController
 import com.github.jing332.tts_server_android.compose.systts.AuditionDialog
-import com.github.jing332.compose.widgets.AppSpinner
-import com.github.jing332.compose.widgets.TextCheckBox
 import com.github.jing332.tts_server_android.conf.ReplaceRuleConfig
-import com.github.jing332.tts_server_android.data.appDb
-import com.github.jing332.tts_server_android.data.entities.replace.ReplaceRule
-import com.github.jing332.tts_server_android.data.entities.replace.ReplaceRuleGroup
-import com.github.jing332.tts_server_android.data.entities.systts.SystemTts
 import androidx.compose.material3.AlertDialog as AlertDialog1
 
 
@@ -95,7 +95,7 @@ fun PreviewRuleEditScreen() {
 fun RuleEditScreen(
     rule: ReplaceRule,
     onRuleChange: (ReplaceRule) -> Unit,
-    groups: List<ReplaceRuleGroup> = remember { appDb.replaceRuleDao.allGroup },
+    groups: List<ReplaceRuleGroup> = remember { dbm.replaceRuleDao.allGroup },
     onSave: () -> Unit,
 ) {
     val group = remember(rule.groupId) { groups.find { it.id == rule.groupId } ?: groups.first() }
@@ -332,7 +332,7 @@ private fun Screen(
                 .fillMaxWidth(),
             inertKeyState = insertKeyState,
             trailingIcon = {
-                var showAuditionDialog by remember { mutableStateOf<SystemTts?>(null) }
+                var showAuditionDialog by remember { mutableStateOf<SystemTtsV2?>(null) }
                 if (showAuditionDialog != null) {
                     AuditionDialog(
                         onDismissRequest = { showAuditionDialog = null },
@@ -343,10 +343,10 @@ private fun Screen(
 
                 var showTtsSelectDialog by remember { mutableStateOf(false) }
                 if (showTtsSelectDialog) {
-                    SysttsSelectBottomSheet(onDismissRequest = { showTtsSelectDialog = false }) {
-                        showTtsSelectDialog = false
-                        showAuditionDialog = it
-                    }
+//                    SysttsSelectBottomSheet(onDismissRequest = { showTtsSelectDialog = false }) {
+//                        showTtsSelectDialog = false
+//                        showAuditionDialog = it
+//                    }
                 }
 
                 AnimatedVisibility(visible = testResult.isNotBlank()) {

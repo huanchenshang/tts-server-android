@@ -14,8 +14,8 @@ import androidx.navigation.compose.rememberNavController
 import com.github.jing332.tts_server_android.compose.LocalNavController
 import com.github.jing332.tts_server_android.compose.systts.replace.edit.RuleEditScreen
 import com.github.jing332.tts_server_android.compose.theme.AppTheme
-import com.github.jing332.tts_server_android.data.appDb
-import com.github.jing332.tts_server_android.data.entities.replace.ReplaceRule
+import com.github.jing332.database.dbm
+import com.github.jing332.database.entities.replace.ReplaceRule
 import com.github.jing332.tts_server_android.service.systts.SystemTtsService
 
 class ReplaceManagerActivity : AppCompatActivity() {
@@ -42,7 +42,7 @@ class ReplaceManagerActivity : AppCompatActivity() {
                                 )
                             }
                             RuleEditScreen(rule, onRuleChange = { rule = it }, onSave = {
-                                appDb.replaceRuleDao.insert(rule)
+                                dbm.replaceRuleDao.insert(rule)
                                 if (rule.isEnabled)
                                     SystemTtsService.notifyUpdateConfig(isOnlyReplacer = true)
                             })

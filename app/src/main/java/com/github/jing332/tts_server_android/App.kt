@@ -5,6 +5,9 @@ import android.app.Application
 import android.content.Context
 import android.content.Intent
 import android.os.Process
+import com.github.jing332.database.entities.systts.SystemTtsMigration
+import com.github.jing332.database.entities.systts.SystemTtsV2
+import com.github.jing332.tts_server_android.constant.AppConst
 import com.github.jing332.tts_server_android.model.hanlp.HanlpManager
 import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.GlobalScope
@@ -34,6 +37,9 @@ class App : Application() {
         super.onCreate()
         instance = this
         CrashHandler(this)
+
+        SystemTtsV2.Converters.json = AppConst.jsonBuilder
+//        SystemTtsMigration.migrate()
 
         GlobalScope.launch {
             HanlpManager.initDir(

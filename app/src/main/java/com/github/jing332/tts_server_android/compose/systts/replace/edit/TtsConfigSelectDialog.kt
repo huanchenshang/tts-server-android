@@ -24,9 +24,9 @@ import com.github.jing332.tts_server_android.R
 import com.github.jing332.tts_server_android.compose.theme.AppTheme
 import com.github.jing332.compose.widgets.AppBottomSheet
 import com.github.jing332.compose.widgets.HtmlText
-import com.github.jing332.tts_server_android.data.appDb
-import com.github.jing332.tts_server_android.data.entities.systts.SystemTts
-import  com.github.jing332.compose.ComposeExtensions.clickableRipple
+import com.github.jing332.database.dbm
+ import  com.github.jing332.compose.ComposeExtensions.clickableRipple
+import com.github.jing332.database.entities.systts.SystemTtsV2
 
 @Preview
 @Composable
@@ -39,8 +39,8 @@ private fun PreviewTtsConfigSelectDialog() {
 }
 
 @Composable
-internal fun SysttsSelectBottomSheet(onDismissRequest: () -> Unit, onClick: (SystemTts) -> Unit) {
-    val items = remember { appDb.systemTtsDao.allEnabledTts }
+internal fun SysttsSelectBottomSheet(onDismissRequest: () -> Unit, onClick: (SystemTtsV2) -> Unit) {
+    val items = remember { dbm.systemTtsV2.allEnabled }
     AppBottomSheet(onDismissRequest = onDismissRequest) {
         Column(Modifier.padding(8.dp), horizontalAlignment = Alignment.CenterHorizontally) {
             Text(text = stringResource(id = R.string.choice_item, ""), style = MaterialTheme.typography.titleLarge)
@@ -59,10 +59,10 @@ internal fun SysttsSelectBottomSheet(onDismissRequest: () -> Unit, onClick: (Sys
                             text = systts.displayName ?: "",
                             style = MaterialTheme.typography.titleMedium
                         )
-                        HtmlText(
-                            text = systts.tts.getDescription(),
-                            style = MaterialTheme.typography.bodySmall
-                        )
+//                        HtmlText(
+//                            text = systts.tts.getDescription(),
+//                            style = MaterialTheme.typography.bodySmall
+//                        )
                     }
                 }
             }

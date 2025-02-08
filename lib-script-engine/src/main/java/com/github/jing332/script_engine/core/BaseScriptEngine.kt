@@ -1,6 +1,6 @@
 package com.github.jing332.script_engine.core
 
-import com.script.javascript.RhinoScriptEngine
+import com.sun.script.javascript.RhinoScriptEngine
 import org.mozilla.javascript.NativeObject
 
 open class BaseScriptEngine(

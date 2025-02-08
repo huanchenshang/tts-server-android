@@ -5,6 +5,7 @@ import com.funny.data_saver.core.mutableDataSaverStateOf
 import com.github.jing332.tts_server_android.app
 
 object SystemTtsConfig {
+
     private val dataSaverPref = DataSaverPreferences(app.getSharedPreferences("systts", 0))
 
     //var isInAppPlayAudio by booleanPref(false)
@@ -178,9 +179,10 @@ object SystemTtsConfig {
         initialValue = true
     )
 
-    val isSilenceAudio = mutableDataSaverStateOf(
+    val isSilenceSkipAudio = mutableDataSaverStateOf(
         dataSaverInterface = dataSaverPref,
-        key = "isSilenceAudio",
+        key = "isSilenceSkipAudio",
         initialValue = false
     )
+
 }

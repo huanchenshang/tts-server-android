@@ -12,7 +12,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import com.github.jing332.tts_server_android.R
-import com.github.jing332.tts_server_android.data.entities.systts.AudioParams
+import com.github.jing332.database.entities.systts.AudioParams
 
 @Composable
 fun GroupAudioParamsDialog(

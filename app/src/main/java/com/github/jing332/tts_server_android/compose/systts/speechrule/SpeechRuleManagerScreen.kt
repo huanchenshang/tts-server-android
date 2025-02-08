@@ -56,8 +56,8 @@ import com.github.jing332.tts_server_android.compose.navigate
 import com.github.jing332.tts_server_android.compose.systts.ConfigDeleteDialog
 import com.github.jing332.tts_server_android.compose.systts.plugin.PluginManagerActivity
 import com.github.jing332.compose.widgets.LazyListIndexStateSaver
-import com.github.jing332.tts_server_android.data.appDb
-import com.github.jing332.tts_server_android.data.entities.SpeechRule
+import com.github.jing332.database.dbm
+import com.github.jing332.database.entities.SpeechRule
 import com.github.jing332.tts_server_android.utils.MyTools
 import kotlinx.coroutines.flow.conflate
 import org.burnoutcrew.reorderable.detectReorderAfterLongPress
@@ -88,7 +88,7 @@ fun SpeechRuleManagerScreen(finish: () -> Unit) {
             onDismissRequest = { showDeleteDialog = null },
             name = showDeleteDialog!!.name
         ) {
-            appDb.speechRuleDao.delete(showDeleteDialog!!)
+            dbm.speechRuleDao.delete(showDeleteDialog!!)
             showDeleteDialog = null
         }
 
@@ -130,7 +130,7 @@ fun SpeechRuleManagerScreen(finish: () -> Unit) {
                                 text = { Text(text = stringResource(id = R.string.export_config)) },
                                 onClick = {
                                     showOptions = false
-                                    showExportSheet = appDb.speechRuleDao.allEnabled
+                                    showExportSheet = dbm.speechRuleDao.allEnabled
                                 },
                                 leadingIcon = {
                                     Icon(Icons.Default.Output, null)
@@ -159,12 +159,12 @@ fun SpeechRuleManagerScreen(finish: () -> Unit) {
         }
     ) { paddingValues ->
         LaunchedEffect(Unit) {
-            appDb.speechRuleDao.all.forEachIndexed { index, speechRule ->
-                appDb.speechRuleDao.update(speechRule.copy(order = index))
+            dbm.speechRuleDao.all.forEachIndexed { index, speechRule ->
+                dbm.speechRuleDao.update(speechRule.copy(order = index))
             }
         }
 
-        val flowAll = remember { appDb.speechRuleDao.flowAll().conflate() }
+        val flowAll = remember { dbm.speechRuleDao.flowAll().conflate() }
         val list by flowAll.collectAsState(initial = emptyList())
 
         val listState = remember { LazyListState() }
@@ -179,7 +179,7 @@ fun SpeechRuleManagerScreen(finish: () -> Unit) {
                 Collections.swap(mutList, from.index, to.index)
                 mutList.forEachIndexed { index, speechRule ->
                     if (speechRule.order != index)
-                        appDb.speechRuleDao.update(speechRule.copy(order = index))
+                        dbm.speechRuleDao.update(speechRule.copy(order = index))
                 }
             })
         LazyColumn(
@@ -199,7 +199,7 @@ fun SpeechRuleManagerScreen(finish: () -> Unit) {
                         name = item.name,
                         desc = "${item.author} - v${item.version}",
                         isEnabled = item.isEnabled,
-                        onEnabledChange = { appDb.speechRuleDao.update(item.copy(isEnabled = it)) },
+                        onEnabledChange = { dbm.speechRuleDao.update(item.copy(isEnabled = it)) },
                         onClick = {
 
                         },

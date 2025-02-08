@@ -8,6 +8,7 @@ appcompat = "1.7.0"
 activityKtx = "1.9.1"
 room = '2.6.1'
 agp = '8.4.0'
+androidTools = "31.5.2"
 kotlin = "1.9.22"
 ksp = "1.9.22-1.0.17"
 about = "10.9.2"
@@ -28,7 +29,7 @@ sheet = "0.5.4"
 
 okio = "3.3.0"
 okhttp = "4.11.0"
-net = "3.6.4"
+net = "3.7.0"
 
 recyclerview = "1.3.2"
 codeEditor = "0.21.1"
@@ -37,13 +38,19 @@ androidsgv = "1.4"
 junit = "4.13.2"
 junitVersion = "1.2.1"
 espressoCore = "3.6.1"
-hutool = "5.8.19"
+hutool = "5.8.35"
 media = "1.4.0"
 caffeine = "3.1.8"
-desugar = "2.0.4"
+desugar = "2.1.4"
 splitties = "3.0.0"
 
+rhino = "1.8.0"
 kotlinParcelize = "2.0.20-Beta1"
+logging = "7.0.0"
+slf4j = "2.0.16"
+logback = "1.5.7"
+logback-android = "3.0.0"
+kotlin-result = "2.0.1"
 
 [libraries]
 desugar = { module = "com.android.tools:desugar_jdk_libs", version.ref = "desugar" }
@@ -73,6 +80,7 @@ android-svg = { module = "com.caverock:androidsvg", version.ref = "androidsgv" }
 compose-bom = { module = "androidx.compose:compose-bom", version.ref = "composeBom" }
 compose-foundation = { module = "androidx.compose.foundation:foundation" }
 compose-ui = { module = "androidx.compose.ui:ui" }
+compose-ui-android = { module = "androidx.compose.ui:ui-android" }
 
 compose-material3-core = { module = "androidx.compose.material3:material3" }
 compose-material3-winsize = { module = "androidx.compose.material3:material3-window-size-class" }
@@ -112,6 +120,19 @@ splitties-systemservices = { module = "com.louiscad.splitties:splitties-systemse
 media3-exo = { module = "androidx.media3:media3-exoplayer", version.ref = "media" }
 media3-ui = { module = "androidx.media3:media3-ui", version.ref = "media" }
 caffeine = { module = "com.github.ben-manes.caffeine:caffeine", version.ref = "caffeine" }
+logging = { module = "io.github.oshai:kotlin-logging-jvm", version.ref = "logging" }
+slf4j-api = { module = "org.slf4j:slf4j-api", version.ref = "slf4j" }
+slf4j-simple = { module = "org.slf4j:slf4j-simple", version.ref = "slf4j" }
+logback-classic = { module = "ch.qos.logback:logback-classic", version.ref = "logback" }
+logback-android = { module = "com.github.tony19:logback-android", version.ref = "logback-android" }
+
+mozilla-rhino = { module = "org.mozilla:rhino", version.ref = "rhino"}
+
+# logic-build
+android-gradlePlugin = { group = "com.android.tools.build", name = "gradle", version.ref = "agp" }
+android-tools-common = { group = "com.android.tools", name = "common", version.ref = "androidTools" }
+kotlin-gradlePlugin = { group = "org.jetbrains.kotlin", name = "kotlin-gradle-plugin", version.ref = "kotlin" }
+kotlin-result = { group = "com.michael-bull.kotlin-result", name = "kotlin-result", version.ref = "kotlin-result" }
 
 [bundles]
 andorid-base = ["coreKtx", "appcompat"]
@@ -139,4 +160,4 @@ kotlin-serialization = { id = "org.jetbrains.kotlin.plugin.serialization", versi
 kotlin-parcelize = { id = "org.jetbrains.kotlin.plugin.parcelize", version.ref = "kotlin" }
 ksp = { id = "com.google.devtools.ksp", version.ref = "ksp" }
 about = { id = "com.mikepenz.aboutlibraries.plugin", version.ref = "about" }
-
+androidApplication = { id = "com.github.jing332.android.application", version = "unspecified" }

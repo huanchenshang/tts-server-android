@@ -45,7 +45,8 @@ android {
 }
 
 dependencies {
-    api(fileTree("include" to listOf("*.jar"), "dir" to "libs"))
+//    api(fileTree("include" to listOf("*.jar"), "dir" to "libs"))
+//    implementation("io.apisense:rhino-android:1.3.0")
 
     api(project(":lib-common"))
     api(project(":lib-compose"))

@@ -21,15 +21,15 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.github.jing332.tts_server_android.R
-import com.github.jing332.tts_server_android.data.appDb
-import com.github.jing332.tts_server_android.data.entities.plugin.Plugin
+import com.github.jing332.database.dbm
+import com.github.jing332.database.entities.plugin.Plugin
 
 @Composable
 fun PluginSelectionDialog(onDismissRequest: () -> Unit, onSelect: (Plugin) -> Unit) {
     AlertDialog(onDismissRequest = onDismissRequest,
         title = { Text(stringResource(id = R.string.select_plugin)) },
         text = {
-            val plugins = appDb.pluginDao.allEnabled
+            val plugins = dbm.pluginDao.allEnabled
             if (plugins.isEmpty())
                 Text(
                     stringResource(id = R.string.no_plugins),

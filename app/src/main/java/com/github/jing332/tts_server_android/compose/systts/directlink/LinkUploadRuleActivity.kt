@@ -14,13 +14,12 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.res.stringResource
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.github.jing332.tts_server_android.R
 import com.github.jing332.tts_server_android.compose.codeeditor.CodeEditorScreen
 import com.github.jing332.tts_server_android.compose.codeeditor.LoggerBottomSheet
 import com.github.jing332.tts_server_android.compose.theme.AppTheme
 import com.github.jing332.tts_server_android.conf.DirectUploadConfig
-import com.github.jing332.script_engine.core.Logger
-import com.github.jing332.tts_server_android.model.rhino.direct_link_upload.DirectUploadEngine
 import com.github.jing332.tts_server_android.model.rhino.direct_link_upload.DirectUploadFunction
 import com.github.jing332.tts_server_android.ui.view.AppDialogs.displayErrorDialog
 import io.github.rosemoe.sora.widget.CodeEditor
@@ -40,9 +39,8 @@ class LinkUploadRuleActivity : AppCompatActivity() {
 
 
     @Composable
-    private fun LinkUploadRuleScreen() {
+    private fun LinkUploadRuleScreen(vm: LinkUploadRuleViewModel = viewModel()) {
         var editor by remember { mutableStateOf<CodeEditor?>(null) }
-        val logger by remember { mutableStateOf(com.github.jing332.script_engine.core.Logger()) }
         var targets by remember { mutableStateOf<List<DirectUploadFunction>?>(null) }
         val scope = rememberCoroutineScope()
 
@@ -50,37 +48,19 @@ class LinkUploadRuleActivity : AppCompatActivity() {
             editor?.setText(DirectUploadConfig.code.value)
         }
 
-        var showDebugLogger by remember { mutableStateOf("") }
-        if (showDebugLogger.isNotEmpty())
+        var showDebugLogger by remember { mutableStateOf<DirectUploadFunction?>(null) }
+        if (showDebugLogger != null)
             LoggerBottomSheet(
-                logger = logger,
-                onDismissRequest = { showDebugLogger = "" }) {
+                registry = vm.getConsole(),
+                onDismissRequest = { showDebugLogger = null }) {
                 scope.launch(Dispatchers.IO) {
                     runCatching {
-                        val engine = DirectUploadEngine(
-                            context = this@LinkUploadRuleActivity,
-                            logger = logger,
-                            code = editor!!.text.toString()
-                        )
-                        val func =
-                            engine.obtainFunctionList().find { it.funcName == showDebugLogger }
-
-                        val url = func?.invoke(""" {"test":"test"} """)
-                        logger.i("url: $url")
+                        vm.invoke(showDebugLogger!!)
                     }.onFailure {
                         this@LinkUploadRuleActivity.displayErrorDialog(it)
                     }
                 }
             }
-
-        fun obtainFunctionList(): List<DirectUploadFunction> {
-            val engine = DirectUploadEngine(
-                context = this,
-                logger = logger,
-                code = editor!!.text.toString()
-            )
-            return engine.obtainFunctionList()
-        }
 
 
         CodeEditorScreen(
@@ -88,7 +68,8 @@ class LinkUploadRuleActivity : AppCompatActivity() {
             onBack = { finishAfterTransition() },
             onSave = {
                 runCatching {
-                    obtainFunctionList()
+                    vm.uploadCode(editor!!.text.toString())
+                    vm.save()
                     DirectUploadConfig.code.value = editor!!.text.toString()
 
                     finishAfterTransition()
@@ -99,7 +80,9 @@ class LinkUploadRuleActivity : AppCompatActivity() {
             onUpdate = { editor = it },
             onDebug = {
                 kotlin.runCatching {
-                    targets = obtainFunctionList()
+                    vm.uploadCode(editor!!.text.toString())
+                    targets = vm.debug()
+                    println(targets)
                 }.onFailure {
                     this.displayErrorDialog(it)
                 }
@@ -107,9 +90,9 @@ class LinkUploadRuleActivity : AppCompatActivity() {
             debugIconContent = {
                 DropdownMenu(expanded = targets != null, onDismissRequest = { targets = null }) {
                     targets?.forEach {
-                        DropdownMenuItem(text = { Text(it.funcName) }, onClick = {
+                        DropdownMenuItem(text = { Text(it.name) }, onClick = {
                             targets = null
-                            showDebugLogger = it.funcName
+                            showDebugLogger = it
                         })
                     }
                 }

@@ -1,5 +1,7 @@
 package com.github.jing332.tts_server_android.conf
 
+import com.github.jing332.tts_server_android.compose.systts.sizeToToggleableState
+
 object SysTtsConfig {
     var isInAppPlayAudio: Boolean
         get() = SystemTtsConfig.isInternalPlayerEnabled.value
@@ -85,10 +87,10 @@ object SysTtsConfig {
             SystemTtsConfig.isSplitEnabled.value = value
         }
 
-    var requestTimeout: Int
-        get() = SystemTtsConfig.requestTimeout.value
+    var requestTimeout: Long
+        get() = SystemTtsConfig.requestTimeout.value.toLong()
         set(value) {
-            SystemTtsConfig.requestTimeout.value = value
+            SystemTtsConfig.requestTimeout.value = value.toInt()
         }
 
     var maxRetryCount: Int

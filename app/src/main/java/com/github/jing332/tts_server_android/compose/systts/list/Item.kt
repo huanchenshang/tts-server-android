@@ -51,7 +51,7 @@ import com.github.jing332.compose.widgets.LongClickIconButton
 import com.github.jing332.compose.widgets.htmlcompose.HtmlText
 import com.github.jing332.tts_server_android.R
 import com.github.jing332.tts_server_android.conf.AppConfig
-import com.github.jing332.tts_server_android.utils.StringUtils.limitLength
+import com.github.jing332.common.utils.StringUtils.limitLength
 import org.burnoutcrew.reorderable.ReorderableLazyListState
 import org.burnoutcrew.reorderable.detectReorder
 

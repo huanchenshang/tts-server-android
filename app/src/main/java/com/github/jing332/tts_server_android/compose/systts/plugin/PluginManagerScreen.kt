@@ -58,8 +58,8 @@ import com.github.jing332.tts_server_android.compose.ShadowReorderableItem
 import com.github.jing332.tts_server_android.compose.navigateSingleTop
 import com.github.jing332.tts_server_android.compose.systts.ConfigDeleteDialog
 import com.github.jing332.tts_server_android.constant.AppConst
-import com.github.jing332.tts_server_android.data.appDb
-import com.github.jing332.tts_server_android.data.entities.plugin.Plugin
+import com.github.jing332.database.dbm
+import com.github.jing332.database.entities.plugin.Plugin
 import com.github.jing332.tts_server_android.utils.MyTools
 import kotlinx.coroutines.flow.conflate
 import kotlinx.serialization.encodeToString
@@ -94,7 +94,7 @@ fun PluginManagerScreen(onFinishActivity: () -> Unit) {
     if (showDeleteDialog != null) {
         val plugin = showDeleteDialog!!
         ConfigDeleteDialog(onDismissRequest = { showDeleteDialog = null }, name = plugin.name) {
-            appDb.pluginDao.delete(plugin)
+            dbm.pluginDao.delete(plugin)
             showDeleteDialog = null
         }
     }
@@ -106,7 +106,7 @@ fun PluginManagerScreen(onFinishActivity: () -> Unit) {
             showVarsSettings = null
         }
         PluginVarsBottomSheet(onDismissRequest = {
-            appDb.pluginDao.update(plugin)
+            dbm.pluginDao.update(plugin)
             showVarsSettings = null
         }, plugin = plugin) {
             plugin = it
@@ -156,7 +156,7 @@ fun PluginManagerScreen(onFinishActivity: () -> Unit) {
                             text = { Text(stringResource(id = R.string.export_config)) },
                             onClick = {
                                 showOptions = false
-                                showExportConfig = appDb.pluginDao.allEnabled
+                                showExportConfig = dbm.pluginDao.allEnabled
                             },
                             leadingIcon = {
                                 Icon(Icons.Default.Output, null)
@@ -181,7 +181,7 @@ fun PluginManagerScreen(onFinishActivity: () -> Unit) {
             }
         )
     }) { paddingValues ->
-        val flowAll = remember { appDb.pluginDao.flowAll().conflate() }
+        val flowAll = remember { dbm.pluginDao.flowAll().conflate() }
         val list by flowAll.collectAsStateWithLifecycle(emptyList())
 
         val reorderState = rememberReorderableLazyListState(onMove = { from, to ->
@@ -190,7 +190,7 @@ fun PluginManagerScreen(onFinishActivity: () -> Unit) {
 
             mutList.forEachIndexed { index, plugin ->
                 if (index != plugin.order)
-                    appDb.pluginDao.update(plugin.copy(order = index))
+                    dbm.pluginDao.update(plugin.copy(order = index))
             }
         })
 
@@ -216,7 +216,7 @@ fun PluginManagerScreen(onFinishActivity: () -> Unit) {
                         desc = desc,
                         isEnabled = item.isEnabled,
                         onEnabledChange = {
-                            appDb.pluginDao.update(item.copy(isEnabled = it))
+                            dbm.pluginDao.update(item.copy(isEnabled = it))
                         },
                         onEdit = {
                             navController.navigateSingleTop(
