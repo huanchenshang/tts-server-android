@@ -16,7 +16,6 @@ object ConfigUiFactory {
 
         return when ((config as TtsConfigurationDTO).source) {
             is LocalTtsSource -> LocalTtsUI()
-            is MsTtsSource -> MsTtsUI()
             else -> null
         }
     }

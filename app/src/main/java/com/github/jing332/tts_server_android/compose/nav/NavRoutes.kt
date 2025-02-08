@@ -21,8 +21,7 @@ sealed class NavRoutes(
             listOf(
                 SystemTTS,
                 SystemTtsForwarder,
-                MsTtsForwarder,
-                Settings
+               Settings
             )
         }
     }
@@ -36,9 +35,6 @@ sealed class NavRoutes(
             Icon(modifier = Modifier.size(24.dp), painter = painterResource(id = R.drawable.ic_tts), contentDescription = null)
         })
 
-    data object MsTtsForwarder : NavRoutes("ms_tts_forwarder", R.string.forwarder_ms, icon = {
-        Icon(painter = painterResource(id = R.drawable.ic_microsoft), null)
-    })
 
     data object Settings : NavRoutes("settings", R.string.settings, icon = {
         Icon(Icons.Default.Settings, null)

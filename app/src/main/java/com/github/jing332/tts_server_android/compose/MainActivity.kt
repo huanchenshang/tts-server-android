@@ -85,10 +85,11 @@ import com.github.jing332.common.utils.longToast
 import com.github.jing332.common.utils.performLongPress
 import com.github.jing332.common.utils.toast
 import com.github.jing332.compose.widgets.AppLauncherIcon
+import com.github.jing332.database.dbm
+import com.github.jing332.database.entities.systts.SystemTtsV2
 import com.github.jing332.tts_server_android.BuildConfig
 import com.github.jing332.tts_server_android.R
 import com.github.jing332.tts_server_android.ShortCuts
-import com.github.jing332.tts_server_android.compose.forwarder.ms.MsTtsForwarderScreen
 import com.github.jing332.tts_server_android.compose.forwarder.systts.SystemTtsForwarderScreen
 import com.github.jing332.tts_server_android.compose.nav.NavRoutes
 import com.github.jing332.tts_server_android.compose.settings.SettingsScreen
@@ -96,9 +97,6 @@ import com.github.jing332.tts_server_android.compose.systts.SystemTtsScreen
 import com.github.jing332.tts_server_android.compose.systts.list.ui.widgets.TtsEditContainerScreen
 import com.github.jing332.tts_server_android.compose.theme.AppTheme
 import com.github.jing332.tts_server_android.conf.AppConfig
-import com.github.jing332.database.dbm
-import com.github.jing332.database.entities.systts.EmptyConfiguration
-import com.github.jing332.database.entities.systts.SystemTtsV2
 import com.github.jing332.tts_server_android.service.systts.SystemTtsService
 import com.github.jing332.tts_server_android.ui.AppHelpDocumentActivity
 import com.github.jing332.tts_server_android.utils.MyTools.killBattery
@@ -123,7 +121,7 @@ fun Context.asActivity(): Activity {
 private var updateCheckTrigger by mutableStateOf(false)
 
 class MainActivity : AppCompatActivity() {
-    companion object{
+    companion object {
         private val logger = KotlinLogging.logger { this::class.java.name }
     }
 
@@ -259,7 +257,6 @@ private fun MainScreen(finish: () -> Unit) {
                 composable(NavRoutes.SystemTtsForwarder.id) {
                     SystemTtsForwarderScreen()
                 }
-                composable(NavRoutes.MsTtsForwarder.id) { MsTtsForwarderScreen() }
                 composable(NavRoutes.Settings.id) { SettingsScreen(drawerState) }
 
                 composable(NavRoutes.TtsEdit.id) { stackEntry ->

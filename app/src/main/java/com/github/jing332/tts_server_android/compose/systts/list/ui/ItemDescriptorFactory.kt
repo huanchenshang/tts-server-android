@@ -18,7 +18,6 @@ object ItemDescriptorFactory {
 
         return when ((systemTts.config as TtsConfigurationDTO).source) {
             is LocalTtsSource -> LocalTtsDescriptor(context, systemTts)
-            is MsTtsSource -> MsTtsDescriptor(context, systemTts)
             is PluginTtsSource -> PluginDescriptor(context, systemTts)
 
             else -> throw IllegalArgumentException("Unknown source: ${(systemTts.config as TtsConfigurationDTO).source}")

@@ -278,18 +278,6 @@ internal fun ListManagerScreen(vm: ListManagerViewModel = viewModel()) {
                             }, leadingIcon = icon)
                         }
 
-                        MenuItem(
-                            icon = { Icon(Icons.AutoMirrored.Default.PlaylistAdd, null) },
-                            title = R.string.systts_add_ms_tts
-                        ) {
-                            navigateToEdit(
-                                SystemTtsV2(
-                                    config = TtsConfigurationDTO(
-                                        source = MsTtsSource(locale = AppConst.localeCode)
-                                    )
-                                )
-                            )
-                        }
 
                         MenuItem(
                             icon = { Icon(Icons.Default.PhoneAndroid, null) },
