@@ -6,8 +6,12 @@ import android.speech.tts.TextToSpeech
 import com.github.jing332.common.LogLevel
 import com.github.jing332.database.entities.systts.AudioParams
 import com.github.jing332.database.entities.systts.source.LocalTtsSource
-import com.github.jing332.lib_gojni.SystemTtsForwarder
+import com.github.jing332.server.forwarder.Engine
+import com.github.jing332.server.forwarder.SystemTtsForwardServer
+import com.github.jing332.server.forwarder.TtsParams
+import com.github.jing332.server.forwarder.Voice
 import com.github.jing332.tts.CachedEngineManager
+import com.github.jing332.tts.manager.SystemParams
 import com.github.jing332.tts.speech.EngineState
 import com.github.jing332.tts.speech.local.LocalTtsService
 import com.github.jing332.tts_server_android.App
@@ -18,6 +22,7 @@ import com.github.jing332.tts_server_android.help.LocalTtsEngineHelper
 import com.github.jing332.tts_server_android.service.forwarder.AbsForwarderService
 import kotlinx.coroutines.runBlocking
 import kotlinx.serialization.encodeToString
+import java.io.OutputStream
 
 class SysTtsForwarderService(
     override val port: Int = SystemTtsForwarderConfig.port.value,
@@ -46,7 +51,7 @@ class SysTtsForwarderService(
         var instance: SysTtsForwarderService? = null
     }
 
-    private var mServer: SystemTtsForwarder? = null
+    private var mServer: SystemTtsForwardServer? = null
     private var mLocalTTS: LocalTtsService? = null
     private val mLocalTtsHelper by lazy { LocalTtsEngineHelper(this) }
 
@@ -64,69 +69,65 @@ class SysTtsForwarderService(
     }
 
     override fun initServer() {
-        mServer = SystemTtsForwarder().apply {
-            init(
-                onLog = { level, msg ->
-                    sendLog(level, msg)
-                },
-                onGetAudio = { engine, voice, text, rate, pitch ->
-                    val e = getEngine(engine)
-                    if (e.state is EngineState.Uninitialized)
-                        runBlocking { e.onInit() }
-
-                    val file = runBlocking {
-                        e.getAudioFile(
-                            LocalTtsSource(
-                                engine = engine,
-                                voice = voice,
-                            ),
-                            text = text,
-                            params = AudioParams(speed = (rate+100) / 100f, pitch = pitch / 100f)
-                        )
-                    }
-
-                    if (file.exists()) return@init file.absolutePath
-
-                    throw Exception(getString(R.string.forwarder_sys_fail_audio_file))
-                },
-                onGetEngines = {
-                    val data = getSysTtsEngines().map { EngineInfo(it.name, it.label) }
-                    return@init AppConst.jsonBuilder.encodeToString(data)
-                },
-                onCancelAudio = { engine ->
-                    val e = getEngine(engine)
-                    e.onStop()
-                    sendLog(LogLevel.WARN, "Canceled: $engine")
-                },
-                onGetVoices = { engine ->
-                    return@init runBlocking {
-                        val ok = mLocalTtsHelper.setEngine(engine)
-                        if (!ok) throw Exception(getString(R.string.systts_engine_init_failed_timeout))
-
-                        val data = mLocalTtsHelper.voices.map {
-                            VoiceInfo(
-                                it.name,
-                                it.locale.toLanguageTag(),
-                                it.locale.getDisplayName(it.locale),
-                                it.features?.toList()
-                            )
-                        }
-
-                        return@runBlocking AppConst.jsonBuilder.encodeToString(data)
-                    }
-                }
-
-            )
-        }
     }
 
     override fun startServer() {
-        mServer?.start(port.toLong())
+        mServer = SystemTtsForwardServer(port, object : SystemTtsForwardServer.Callback {
+            override fun log(level: Int, message: String) {
+                sendLog(level, message)
+            }
+            override suspend fun tts(output: OutputStream, params: TtsParams) {
+                val source = LocalTtsSource(
+                    engine = params.engine,
+                    voice = params.voice,
+                )
+                val e: LocalTtsService =
+                    CachedEngineManager.getEngine(this@SysTtsForwarderService, source)
+                            as? LocalTtsService
+                        ?: throw IllegalArgumentException("Engine not found: ${params.engine}")
+                if (e.state is EngineState.Uninitialized)
+                    runBlocking { e.onInit() }
+
+                val stream = runBlocking {
+                    e.getStream(
+                        source = source,
+                        params = SystemParams(
+                            text = params.text,
+                            speed = (params.speed + 100) / 100f,
+                            pitch = params.pitch / 100f
+                        )
+                    )
+                }
+
+                stream.use {
+                    it.copyTo(output)
+                }
+            }
+
+            override suspend fun voices(engine: String): List<Voice> {
+                val ok = mLocalTtsHelper.setEngine(engine)
+                if (!ok) throw IllegalStateException(getString(R.string.systts_engine_init_failed_timeout))
+
+                return mLocalTtsHelper.voices.map {
+                    Voice(
+                        name = it.name,
+                        locale = it.locale.toLanguageTag(),
+                        localeName = it.locale.getDisplayName(it.locale),
+                        features = it.features?.toList()
+                    )
+                }
+            }
+
+            override suspend fun engines(): List<Engine> =
+                getSysTtsEngines().map { Engine(name = it.name, it.label) }
+
+
+        }).apply { start(wait = true) }
     }
 
     override fun closeServer() {
         mServer?.let {
-            it.shutdown()
+            it.stop()
             mLocalTTS?.onDestroy()
             mLocalTTS = null
         }

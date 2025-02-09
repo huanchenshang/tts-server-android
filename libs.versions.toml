@@ -108,8 +108,10 @@ okhttp = { module = "com.squareup.okhttp3:okhttp", version.ref = "okhttp" }
 net = { module = "com.github.liangjingkanji:Net", version.ref = "net" }
 ktor-server-netty = { module = "io.ktor:ktor-server-netty", version.ref = "ktor-server" }
 ktor-server-core = { module = "io.ktor:ktor-server-core", version.ref = "ktor-server" }
-ktor-server-content-negotiation = { module = "io.ktor:ktor-server-content-negotiation", version.ref = "ktor-server"}
+ktor-server-content-negotiation = { module = "io.ktor:ktor-server-content-negotiation", version.ref = "ktor-server" }
 ktor-server-serialization-json = { module = "io.ktor:ktor-serialization-kotlinx-json", version.ref = "ktor-server" }
+ktor-server-cors = { module = "io.ktor:ktor-server-cors", version.ref = "ktor-server" }
+ktor-server-status-pages = { module = "io.ktor:ktor-server-status-pages", version.ref = "ktor-server" }
 
 code-editor = { module = "io.github.Rosemoe.sora-editor:editor", version.ref = "codeEditor" }
 code-editor-textmate = { module = "io.github.Rosemoe.sora-editor:language-textmate", version.ref = "codeEditor" }
@@ -131,7 +133,7 @@ slf4j-simple = { module = "org.slf4j:slf4j-simple", version.ref = "slf4j" }
 logback-classic = { module = "ch.qos.logback:logback-classic", version.ref = "logback" }
 logback-android = { module = "com.github.tony19:logback-android", version.ref = "logback-android" }
 
-mozilla-rhino = { module = "org.mozilla:rhino", version.ref = "rhino"}
+mozilla-rhino = { module = "org.mozilla:rhino", version.ref = "rhino" }
 
 # logic-build
 android-gradlePlugin = { group = "com.android.tools.build", name = "gradle", version.ref = "agp" }
@@ -152,7 +154,7 @@ compose = [
 compose-material3 = ["compose-material-icons-core", "compose-material-icons-extended", "compose-material3-winsize", "compose-material3-core"]
 about = ["about", "about-compose"]
 network = ["okio", "okhttp", "net"]
-ktor = ["ktor-server-netty", "ktor-server-core", "ktor-server-content-negotiation", "ktor-server-serialization-json"]
+ktor = ["ktor-server-netty", "ktor-server-core", "ktor-server-content-negotiation", "ktor-server-serialization-json", "ktor-server-cors", "ktor-server-status-pages"]
 ui = ["material", "recyclerview"]
 codeEditor = ["code-editor", "code-editor-textmate"]
 markwon = ["markwon-core", "markwon-image", "markwon-linkify", "android-svg"]

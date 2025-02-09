@@ -12,7 +12,7 @@ class LinkUploadRuleViewModel(val app: Application) : AndroidViewModel(app) {
         engine = DirectUploadEngine(app, code)
     }
 
-    fun uploadCode(code: String) {
+    fun updateCode(code: String) {
         if (::engine.isInitialized)
             engine.code = code
         else initEngine(code)

@@ -67,7 +67,7 @@ class LinkUploadRuleActivity : AppCompatActivity() {
             onBack = { finishAfterTransition() },
             onSave = {
                 runCatching {
-                    vm.uploadCode(editor!!.text.toString())
+                    vm.updateCode(editor!!.text.toString())
                     vm.save()
                     DirectUploadConfig.code.value = editor!!.text.toString()
 
@@ -79,7 +79,7 @@ class LinkUploadRuleActivity : AppCompatActivity() {
             onUpdate = { editor = it },
             onDebug = {
                 kotlin.runCatching {
-                    vm.uploadCode(editor!!.text.toString())
+                    vm.updateCode(editor!!.text.toString())
                     targets = vm.debug()
                     println(targets)
                 }.onFailure {

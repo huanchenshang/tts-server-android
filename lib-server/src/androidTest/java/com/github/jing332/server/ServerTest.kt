@@ -3,11 +3,18 @@ package com.github.jing332.server
 import android.util.Log
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
+import com.drake.net.Net
 import com.github.jing332.common.LogEntry
+import com.github.jing332.server.forwarder.Engine
+import com.github.jing332.server.forwarder.SystemTtsForwardServer
+import com.github.jing332.server.forwarder.TtsParams
+import com.github.jing332.server.forwarder.Voice
 import com.github.jing332.server.script.ScriptRemoteServer
+import okhttp3.Response
 import org.junit.Assert.assertEquals
 import org.junit.Test
 import org.junit.runner.RunWith
+import java.io.OutputStream
 
 /**
  * Instrumented test, which will execute on an Android device.
@@ -21,6 +28,30 @@ class ServerTest {
         // Context of the app under test.
         val appContext = InstrumentationRegistry.getInstrumentation().targetContext
         assertEquals("com.github.jing332.server.test", appContext.packageName)
+    }
+
+    @Test
+    fun forwarder() {
+        val server = SystemTtsForwardServer(1233, object : SystemTtsForwardServer.Callback {
+            override suspend fun tts(output: OutputStream, params: TtsParams) {
+                val resp: Response =
+                    Net.get("https://download.samplelib.com/wav/sample-3s.wav").execute()
+                resp.body!!.byteStream().use { it.copyTo(output) }
+            }
+
+            override suspend fun voices(engine: String): List<Voice> {
+                return listOf(Voice("Xiao Yi", "zh-CN", "中文"))
+            }
+
+            override suspend fun engines(): List<Engine> {
+                return listOf(
+                    Engine("Huawei", "com.huawei.tts"),
+                    Engine("Google", "com.google.tts")
+                )
+            }
+
+        })
+        server.start(true)
     }
 
     @Test

@@ -1,13 +1,12 @@
 package com.github.jing332.server.script
 
 import com.github.jing332.common.LogEntry
+import com.github.jing332.server.BaseCallback
 import com.github.jing332.server.Server
+import com.github.jing332.server.installPlugins
 import io.ktor.http.ContentType
-import io.ktor.serialization.kotlinx.json.json
-import io.ktor.server.application.install
 import io.ktor.server.engine.embeddedServer
 import io.ktor.server.netty.Netty
-import io.ktor.server.plugins.contentnegotiation.ContentNegotiation
 import io.ktor.server.request.receiveText
 import io.ktor.server.response.respond
 import io.ktor.server.response.respondText
@@ -15,7 +14,6 @@ import io.ktor.server.routing.get
 import io.ktor.server.routing.post
 import io.ktor.server.routing.routing
 import io.ktor.server.util.getOrFail
-import kotlinx.serialization.json.Json
 import java.net.BindException
 
 class ScriptRemoteServer(
@@ -29,13 +27,7 @@ class ScriptRemoteServer(
 
     private val ktor by lazy {
         embeddedServer(Netty, port = port) {
-            install(ContentNegotiation){
-                json(Json{
-                    prettyPrint = true
-                    isLenient = true
-                })
-            }
-
+            installPlugins()
             routing {
                 get("$BASE_PATH/pull") {
                     call.respondText(contentType = jsContentType, text = callback.pull())
@@ -71,7 +63,7 @@ class ScriptRemoteServer(
         ktor.stop()
     }
 
-    interface Callback {
+    interface Callback : BaseCallback {
         fun pull(): String
         fun push(code: String)
         fun action(name: String)

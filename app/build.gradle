@@ -167,7 +167,6 @@ android {
 dependencies {
     coreLibraryDesugaring(libs.desugar)
     api(project(":lib-common"))
-    implementation(project(":lib-gojni"))
     implementation(project(":lib-compose"))
     implementation(project(":lib-script"))
     implementation(project(":lib-tts"))

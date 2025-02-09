@@ -3,7 +3,11 @@
 package com.github.jing332.tts_server_android.service.forwarder
 
 import android.annotation.SuppressLint
-import android.app.*
+import android.app.IntentService
+import android.app.Notification
+import android.app.NotificationChannel
+import android.app.NotificationManager
+import android.app.PendingIntent
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
@@ -13,17 +17,21 @@ import android.os.PowerManager
 import androidx.annotation.DrawableRes
 import androidx.annotation.StringRes
 import androidx.core.content.ContextCompat
-import com.github.jing332.tts_server_android.R
-import com.github.jing332.tts_server_android.constant.AppConst
-import com.github.jing332.tts_server_android.constant.KeyConst
-import com.github.jing332.tts_server_android.constant.AppLog
+import com.drake.net.utils.withMain
 import com.github.jing332.common.LogLevel
-import com.github.jing332.lib_gojni.NativeUtils
-import com.github.jing332.tts_server_android.ui.ImportConfigActivity
 import com.github.jing332.common.utils.ClipboardUtils
+import com.github.jing332.common.utils.NetworkUtils
 import com.github.jing332.common.utils.registerGlobalReceiver
 import com.github.jing332.common.utils.startForegroundCompat
 import com.github.jing332.common.utils.toast
+import com.github.jing332.tts_server_android.R
+import com.github.jing332.tts_server_android.constant.AppConst
+import com.github.jing332.tts_server_android.constant.AppLog
+import com.github.jing332.tts_server_android.constant.KeyConst
+import com.github.jing332.tts_server_android.ui.ImportConfigActivity
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import splitties.systemservices.powerManager
 
 @Suppress("DEPRECATION")
@@ -56,18 +64,20 @@ abstract class AbsForwarderService(
     abstract val port: Int
     abstract val isWakeLockEnabled: Boolean
 
+    private var listenAddress: String = ""
     private val mNotificationReceiver = NotificationActionReceiver()
-
-    fun listenAddress(): String {
-        return NativeUtils.getOutboundIP() + ":" + port
-    }
+    protected val scope = CoroutineScope(Dispatchers.Default)
 
     @SuppressLint("WakelockTimeout", "UnspecifiedRegisterReceiverFlag")
     override fun onCreate() {
         super.onCreate()
         isRunning = true
 
-        initNotification()
+        scope.launch {
+            val host = NetworkUtils.getLocalIpAddress().firstOrNull()?.hostName ?: "localhost"
+            listenAddress = "$host:$port"
+            withMain { initNotification(listenAddress) }
+        }
 
         registerGlobalReceiver(
             listOf(notificationActionCopyUrl, notificationActionClose),
@@ -125,7 +135,7 @@ abstract class AbsForwarderService(
         wakeLock = null
     }
 
-    private fun initNotification() {
+    private fun initNotification(localAddress: String) {
         /*Android 12(S)+ 必须指定PendingIntent.FLAG_*/
         val pendingIntentFlags = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S)
             PendingIntent.FLAG_IMMUTABLE
@@ -182,7 +192,7 @@ abstract class AbsForwarderService(
         val notification = builder
             .setColor(ContextCompat.getColor(this, R.color.md_theme_light_primary))
             .setContentTitle(getString(notificationTitle))
-            .setContentText(getString(R.string.server_listen_address_local, listenAddress()))
+            .setContentText(getString(R.string.server_listen_address_local, localAddress))
             .setSmallIcon(smallIconRes)
             .setContentIntent(pendingIntent)
             .addAction(0, getString(R.string.exit), closePendingIntent)
@@ -197,7 +207,7 @@ abstract class AbsForwarderService(
         override fun onReceive(ctx: Context?, intent: Intent?) {
             when (intent?.action) {
                 notificationActionCopyUrl -> {
-                    ClipboardUtils.copyText(listenAddress())
+                    ClipboardUtils.copyText(listenAddress)
                     toast(R.string.copied)
                 }
 

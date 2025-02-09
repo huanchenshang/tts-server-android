@@ -2,6 +2,7 @@ plugins {
     alias(libs.plugins.android.library)
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.androidApplication)
+    alias(libs.plugins.kotlin.serialization)
 }
 
 android {
@@ -36,6 +37,7 @@ android {
 dependencies {
     implementation(project(":lib-common"))
     implementation(libs.bundles.ktor)
+    implementation(libs.logback.android)
 
     testImplementation(libs.junit)
     androidTestImplementation(libs.ext.junit)

@@ -50,7 +50,6 @@ dependencies {
     api(project(":lib-script"))
     api(project(":lib-compose"))
 
-    implementation(project(":lib-gojni"))
     implementation(project(":lib-common"))
 
     implementation(libs.hutool.cache)
