@@ -88,7 +88,7 @@ class PluginPreviewActivity : AppCompatActivity() {
         }
 
         if (source.locale.isBlank()) {
-            val l = AppLocale.getAppLocale(this)
+            val l = AppLocale.current(this)
             source = source.copy(locale = "${l.language}-${l.country}")// eg: en-US, zh-CN)
         }
 

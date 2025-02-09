@@ -263,8 +263,8 @@ private fun MainScreen(finish: () -> Unit) {
                     val systemTts: SystemTtsV2 =
                         stackEntry.arguments?.getParcelable(NavRoutes.TtsEdit.DATA)
                             ?: return@composable
-                    var stateSystemTts by rememberSaveable { mutableStateOf(systemTts) }
 
+                    var stateSystemTts by rememberSaveable { mutableStateOf(systemTts) }
 
                     TtsEditContainerScreen(
                         modifier = Modifier
@@ -272,7 +272,6 @@ private fun MainScreen(finish: () -> Unit) {
                         systts = stateSystemTts,
                         onSysttsChange = {
                             stateSystemTts = it
-
                             println("UpdateSystemTTS: $it")
                         },
                         onSave = {

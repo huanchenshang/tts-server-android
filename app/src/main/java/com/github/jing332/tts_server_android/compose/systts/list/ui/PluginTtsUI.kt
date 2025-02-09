@@ -24,6 +24,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.drake.net.utils.withIO
+import com.github.jing332.common.utils.toScale
 import com.github.jing332.compose.widgets.AppSpinner
 import com.github.jing332.compose.widgets.LabelSlider
 import com.github.jing332.compose.widgets.LoadingContent
@@ -66,7 +67,7 @@ class PluginTtsUI : IConfigUI() {
                 text = rateStr,
                 value = tts.speed,
                 onValueChange = {
-                    onSystemTtsChange(systemTts.copySource(tts.copy(speed = it)))
+                    onSystemTtsChange(systemTts.copySource(tts.copy(speed = it.toScale(2))))
                 },
                 valueRange = 0f..2f
             )
@@ -80,7 +81,7 @@ class PluginTtsUI : IConfigUI() {
                 text = volumeStr, value = tts.volume, onValueChange = {
                     onSystemTtsChange(
                         systemTts.copySource(
-                            tts.copy(volume = it)
+                            tts.copy(volume = it.toScale(2))
                         )
                     )
                 }, valueRange = 0f..2f
@@ -94,7 +95,7 @@ class PluginTtsUI : IConfigUI() {
                 text = pitchStr, value = tts.pitch, onValueChange = {
                     onSystemTtsChange(
                         systemTts.copySource(
-                            tts.copy(pitch = it)
+                            tts.copy(pitch = it.toScale(2))
                         )
                     )
                 }, valueRange = 0f..2f

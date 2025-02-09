@@ -6,6 +6,7 @@ import com.github.jing332.database.entities.systts.IConfiguration
 import com.github.jing332.database.entities.systts.TtsConfigurationDTO
 import com.github.jing332.database.entities.systts.source.LocalTtsSource
 import com.github.jing332.database.entities.systts.source.MsTtsSource
+import com.github.jing332.database.entities.systts.source.PluginTtsSource
 
 object ConfigUiFactory {
     fun from(config: IConfiguration): IConfigUI? {
@@ -16,6 +17,7 @@ object ConfigUiFactory {
 
         return when ((config as TtsConfigurationDTO).source) {
             is LocalTtsSource -> LocalTtsUI()
+            is PluginTtsSource -> PluginTtsUI()
             else -> null
         }
     }

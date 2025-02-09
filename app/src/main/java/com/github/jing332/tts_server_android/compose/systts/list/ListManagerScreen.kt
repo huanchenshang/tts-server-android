@@ -12,7 +12,6 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.PlaylistAdd
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.AddCard
 import androidx.compose.material.icons.filled.Audiotrack
@@ -70,8 +69,10 @@ import com.github.jing332.database.entities.systts.BgmConfiguration
 import com.github.jing332.database.entities.systts.SystemTtsV2
 import com.github.jing332.database.entities.systts.TtsConfigurationDTO
 import com.github.jing332.database.entities.systts.source.LocalTtsSource
-import com.github.jing332.database.entities.systts.source.MsTtsSource
+import com.github.jing332.database.entities.systts.source.PluginTtsSource
+import com.github.jing332.tts_server_android.AppLocale
 import com.github.jing332.tts_server_android.compose.systts.list.ui.ItemDescriptorFactory
+import com.github.jing332.tts_server_android.toCode
 import kotlinx.coroutines.launch
 import kotlinx.serialization.encodeToString
 import org.burnoutcrew.reorderable.detectReorderAfterLongPress
@@ -210,10 +211,6 @@ internal fun ListManagerScreen(vm: ListManagerViewModel = viewModel()) {
         listState = listState, onMove = vm::reorder
     )
 
-    LaunchedEffect(models) {
-        println("update models: ${models.size}")
-    }
-
     var addGroupDialog by remember { mutableStateOf(false) }
     if (addGroupDialog) {
         var name by remember { mutableStateOf("") }
@@ -241,7 +238,16 @@ internal fun ListManagerScreen(vm: ListManagerViewModel = viewModel()) {
     var addPluginDialog by remember { mutableStateOf(false) }
     if (addPluginDialog) {
         PluginSelectionDialog(onDismissRequest = { addPluginDialog = false }) {
-//            navigateToEdit(SystemTtsV2(tts = PluginTTS(pluginId = it.pluginId)))
+            navigateToEdit(
+                SystemTtsV2(
+                    config = TtsConfigurationDTO(
+                        source = PluginTtsSource(
+                            pluginId = it.pluginId,
+                            locale = AppLocale.current(context).toCode()
+                        )
+                    )
+                )
+            )
         }
     }
 
