@@ -436,4 +436,7 @@
     <string name="exclude_from_recent_summary">在[最近任务]中隐藏本应用</string>
     <string name="not_support_audition">不支持试听！</string>
     <string name="systts_log_direct_play">直接播放：%1$s</string>
+    <string name="format_code">格式化</string>
+    <string name="undo">撤销</string>
+    <string name="redo">重做</string>
 </resources>

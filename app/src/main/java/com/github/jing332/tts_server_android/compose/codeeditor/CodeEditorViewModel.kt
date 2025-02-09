@@ -1,14 +1,17 @@
 package com.github.jing332.tts_server_android.compose.codeeditor
 
+import android.app.Application
+import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.ViewModel
 import com.github.jing332.common.LogEntry
+import com.github.jing332.script.JsBeautify
 import com.github.jing332.server.script.ScriptRemoteServer
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import java.net.BindException
 import java.net.SocketException
 
-class CodeEditorViewModel : ViewModel() {
+class CodeEditorViewModel(val app: Application) : AndroidViewModel(app) {
     companion object {
         const val TAG = "CodeEditorViewModel"
 
@@ -62,6 +65,11 @@ class CodeEditorViewModel : ViewModel() {
 
         server?.stop()
         server = null
+    }
+
+    private val beautifier by lazy { JsBeautify(app) }
+    fun formatCode(code: String): String {
+        return beautifier.format(code)
     }
 }
 

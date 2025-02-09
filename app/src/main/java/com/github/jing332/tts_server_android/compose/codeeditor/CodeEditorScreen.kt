@@ -5,6 +5,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -13,10 +14,14 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.InsertDriveFile
+import androidx.compose.material.icons.automirrored.filled.Redo
+import androidx.compose.material.icons.automirrored.filled.Undo
 import androidx.compose.material.icons.automirrored.filled.WrapText
 import androidx.compose.material.icons.filled.BugReport
+import androidx.compose.material.icons.filled.Code
 import androidx.compose.material.icons.filled.ColorLens
 import androidx.compose.material.icons.filled.MoreVert
+import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material.icons.filled.Save
 import androidx.compose.material.icons.filled.SettingsRemote
 import androidx.compose.material3.DropdownMenu
@@ -45,6 +50,7 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.github.jing332.common.utils.longToast
 import com.github.jing332.compose.ComposeExtensions.clickableRipple
+import com.github.jing332.compose.widgets.AppTooltip
 import com.github.jing332.compose.widgets.CheckedMenuItem
 import com.github.jing332.compose.widgets.LongClickIconButton
 import com.github.jing332.tts_server_android.R
@@ -52,6 +58,8 @@ import com.github.jing332.tts_server_android.conf.CodeEditorConfig
 import com.github.jing332.tts_server_android.ui.AppActivityResultContracts
 import com.github.jing332.tts_server_android.ui.FilePickerActivity
 import com.github.jing332.tts_server_android.ui.view.AppDialogs.displayErrorDialog
+import io.github.rosemoe.sora.text.Content
+import io.github.rosemoe.sora.text.ContentListener
 import io.github.rosemoe.sora.widget.CodeEditor
 import kotlinx.coroutines.launch
 
@@ -137,10 +145,31 @@ fun CodeEditorScreen(
                 actions = {
                     IconButton(onClick = onDebug) {
                         Icon(
-                            Icons.Filled.BugReport,
-                            contentDescription = stringResource(id = R.string.nav_back)
+                            Icons.Filled.PlayArrow,
+                            contentDescription = stringResource(id = R.string.debug)
                         )
                         debugIconContent()
+                    }
+
+                    LongClickIconButton(
+                        onClick = { codeEditor?.undo() },
+                        onLongClickLabel = stringResource(R.string.redo),
+                        onLongClick = { codeEditor?.redo() }) {
+                        Icon(
+                            Icons.AutoMirrored.Filled.Undo,
+                            contentDescription = stringResource(id = R.string.undo)
+                        )
+                    }
+
+                    AppTooltip(tooltip = stringResource(R.string.format_code)) {
+                        IconButton(onClick = {
+                            codeEditor?.let {
+                                val newCode = vm.formatCode(it.string())
+                                it.setText(newCode)
+                            }
+                        }) {
+                            Icon(Icons.Default.Code, stringResource(id = R.string.format_code))
+                        }
                     }
                     LongClickIconButton(onClick = onSave, onLongClick = onLongClickSave) {
                         Icon(
@@ -238,7 +267,34 @@ fun CodeEditorScreen(
                 modifier = Modifier
                     .weight(1f)
                     .fillMaxWidth(), onUpdate = {
+                    it.isUndoEnabled = true
+                    it.text.addContentListener(object : ContentListener {
+                        override fun beforeReplace(content: Content) {
+
+                        }
+
+                        override fun afterInsert(
+                            content: Content,
+                            startLine: Int,
+                            startColumn: Int,
+                            endLine: Int,
+                            endColumn: Int,
+                            insertedContent: CharSequence
+                        ) {
+                         }
+
+                        override fun afterDelete(
+                            content: Content,
+                            startLine: Int,
+                            startColumn: Int,
+                            endLine: Int,
+                            endColumn: Int,
+                            deletedContent: CharSequence
+                        ) {
+                         }
+                    })
                     codeEditor = it
+
                     onUpdate(it)
                 }
             )
@@ -272,7 +328,7 @@ fun CodeEditorScreen(
                         Modifier
                             .clickableRipple {
                                 codeEditor?.let { editor ->
-                                    val text = it.second
+                                    val text = it.first
                                     if (editor.isEditable)
                                         if ("\t" == text && editor.snippetController.isInSnippet())
                                             editor.snippetController.shiftToNextTabStop()
