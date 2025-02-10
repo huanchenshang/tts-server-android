@@ -13,6 +13,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.minimumInteractiveComponentSize
+import androidx.compose.material3.ripple
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
@@ -50,7 +51,7 @@ fun PluginSelectionDialog(onDismissRequest: () -> Unit, onSelect: (Plugin) -> Un
                             .clip(MaterialTheme.shapes.small)
                             .clickable(
                                 interactionSource = remember { MutableInteractionSource() },
-                                indication = rememberRipple()
+                                indication = ripple()
                             ) { onSelect(it) }
                             .padding(vertical = 4.dp)
                     ) {

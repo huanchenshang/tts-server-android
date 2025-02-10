@@ -24,6 +24,7 @@ import androidx.compose.material.icons.filled.PlayCircleOutline
 import androidx.compose.material.icons.filled.Repeat
 import androidx.compose.material.icons.filled.SelectAll
 import androidx.compose.material.icons.filled.SettingsBackupRestore
+import androidx.compose.material.icons.filled.StackedLineChart
 import androidx.compose.material.icons.filled.Tag
 import androidx.compose.material.icons.filled.TextFields
 import androidx.compose.material.icons.filled.Waves
@@ -250,16 +251,16 @@ fun SettingsScreen(drawerState: DrawerState) {
 //                icon = { Icon(Icons.Default.PlayCircleOutline, null) }
 //            )
 
-//            var silenceAudio by remember { SystemTtsConfig.isSilenceAudio }
-//            SwitchPreference(
-//                title = { Text("Silence Audio") },
-//                subTitle = { /*TODO*/ },
-//                checked = silenceAudio,
-//                onCheckedChange = {
-//                    silenceAudio = it
-//                },
-//                icon = { Icon(Icons.Default.StackedLineChart, null) }
-//            )
+            var silenceAudio by remember { SystemTtsConfig.isSilenceSkipAudio }
+            SwitchPreference(
+                title = { Text("Silence Audio") },
+                subTitle = {  },
+                checked = silenceAudio,
+                onCheckedChange = {
+                    silenceAudio = it
+                },
+                icon = { Icon(Icons.Default.StackedLineChart, null) }
+            )
 
 //            var streamPlay by remember { SystemTtsConfig.isStreamPlayModeEnabled }
 //            SwitchPreference(

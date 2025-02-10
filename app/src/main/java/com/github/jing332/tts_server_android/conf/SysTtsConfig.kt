@@ -1,7 +1,5 @@
 package com.github.jing332.tts_server_android.conf
 
-import com.github.jing332.tts_server_android.compose.systts.sizeToToggleableState
-
 object SysTtsConfig {
     var isInAppPlayAudio: Boolean
         get() = SystemTtsConfig.isInternalPlayerEnabled.value
@@ -111,10 +109,10 @@ object SysTtsConfig {
             SystemTtsConfig.maxEmptyAudioRetryCount.value = value
         }
 
-    var isSkipSilentText: Boolean
-        get() = SystemTtsConfig.isSkipSilentText.value
+    var isSkipSilentAudio: Boolean
+        get() = SystemTtsConfig.isSilenceSkipAudio.value
         set(value) {
-            SystemTtsConfig.isSkipSilentText.value = value
+            SystemTtsConfig.isSilenceSkipAudio.value = value
         }
 
     var isStreamPlayModeEnabled: Boolean

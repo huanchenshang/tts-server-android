@@ -20,7 +20,6 @@ import android.speech.tts.Voice
 import android.util.Log
 import androidx.core.content.ContextCompat
 import com.github.jing332.common.LogLevel
-import com.github.jing332.common.utils.StringUtils.sizeToReadable
 import com.github.jing332.common.utils.longToast
 import com.github.jing332.common.utils.registerGlobalReceiver
 import com.github.jing332.common.utils.runOnUI
@@ -49,7 +48,6 @@ import kotlinx.coroutines.job
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import java.util.Locale
-import java.util.concurrent.TimeUnit
 import kotlin.system.exitProcess
 
 
@@ -89,7 +87,7 @@ class SystemTtsService : TextToSpeechService(), IEventListener {
                 requestTimeout = SysTtsConfig.requestTimeout,
                 maxRetryTimes = SysTtsConfig.maxRetryCount,
                 streamPlayEnabled = SysTtsConfig.isStreamPlayModeEnabled,
-                silenceSkipEnabled = SysTtsConfig.isSkipSilentText
+                silenceSkipEnabled = SysTtsConfig.isSkipSilentAudio
             )
 
         }

@@ -1,6 +1,5 @@
 package com.github.jing332.tts_server_android.compose.systts.list
 
-import android.os.Bundle
 import androidx.annotation.StringRes
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.layout.Box
@@ -40,39 +39,39 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.drake.net.utils.withIO
-import com.github.jing332.tts_server_android.R
-import com.github.jing332.tts_server_android.compose.LocalDrawerState
-import com.github.jing332.tts_server_android.compose.LocalNavController
-import com.github.jing332.tts_server_android.compose.ShadowReorderableItem
-import com.github.jing332.tts_server_android.compose.nav.NavRoutes
-import com.github.jing332.tts_server_android.compose.nav.NavTopAppBar
-import com.github.jing332.tts_server_android.compose.navigate
-import com.github.jing332.tts_server_android.compose.systts.AuditionDialog
-import com.github.jing332.tts_server_android.compose.systts.ConfigDeleteDialog
-import com.github.jing332.tts_server_android.compose.systts.ConfigExportBottomSheet
-import com.github.jing332.tts_server_android.compose.systts.list.ui.widgets.QuickEditBottomSheet
-import com.github.jing332.tts_server_android.compose.systts.list.ui.widgets.TagDataClearConfirmDialog
-import com.github.jing332.tts_server_android.compose.systts.sizeToToggleableState
+import com.github.jing332.common.utils.longToast
 import com.github.jing332.compose.widgets.LazyListIndexStateSaver
 import com.github.jing332.compose.widgets.TextFieldDialog
-import com.github.jing332.tts_server_android.constant.AppConst
-import com.github.jing332.tts_server_android.constant.SpeechTarget
 import com.github.jing332.database.dbm
 import com.github.jing332.database.entities.AbstractListGroup
+import com.github.jing332.database.entities.systts.BgmConfiguration
 import com.github.jing332.database.entities.systts.GroupWithSystemTts
 import com.github.jing332.database.entities.systts.SystemTtsGroup
-import com.github.jing332.tts_server_android.model.rhino.speech_rule.SpeechRuleEngine
-import com.github.jing332.tts_server_android.service.systts.SystemTtsService
-import com.github.jing332.tts_server_android.ui.view.AppDialogs.displayErrorDialog
-import com.github.jing332.common.utils.longToast
-import com.github.jing332.database.entities.systts.BgmConfiguration
 import com.github.jing332.database.entities.systts.SystemTtsV2
 import com.github.jing332.database.entities.systts.TtsConfigurationDTO
 import com.github.jing332.database.entities.systts.source.LocalTtsSource
 import com.github.jing332.database.entities.systts.source.PluginTtsSource
 import com.github.jing332.tts_server_android.AppLocale
+import com.github.jing332.tts_server_android.R
+import com.github.jing332.tts_server_android.compose.LocalDrawerState
+import com.github.jing332.tts_server_android.compose.LocalNavController
+import com.github.jing332.tts_server_android.compose.ShadowReorderableItem
+import com.github.jing332.tts_server_android.compose.SharedViewModel
+import com.github.jing332.tts_server_android.compose.nav.NavRoutes
+import com.github.jing332.tts_server_android.compose.nav.NavTopAppBar
+import com.github.jing332.tts_server_android.compose.systts.AuditionDialog
+import com.github.jing332.tts_server_android.compose.systts.ConfigDeleteDialog
+import com.github.jing332.tts_server_android.compose.systts.ConfigExportBottomSheet
 import com.github.jing332.tts_server_android.compose.systts.list.ui.ItemDescriptorFactory
+import com.github.jing332.tts_server_android.compose.systts.list.ui.widgets.QuickEditBottomSheet
+import com.github.jing332.tts_server_android.compose.systts.list.ui.widgets.TagDataClearConfirmDialog
+import com.github.jing332.tts_server_android.compose.systts.sizeToToggleableState
+import com.github.jing332.tts_server_android.constant.AppConst
+import com.github.jing332.tts_server_android.constant.SpeechTarget
+import com.github.jing332.tts_server_android.model.rhino.speech_rule.SpeechRuleEngine
+import com.github.jing332.tts_server_android.service.systts.SystemTtsService
 import com.github.jing332.tts_server_android.toCode
+import com.github.jing332.tts_server_android.ui.view.AppDialogs.displayErrorDialog
 import kotlinx.coroutines.launch
 import kotlinx.serialization.encodeToString
 import org.burnoutcrew.reorderable.detectReorderAfterLongPress
@@ -82,7 +81,10 @@ import org.burnoutcrew.reorderable.reorderable
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
 @Composable
-internal fun ListManagerScreen(vm: ListManagerViewModel = viewModel()) {
+internal fun ListManagerScreen(
+    sharedVM: SharedViewModel,
+    vm: ListManagerViewModel = viewModel()
+) {
     val navController = LocalNavController.current
     val scope = rememberCoroutineScope()
     val context = LocalContext.current
@@ -106,9 +108,8 @@ internal fun ListManagerScreen(vm: ListManagerViewModel = viewModel()) {
     }
 
     fun navigateToEdit(systts: SystemTtsV2) {
-        navController.navigate(NavRoutes.TtsEdit.id, Bundle().apply {
-            putParcelable(NavRoutes.TtsEdit.DATA, systts)
-        })
+        sharedVM.put(NavRoutes.TtsEdit.DATA, systts)
+        navController.navigate(NavRoutes.TtsEdit.id)
     }
 
     // 长按Item拖拽提示
@@ -432,14 +433,7 @@ internal fun ListManagerScreen(vm: ListManagerViewModel = viewModel()) {
                                         navigateToEdit(item.copy(id = System.currentTimeMillis()))
                                     },
                                     onDelete = { deleteTts = item },
-                                    onEdit = {
-                                        navController.navigate(
-                                            NavRoutes.TtsEdit.id,
-                                            Bundle().apply {
-                                                putParcelable(NavRoutes.TtsEdit.DATA, item)
-                                            }
-                                        )
-                                    },
+                                    onEdit = { navigateToEdit(item) },
                                     onAudition = { showAuditionDialog = item },
                                     onExport = {
                                         showExportSheet =

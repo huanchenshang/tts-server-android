@@ -111,7 +111,9 @@ internal class ResultProcessor(
                 sonic(bytes)
             }
 
-            if (pcm == null) {
+            if (context.cfg.silenceSkipEnabled) {
+                if (pcm != null) sonic(pcm)
+            } else if (pcm == null) {
                 processor.queueEndOfStream()
                 read()
             } else {

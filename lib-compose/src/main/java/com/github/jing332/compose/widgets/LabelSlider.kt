@@ -1,5 +1,6 @@
 package com.github.jing332.compose.widgets
 
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.Row
@@ -7,8 +8,10 @@ import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Remove
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Slider
+import androidx.compose.material3.SliderDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -24,6 +27,7 @@ import androidx.compose.ui.semantics.invisibleToUser
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.stateDescription
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
 import androidx.constraintlayout.compose.ConstraintLayout
 import com.github.jing332.common.utils.performLongPress
@@ -79,6 +83,7 @@ fun LabelSlider(
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun LabelSlider(
     modifier: Modifier = Modifier,
@@ -161,7 +166,15 @@ fun LabelSlider(
                 enabled = enabled,
                 valueRange = valueRange,
                 steps = steps,
-                onValueChangeFinished = onValueChangeFinished
+                onValueChangeFinished = onValueChangeFinished,
+                thumb = {
+                    SliderDefaults.Thumb(
+                        interactionSource = remember { MutableInteractionSource() },
+                        colors = SliderDefaults.colors(),
+                        enabled = enabled,
+                        thumbSize = DpSize(4.dp, 24.dp)
+                    )
+                }
             )
             if (showButton)
                 LongClickIconButton(

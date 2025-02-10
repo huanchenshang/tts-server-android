@@ -17,6 +17,7 @@ import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.minimumInteractiveComponentSize
+import androidx.compose.material3.ripple
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
@@ -126,7 +127,7 @@ internal fun BasePreferenceWidget(
         .clip(MaterialTheme.shapes.extraSmall)
         .clickable(
             interactionSource = remember { MutableInteractionSource() },
-            indication = rememberRipple()
+            indication = ripple()
         ) {
             onClick()
         }
