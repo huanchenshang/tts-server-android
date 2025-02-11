@@ -3,12 +3,13 @@ package com.github.jing332.tts.speech.plugin.engine
 import android.content.Context
 import com.github.jing332.database.entities.plugin.Plugin
 import com.github.jing332.database.entities.systts.source.PluginTtsSource
-import com.github.jing332.script.annotation.ScriptInterface
 import com.github.jing332.script.rhino.RhinoScriptEngine
 import com.github.jing332.script.runtime.console.ConsoleImpl
 import com.github.jing332.script.simple.CompatScriptRuntime
 import com.github.jing332.script.source.toScriptSource
 import com.github.jing332.tts.speech.EmptyInputStream
+import kotlinx.coroutines.runInterruptible
+import kotlinx.coroutines.sync.Mutex
 import org.mozilla.javascript.ScriptableObject
 import org.mozilla.javascript.Undefined
 import org.mozilla.javascript.typedarrays.NativeInt8Array
@@ -49,15 +50,18 @@ open class TtsPluginEngineV2(val context: Context, val plugin: Plugin) {
 
     protected val pluginJsObj: ScriptableObject by lazy {
         (engine.get(OBJ_PLUGIN_JS) as? ScriptableObject)
-            ?: throw IllegalStateException("$OBJ_PLUGIN_JS not found")
+            ?: throw IllegalStateException("Object $OBJ_PLUGIN_JS not found")
     }
 
     protected var engine: RhinoScriptEngine = RhinoScriptEngine(runtime)
 
     open fun execute(script: String): Any? = engine.execute(script.toScriptSource())
 
+    init {
+        eval()
+    }
     @Suppress("UNCHECKED_CAST")
-    fun eval() {
+    private fun eval() {
         execute(plugin.code)
 
         pluginJsObj.apply {
@@ -76,7 +80,7 @@ open class TtsPluginEngineV2(val context: Context, val plugin: Plugin) {
             }
 
             plugin.version = try {
-                (get("version") as Double).toInt()
+                org.mozilla.javascript.Context.toNumber(get("version")).toInt()
             } catch (e: Exception) {
                 -1
             }
@@ -112,33 +116,23 @@ open class TtsPluginEngineV2(val context: Context, val plugin: Plugin) {
 
             is Undefined -> null
 
-            else -> throw IllegalArgumentException("getAudio() return type not suppport: ${result.javaClass.name}")
+            else -> throw IllegalArgumentException("getAudio() return type not support: ${result.javaClass.name}")
         }
     }
 
-    private fun getAudioV2(request: Map<String, Any>): InputStream {
-        val pos = PipedOutputStream()
-        val pis = PipedInputStream(pos)
-        val callback = object {
-            @ScriptInterface
-            fun write(data: ByteArray) {
-                pos.write(data)
-                pos.flush()
-            }
+    private val mMutex by lazy { Mutex() } // stream lock
+    private suspend fun getAudioV2(request: Map<String, Any>): InputStream {
+        val ins = JsBridgeInputStream()
+        val callback = ins.getCallback(mMutex)
 
-            @ScriptInterface
-            fun close() {
-                pos.close()
-            }
+        val result = runInterruptible {
+            engine.invokeMethod(pluginJsObj, FUNC_GET_AUDIO_V2, request, callback)
+                ?: throw NoSuchMethodException("getAudioV2() not found")
         }
-
-        val result = engine.invokeMethod(pluginJsObj, FUNC_GET_AUDIO_V2, callback, request)
-            ?: throw NoSuchMethodException("getAudioV2() not found")
-
-        return handleAudioResult(result) ?: pis
+        return handleAudioResult(result) ?: ins
     }
 
-    fun getAudio(
+    suspend fun getAudio(
         text: String,
         locale: String,
         voice: String,
@@ -146,25 +140,31 @@ open class TtsPluginEngineV2(val context: Context, val plugin: Plugin) {
         volume: Float = 1f,
         pitch: Float = 1f
     ): InputStream {
+        val r =   (rate * 50f).toInt()
+        val v =  (volume * 50f).toInt()
+        val p =   (pitch * 50f).toInt()
         val result = try {
-            engine.invokeMethod(
-                pluginJsObj,
-                FUNC_GET_AUDIO,
-                text,
-                locale,
-                voice,
-                (rate * 50f).toInt(),
-                (volume * 50f).toInt(),
-                (pitch * 50f).toInt()
-            )
+            runInterruptible {
+                engine.invokeMethod(
+                    pluginJsObj,
+                    FUNC_GET_AUDIO,
+                    text,
+                    locale,
+                    voice,
+                    r,
+                    v,
+                    p
+                )
+            }
         } catch (_: NoSuchMethodException) {
             val request = mapOf(
                 "text" to text,
                 "locale" to locale,
                 "voice" to voice,
-                "rate" to rate,
-                "volume" to volume,
-                "pitch" to pitch
+                "rate" to r,
+                "speed" to r,
+                "volume" to v,
+                "pitch" to p
             )
             getAudioV2(request)
         }

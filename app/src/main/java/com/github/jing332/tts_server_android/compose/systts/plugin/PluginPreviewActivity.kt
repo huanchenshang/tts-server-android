@@ -42,6 +42,7 @@ import com.github.jing332.tts_server_android.compose.systts.list.ui.PluginTtsUI
 import com.github.jing332.tts_server_android.compose.systts.list.ui.PluginTtsViewModel
 import com.github.jing332.tts_server_android.compose.theme.AppTheme
 import com.github.jing332.tts_server_android.constant.AppConst
+import com.github.jing332.tts_server_android.toCode
 import com.github.jing332.tts_server_android.ui.view.ErrorDialogActivity
 import io.github.oshai.kotlinlogging.KotlinLogging
 
@@ -76,20 +77,20 @@ class PluginPreviewActivity : AppCompatActivity() {
 
         AppConst.localBroadcast.registerReceiver(mReceiver, IntentFilter(ACTION_FINISH))
 
-        var source = intent.getParcelableExtra<PluginTtsSource>(KEY_SOURCE)
+        val argSource: PluginTtsSource? = intent.getParcelableExtra(KEY_SOURCE)
         val plugin = intent.getParcelableExtra<Plugin>(KEY_PLUGIN)
-        logger.atDebug {
-            message = "loading preview plugin ui"
-            payload = mapOf("source" to source, "plugin" to plugin)
-        }
-        if (source == null || plugin == null) {
+        if (argSource == null || plugin == null) {
             finish()
             return
         }
 
-        if (source.locale.isBlank()) {
-            val l = AppLocale.current(this)
-            source = source.copy(locale = "${l.language}-${l.country}")// eg: en-US, zh-CN)
+        val source = (if (argSource.locale.isBlank()) {
+            argSource.copy(locale = AppLocale.current(this).toCode())// eg: en-US, zh-CN)
+        } else argSource).copy(plugin = plugin)
+
+        logger.atDebug {
+            message = "loading preview plugin ui"
+            payload = mapOf("source" to source, "plugin" to plugin)
         }
 
         setContent {

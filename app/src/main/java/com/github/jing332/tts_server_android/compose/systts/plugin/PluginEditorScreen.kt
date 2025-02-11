@@ -80,7 +80,10 @@ internal fun PluginEditorScreen(
     if (showDebugLogger) {
         LoggerBottomSheet(
             registry = (vm.console),
-            onDismissRequest = { showDebugLogger = false }) {
+            onDismissRequest = {
+                showDebugLogger = false
+                vm.stopDebug()
+            }) {
             runCatching {
                 vm.debug(codeEditor!!.string())
             }.onFailure {
@@ -117,7 +120,11 @@ internal fun PluginEditorScreen(
 
     fun previewUi() {
         AppConst.localBroadcast.sendBroadcastSync(Intent(PluginPreviewActivity.ACTION_FINISH))
-        vm.updateCode(codeEditor!!.text.toString())
+        try {
+            vm.updateCode(codeEditor!!.text.toString())
+        } catch (e: Exception) {
+            context.displayErrorDialog(e)
+        }
         previewLauncher.launch(Intent(context, PluginPreviewActivity::class.java).apply {
             putExtra(PluginPreviewActivity.KEY_PLUGIN, vm.plugin)
             putExtra(PluginPreviewActivity.KEY_SOURCE, vm.pluginSource)
@@ -139,9 +146,9 @@ internal fun PluginEditorScreen(
 
         onSave = {
             if (codeEditor != null) {
-                vm.updateCode(codeEditor!!.string())
                 runCatching {
-                    onSave(vm.save())
+                    vm.updateCode(codeEditor!!.string())
+                    onSave(vm.plugin)
                     navController.popBackStack()
                 }.onFailure {
                     context.displayErrorDialog(it)

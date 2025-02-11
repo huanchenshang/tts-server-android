@@ -1,6 +1,7 @@
 package com.github.jing332.tts
 
 import android.content.Context
+import com.github.jing332.database.dbm
 import com.github.jing332.database.entities.systts.source.ITtsSource
 import com.github.jing332.database.entities.systts.source.LocalTtsSource
 import com.github.jing332.database.entities.systts.source.PluginTtsSource
@@ -13,7 +14,12 @@ object TtsFactory {
     fun createEngine(context: Context, source: ITtsSource): ITtsService<ITtsSource>? {
         return when (source) {
             is LocalTtsSource -> LocalTtsService(context, source.engine)
-            is PluginTtsSource -> PluginTtsService(context, source.pluginId)
+            is PluginTtsSource -> {
+                PluginTtsService(
+                    context,
+                    source.plugin ?: dbm.pluginDao.getByPluginId(source.pluginId) ?: return null
+                )
+            }
 
             else -> null
         } as ITtsService<ITtsSource>?

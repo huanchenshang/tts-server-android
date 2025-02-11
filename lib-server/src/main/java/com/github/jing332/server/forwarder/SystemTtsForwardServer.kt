@@ -75,8 +75,8 @@ class SystemTtsForwardServer(val port: Int, val callback: Callback) : Server {
                     val api = call.parameters.getOrFail("api")
                     val name = call.parameters.getOrFail("name")
                     val engine = call.parameters.getOrFail("engine")
-                    val voice = call.parameters.getOrFail("voice")
-                    val pitch = call.parameters.getOrFail("pitch")
+                    val voice = call.parameters["voice"] ?: ""
+                    val pitch = call.parameters["pitch"] ?: "50"
                     call.respond(LegadoUtils.getLegadoJson(api, name, engine, voice, pitch))
                 }
 

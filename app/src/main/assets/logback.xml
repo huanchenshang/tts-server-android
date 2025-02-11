@@ -15,23 +15,20 @@
     </appender>
 
     <!-- Create a file appender for TRACE-level messages -->
-    <appender name="TraceLog" class="ch.qos.logback.core.FileAppender">
-        <file>${LOG_DIR}/trace.log</file>
-        <immediateFlush>true</immediateFlush>
+    <appender name="CrashLog" class="ch.qos.logback.core.FileAppender">
+        <file>${LOG_DIR}/crash.log</file>
 
         <encoder>
+            <immediateFlush>true</immediateFlush>
             <pattern>%d{MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n</pattern>
         </encoder>
 
-        <filter class="ch.qos.logback.classic.filter.LevelFilter">
-            <level>TRACE</level>
-            <onMatch>ACCEPT</onMatch>
-            <onMismatch>DENY</onMismatch>
-        </filter>
+        <filter class="com.github.jing332.tts_server_android.CrashFilter"/>
     </appender>
 
+
     <!-- Create a file appender for DEBUG-level messages -->
-    <appender name="DebugLog" class="ch.qos.logback.core.FileAppender">
+    <appender name="Log" class="ch.qos.logback.core.FileAppender">
         <file>${LOG_DIR}/debug.log</file>
 
         <encoder>
@@ -39,9 +36,9 @@
         </encoder>
     </appender>
 
-    <root level="DEBUG">
+    <root level="TRACE">
         <appender-ref ref="logcat" />
-        <appender-ref ref="DebugLog" />
-        <appender-ref ref="TraceLog" />
+        <appender-ref ref="Log" />
+        <appender-ref ref="CrashLog" />
     </root>
 </configuration>

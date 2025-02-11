@@ -13,35 +13,32 @@ import java.io.InputStream
 
 open class PluginTtsService(
     val context: Context,
-    val pluginId: String
+    val plugin: Plugin
 ) : ITtsService<PluginTtsSource>() {
 
     private var mEngine: TtsPluginEngineV2? = null
 
     override var state: EngineState = EngineState.Uninitialized()
 
-    open fun getPlugin(id: String): Plugin = dbm.pluginDao.getByPluginId(pluginId)
-        ?: throw IllegalStateException("Plugin not found: $pluginId")
+    override suspend fun getStream(params: SystemParams, source: PluginTtsSource): InputStream {
+        val speed = if (source.speed == 0f) params.speed else source.speed
+        val volume = if (source.volume == 0f) params.volume else source.volume
+        val pitch = if (source.pitch == 0f) params.pitch else source.pitch
 
-    override suspend fun getStream(params: SystemParams, source: PluginTtsSource): InputStream =
-        runInterruptible {
-            val speed = if (source.speed == 0f) params.speed else source.speed
-            val volume = if (source.volume == 0f) params.volume else source.volume
-            val pitch = if (source.pitch == 0f) params.pitch else source.pitch
 
-            mEngine?.getAudio(
-                text = params.text,
-                locale = source.locale,
-                voice = source.voice,
-                rate = speed,
-                volume = volume,
-                pitch = pitch
-            ) ?: throw IllegalStateException("Engine not initialized: $pluginId")
-        }
+        return mEngine?.getAudio(
+            text = params.text,
+            locale = source.locale,
+            voice = source.voice,
+            rate = speed,
+            volume = volume,
+            pitch = pitch
+        ) ?: throw IllegalStateException("Engine not initialized: ${plugin.pluginId}")
+    }
 
     override suspend fun onInit() {
         state = EngineState.Initializing
-        mEngine = TtsPluginEngineManager.getEngine(context, getPlugin(pluginId))
+        mEngine = TtsPluginEngineManager.getEngine(context, plugin)
 
         state = EngineState.Initialized
     }

@@ -181,7 +181,6 @@ class TtsPluginEngineTest {
         """.trimIndent()
         val engine = TtsPluginUiEngineV2(context, Plugin(code = code))
 
-        engine.eval()
-    }
+     }
 
 }

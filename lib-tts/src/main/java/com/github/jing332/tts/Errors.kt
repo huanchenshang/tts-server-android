@@ -12,4 +12,9 @@ data class HandleTextError(val cause: Throwable) : TextProcessorError
 data object NoMatchingConfigFound : TextProcessorError
 
 sealed interface RequesterError : TtsError
-data object TimesLimitExceeded : RequesterError
+data class RequestError(val cause: Throwable) : RequesterError
+data class InitializationError(val reason: String) : RequesterError
+
+sealed interface ResultProcessorError : TtsError
+data class AudioStreamError(val cause: Throwable) : ResultProcessorError
+data class AudioDecodingError(val cause: Throwable) : ResultProcessorError

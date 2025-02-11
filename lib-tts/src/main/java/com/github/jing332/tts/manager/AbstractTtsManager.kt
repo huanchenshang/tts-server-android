@@ -1,9 +1,12 @@
 package com.github.jing332.tts.manager
 
+import com.github.jing332.tts.AudioDecodingError
+import com.github.jing332.tts.AudioStreamError
 import com.github.jing332.tts.ConfigEmptyError
 import com.github.jing332.tts.GetBgm
+import com.github.jing332.tts.InitializationError
 import com.github.jing332.tts.ManagerContext
-import com.github.jing332.tts.TimesLimitExceeded
+import com.github.jing332.tts.RequestError
 import com.github.jing332.tts.TtsError
 import com.github.jing332.tts.manager.event.EventType
 import com.github.jing332.tts.manager.event.IEventListener
@@ -20,6 +23,7 @@ import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
+import kotlinx.coroutines.withTimeoutOrNull
 
 abstract class AbstractTtsManager() : ITtsManager {
     private val logger: KLogger
@@ -46,11 +50,24 @@ abstract class AbstractTtsManager() : ITtsManager {
                     ?: 16000
         }
 
+    /**
+     * @return true if error
+     */
+    private inline fun <R> catchError(message: () -> String, block: () -> R): Boolean {
+        try {
+            block()
+            return false
+        } catch (e: Throwable) {
+            eventListener?.onEvent(EventType.Error(Exception(message())))
+        }
+        return true
+    }
+
     private suspend fun textProcess(
         channel: Channel<Any>,
         params: SystemParams,
         forceConfigId: Long?
-    ): List<TextFragment> {
+    ): List<TextSegment> {
         val processRet = textProcessor.process(params.text, forceConfigId)
         processRet.onSuccess { list ->
             return list
@@ -64,32 +81,93 @@ abstract class AbstractTtsManager() : ITtsManager {
     private suspend fun requestAndProcess(
         channel: Channel<Any>,
         params: SystemParams,
-        config: TtsConfiguration
+        config: TtsConfiguration,
+
+        retries: Int = 0,
+        maxRetries: Int = context.cfg.maxRetryTimes,
     ) {
-        ttsRequester.request(params, config)
-            .onSuccess { ret ->
-                ret.onStream {
-                    try {
-                        resultProcessor.processStream(
-                            ins = it,
-                            tts = config,
-                            targetSampleRate = maxSampleRate
-                        ) { pcmAudio -> channel.send(pcmAudio) }
-                    } catch (e: Exception) {
-                        eventListener?.onEvent(EventType.ResultProcessorError(params, config, e))
+        suspend fun retry() {
+            return if (config.standbyInfo?.config != null && config.standbyInfo.tryTimesWhenTrigger > retries) {
+                eventListener?.onEvent(EventType.StandbyTts(params, config))
+                requestAndProcess(
+                    channel,
+                    params,
+                    config.standbyInfo.config,
+                    retries + 1,
+                    maxRetries
+                )
+            } else
+                requestAndProcess(channel, params, config, retries + 1, maxRetries)
+        }
+
+        if (retries > maxRetries) {
+            eventListener?.onEvent(EventType.RequestTimesEnded)
+            return
+        }
+
+        val time = System.currentTimeMillis()
+        val result = withTimeoutOrNull(context.cfg.requestTimeout) {
+            ttsRequester.request(params, config)
+        }
+        if (result == null) { // timed out
+            eventListener?.onEvent(EventType.RequestTimeout(params, config))
+            return retry()
+        }
+
+        result.onSuccess { ret ->
+            eventListener?.onEvent(
+                EventType.RequestSuccess(
+                    timeCost = System.currentTimeMillis() - time,
+                    params = params,
+                    config = config
+                )
+            )
+            ret.onStream {
+                resultProcessor.processStream(
+                    ins = it,
+                    tts = config,
+                    targetSampleRate = maxSampleRate,
+                    callback = { pcmAudio -> channel.send(pcmAudio) }
+                ).onFailure { e ->
+                    when (e) {
+                        is AudioDecodingError -> {
+                            eventListener?.onEvent(
+                                EventType.AudioDecodingError(params, config, e.cause)
+                            )
+                        }
+
+                        is AudioStreamError -> eventListener?.onEvent(
+                            EventType.AudioStreamError(params, config, e.cause)
+                        )
                     }
-                }.onCallback {
-                    channel.send(
-                        DirectPlayCallbackWithConfig(
-                            fragment = TextFragment(params.text, config), callback = it
+
+                    return retry()
+                }
+            }.onCallback {
+                channel.send(
+                    DirectPlayCallbackWithConfig(
+                        fragment = TextSegment(params.text, config), callback = it
+                    )
+                )
+            }
+        }.onFailure {
+            when (it) {
+                is RequestError -> {
+                    eventListener?.onEvent(EventType.RequestError(params, config, it.cause))
+                }
+
+                is InitializationError -> {
+                    eventListener?.onEvent(
+                        EventType.RequestError(
+                            params,
+                            config,
+                            Exception(it.reason)
                         )
                     )
                 }
-            }.onFailure {
-                if (it is TimesLimitExceeded) {
-                    eventListener?.onEvent(EventType.TimesEnded)
-                }
             }
+            return retry()
+        }
     }
 
     private suspend fun internalSynthesize(
@@ -179,7 +257,7 @@ abstract class AbstractTtsManager() : ITtsManager {
 
 
     class DirectPlayCallbackWithConfig(
-        val fragment: TextFragment,
+        val fragment: TextSegment,
         val callback: ITtsRequester.ISyncPlayCallback,
     )
 }

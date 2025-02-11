@@ -48,8 +48,7 @@ class PluginTtsViewModel(app: Application) : AndroidViewModel(app) {
             isLoading = true
             try {
                 initEngine(source)
-                engine.eval()
-                engine.onLoadData()
+                 engine.onLoadData()
 
                 withMain {
                     engine.onLoadUI(context, linearLayout)

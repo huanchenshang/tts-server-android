@@ -14,6 +14,7 @@ import com.github.jing332.tts.speech.plugin.engine.TtsPluginUiEngineV2
 import com.github.jing332.tts_server_android.app
 import com.github.jing332.tts_server_android.conf.PluginConfig
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 
 class PluginEditorViewModel(app: Application) : AndroidViewModel(app) {
@@ -66,33 +67,24 @@ class PluginEditorViewModel(app: Application) : AndroidViewModel(app) {
         updatePlugin(plugin.copy(code = code))
     }
 
-    fun save(): Plugin {
-        engine.eval()
-        return engine.plugin
-    }
-
-
 //    fun clearPluginCache() {
 //        val file = File("${app.externalCacheDir!!.absolutePath}/${plugin.pluginId}")
 //        file.deleteRecursively()
 //    }
 
-    private fun evalInfo(): Boolean {
-        val plugin = try {
-            engine.eval()
-            engine.plugin
-        } catch (e: Exception) {
-            writeErrorLog(e)
-            return false
-        }
-        console.debug(plugin.toString().replace(", ", "\n"))
-        return true
-    }
-
+    private var mDebugJob: Job? = null
     fun debug(code: String) {
-        updateCode(code)
-        if (!evalInfo()) return
-        viewModelScope.launch(Dispatchers.IO) {
+        console.info("START\n==========")
+
+        mDebugJob = viewModelScope.launch(Dispatchers.IO) {
+            val plugin = try {
+                updateCode(code)
+                engine.plugin
+            } catch (e: Exception) {
+                writeErrorLog(e)
+            }
+            console.debug(plugin.toString().replace(", ", "\n"))
+
             console.debug("")
             kotlin.runCatching {
                 val sampleRate = engine.getSampleRate(pluginSource.locale, pluginSource.voice)
@@ -111,12 +103,13 @@ class PluginEditorViewModel(app: Application) : AndroidViewModel(app) {
 
             kotlin.runCatching {
                 engine.onLoad()
-                val audio = engine.getAudio(
+                val stream = engine.getAudio(
                     text = PluginConfig.textParam.value,
                     locale = pluginSource.voice,
                     voice = pluginSource.locale
                 )
-                val bytes = audio.readBytes()
+
+                val bytes = stream.readBytes()
                 console.info(
                     "Audio size: ${
                         bytes.size.toLong().sizeToReadable()
@@ -125,7 +118,14 @@ class PluginEditorViewModel(app: Application) : AndroidViewModel(app) {
             }.onFailure {
                 writeErrorLog(it)
             }
+
+            console.info("\n" + "==========\nEND")
         }
+    }
+
+    fun stopDebug() {
+        mDebugJob?.cancel()
+        engine.onStop()
     }
 
     private fun writeErrorLog(t: Throwable) {
@@ -136,4 +136,6 @@ class PluginEditorViewModel(app: Application) : AndroidViewModel(app) {
 //        }
         console.error(t.message)
     }
+
+
 }

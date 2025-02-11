@@ -52,12 +52,11 @@ import androidx.compose.ui.unit.dp
 import com.github.jing332.tts_server_android.R
 import com.github.jing332.tts_server_android.compose.LocalNavController
 import com.github.jing332.tts_server_android.compose.ShadowReorderableItem
-import com.github.jing332.tts_server_android.compose.navigate
 import com.github.jing332.tts_server_android.compose.systts.ConfigDeleteDialog
-import com.github.jing332.tts_server_android.compose.systts.plugin.PluginManagerActivity
 import com.github.jing332.compose.widgets.LazyListIndexStateSaver
 import com.github.jing332.database.dbm
 import com.github.jing332.database.entities.SpeechRule
+import com.github.jing332.tts_server_android.compose.SharedViewModel
 import com.github.jing332.tts_server_android.utils.MyTools
 import kotlinx.coroutines.flow.conflate
 import org.burnoutcrew.reorderable.detectReorderAfterLongPress
@@ -67,7 +66,7 @@ import java.util.Collections
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun SpeechRuleManagerScreen(finish: () -> Unit) {
+fun SpeechRuleManagerScreen(sharedVM: SharedViewModel, finish: () -> Unit) {
     val navController = LocalNavController.current
     val context = LocalContext.current
 
@@ -204,9 +203,8 @@ fun SpeechRuleManagerScreen(finish: () -> Unit) {
 
                         },
                         onEdit = {
-                            navController.navigate(NavRoutes.SpeechRuleEdit.id, Bundle().apply {
-                                putParcelable(NavRoutes.SpeechRuleEdit.KEY_DATA, item)
-                            })
+                            sharedVM.put(NavRoutes.SpeechRuleEdit.KEY_DATA, item)
+                            navController.navigate(NavRoutes.SpeechRuleEdit.id )
                         },
                         onExport = { showExportSheet = listOf(item) },
                         onDelete = { showDeleteDialog = item }

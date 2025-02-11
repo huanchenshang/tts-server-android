@@ -1,9 +1,11 @@
 package com.github.jing332.tts_server_android.compose.systts
 
+import android.util.Log
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.text.selection.SelectionContainer
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -14,15 +16,14 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.viewmodel.compose.viewModel
 import com.drake.net.utils.withMain
+import com.github.jing332.common.audio.AudioPlayer
 import com.github.jing332.common.utils.ClipboardUtils
 import com.github.jing332.common.utils.StringUtils.sizeToReadable
 import com.github.jing332.common.utils.toast
@@ -31,15 +32,20 @@ import com.github.jing332.compose.widgets.AppDialog
 import com.github.jing332.compose.widgets.LoadingContent
 import com.github.jing332.database.entities.systts.SystemTtsV2
 import com.github.jing332.database.entities.systts.TtsConfigurationDTO
-import com.github.jing332.tts.TtsManagerImpl
+import com.github.jing332.tts.CachedEngineManager
 import com.github.jing332.tts.manager.SystemParams
 import com.github.jing332.tts.manager.TtsConfiguration.Companion.toVO
+import com.github.jing332.tts.speech.EngineState
 import com.github.jing332.tts_server_android.R
 import com.github.jing332.tts_server_android.conf.AppConfig
-import com.github.michaelbull.result.onSuccess
+import io.github.oshai.kotlinlogging.KotlinLogging
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import splitties.init.appCtx
+
+
+private val logger = KotlinLogging.logger("AuditionDialog")
 
 @Composable
 fun AuditionDialog(
@@ -47,10 +53,18 @@ fun AuditionDialog(
     text: String = AppConfig.testSampleText.value,
     onDismissRequest: () -> Unit
 ) {
-    val vm: AuditionDialogViewModel = viewModel()
     val context = LocalContext.current
+    var error by remember { mutableStateOf("") }
+    var info by remember { mutableStateOf("") }
+    val audioPlayer = remember { AudioPlayer(context) }
 
-    LaunchedEffect(systts.id) {
+    DisposableEffect(systts) {
+        onDispose {
+            audioPlayer.stop()
+        }
+    }
+
+    LaunchedEffect(systts) {
         if (systts.config !is TtsConfigurationDTO) {
             context.toast(R.string.not_support_audition)
 
@@ -58,37 +72,64 @@ fun AuditionDialog(
             return@LaunchedEffect
         }
 
-        val cfg = (systts.config as TtsConfigurationDTO).toVO()
-        vm.init(cfg, text, onDismissRequest)
+        launch(Dispatchers.IO) {
+            val config = (systts.config as TtsConfigurationDTO).toVO()
+            try {
+                val e = CachedEngineManager.getEngine(appCtx, config.source)
+                    ?: throw IllegalStateException("engine is null")
+
+                if (e.state is EngineState.Uninitialized) e.onInit()
+                if (e.isSyncPlay(config.source)) {
+                    e.syncPlay(SystemParams(text = text), config.source)
+                } else {
+                    val stream = e.getStream(SystemParams(text = text), config.source)
+                    val audio = stream.readBytes()
+                    val rateAndMime =
+                        com.github.jing332.common.audio.AudioDecoder.getSampleRateAndMime(audio)
+                    withMain {
+                        info = context.getString(
+                            R.string.systts_test_success_info, audio.size.toLong().sizeToReadable(),
+                            rateAndMime.first, rateAndMime.second
+                        )
+                    }
+
+                    if (config.audioFormat.isNeedDecode)
+                        audioPlayer.play(audio)
+                    else
+                        audioPlayer.play(audio, config.audioFormat.sampleRate)
+                }
+                withContext(Dispatchers.Main) {
+                    onDismissRequest()
+                }
+            } catch (e: Exception) {
+                error = e.message ?: e.toString()
+                logger.warn { e.stackTraceToString() }
+            }
+        }
     }
+
     AppDialog(onDismissRequest = onDismissRequest,
         title = { Text(stringResource(id = R.string.audition)) },
         content = {
             Column(Modifier.verticalScroll(rememberScrollState())) {
-                Text(
-                    vm.error.ifEmpty { text },
-                    color = if (vm.error.isEmpty()) Color.Unspecified else MaterialTheme.colorScheme.error,
-//                    maxLines = if (error.isEmpty()) Int.MAX_VALUE else 1,
-                    style = MaterialTheme.typography.bodySmall
-                )
+                SelectionContainer {
+                    Text(
+                        error.ifEmpty { text },
+                        color = if (error.isEmpty()) Color.Unspecified else MaterialTheme.colorScheme.error,
+                        style = MaterialTheme.typography.bodySmall
+                    )
+                }
 
-                val infoStr = stringResource(
-                    id = R.string.systts_test_success_info,
-                    vm.audioInfo?.first?.toLong()?.sizeToReadable() ?: 0,
-                    vm.audioInfo?.second ?: 0,
-                    vm.audioInfo?.third ?: ""
-                )
-                if (vm.error.isEmpty())
+                if (error.isEmpty())
                     LoadingContent(
                         modifier = Modifier
                             .padding(top = 8.dp)
-                            .fillMaxWidth()
-                            .clickableRipple {
-                                ClipboardUtils.copyText("TTS Server", infoStr)
-                                context.toast(R.string.copied)
-                            }, isLoading = vm.audioInfo == null
+                            .fillMaxWidth(),
+                        isLoading = info.isEmpty()
                     ) {
-                        Text(infoStr, style = MaterialTheme.typography.bodyMedium)
+                        SelectionContainer {
+                            Text(info, style = MaterialTheme.typography.bodyMedium)
+                        }
                     }
 
             }

@@ -6,9 +6,11 @@ import com.github.jing332.tts.speech.ITtsService
 import io.github.oshai.kotlinlogging.KotlinLogging
 
 object CachedEngineManager :
-    AbstractCachedManager<String, ITtsService<ITtsSource>>(1000L * 60L * 10L, 1000L * 60) {
-    private val logger = KotlinLogging.logger { javaClass.name }
-
+    AbstractCachedManager<String, ITtsService<ITtsSource>>(
+        timeout = 1000L * 60L * 10L, // 10 min
+        delay = 1000L * 60 // 1 min
+    ) {
+    private val logger = KotlinLogging.logger("CachedEngineManager")
 
     override fun onCacheRemove(key: String, value: ITtsService<ITtsSource>): Boolean {
         logger.atDebug { message = "Engine timeout destroy: $key" }
@@ -16,8 +18,6 @@ object CachedEngineManager :
 
         return super.onCacheRemove(key, value)
     }
-
-
 
     fun getEngine(context: Context, source: ITtsSource): ITtsService<ITtsSource>? {
         val key = source.getKey() + ";" + source.javaClass.simpleName

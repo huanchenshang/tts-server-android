@@ -1,5 +1,6 @@
 package com.github.jing332.server.script
 
+import android.app.Application
 import com.github.jing332.common.LogEntry
 import com.github.jing332.server.BaseCallback
 import com.github.jing332.server.Server
@@ -10,6 +11,8 @@ import io.ktor.server.netty.Netty
 import io.ktor.server.request.receiveText
 import io.ktor.server.response.respond
 import io.ktor.server.response.respondText
+import io.ktor.server.routing.RoutingContext
+import io.ktor.server.routing.accept
 import io.ktor.server.routing.get
 import io.ktor.server.routing.post
 import io.ktor.server.routing.routing
@@ -39,11 +42,14 @@ class ScriptRemoteServer(
                     call.respondText("")
                 }
 
-                post("$BASE_PATH/action") {
+                suspend fun RoutingContext.action() {
                     val name = call.parameters["name"] ?: call.parameters.getOrFail("action")
                     callback.action(name)
                     call.respondText("")
                 }
+
+                get("$BASE_PATH/action") { action() }
+                post("$BASE_PATH/action") { action() }
 
                 get("$BASE_PATH/log") {
                     call.respond(callback.log())
@@ -60,7 +66,7 @@ class ScriptRemoteServer(
     }
 
     override fun stop() {
-        ktor.stop()
+        ktor.stop(1)
     }
 
     interface Callback : BaseCallback {

@@ -8,5 +8,5 @@ import com.github.michaelbull.result.Result
 interface ITextProcessor {
     fun init(context: Context, configs: Map<Long, TtsConfiguration>): Result<Unit, TtsError>
 
-    fun process(text: String, forceConfigId: Long? = null): Result<List<TextFragment>, TextProcessorError>
+    fun process(text: String, forceConfigId: Long? = null): Result<List<TextSegment>, TextProcessorError>
 }

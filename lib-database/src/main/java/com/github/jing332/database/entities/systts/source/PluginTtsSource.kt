@@ -1,7 +1,10 @@
 package com.github.jing332.database.entities.systts.source
 
+import com.github.jing332.database.entities.plugin.Plugin
+import kotlinx.parcelize.IgnoredOnParcel
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
+import kotlinx.serialization.Transient
 
 
 @Serializable
@@ -15,7 +18,11 @@ data class PluginTtsSource(
     val pitch: Float = 1f,
     val data: Map<String, String> = mutableMapOf(),
 
-    ) : ITtsSource() {
+    @Transient
+    @IgnoredOnParcel
+    val plugin: Plugin? = null
+) : ITtsSource() {
+
 
     override fun getKey(): String {
         // 防止 CachedEngineManager 创建单例 Engine

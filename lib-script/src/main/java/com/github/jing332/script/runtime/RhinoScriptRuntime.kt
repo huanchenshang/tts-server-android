@@ -17,6 +17,7 @@ open class RhinoScriptRuntime() {
      * Call from [com.github.jing332.script.rhino.RhinoScriptEngine.setRuntime]
      */
     open fun init() {
+        global.defineGetter("logger", ::console)
         global.defineGetter("console", ::console)
         global.defineGetter("http", ::http)
     }

@@ -23,6 +23,7 @@ data class Plugin(
 
     @ColumnInfo(defaultValue = "0")
     var version: Int = 0,
+
     var name: String = "",
     var pluginId: String = "",
     var author: String = "",

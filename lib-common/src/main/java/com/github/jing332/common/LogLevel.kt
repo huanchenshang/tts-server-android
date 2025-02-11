@@ -40,13 +40,13 @@ annotation class LogLevel {
 
         fun toString(level: Int): String {
             when (level) {
-                PANIC -> return "宕机"
-                FATIL -> return "致命"
-                ERROR -> return "错误"
-                WARN -> return "警告"
-                INFO -> return "信息"
-                DEBUG -> return "调试"
-                TRACE -> return "详细"
+                PANIC -> return "P"
+                FATIL -> return "F"
+                ERROR -> return "E"
+                WARN -> return "W"
+                INFO -> return "I"
+                DEBUG -> return "D"
+                TRACE -> return "T"
             }
             return level.toString()
         }

@@ -7,10 +7,14 @@ import androidx.media3.common.audio.AudioProcessor
 import androidx.media3.common.util.UnstableApi
 import androidx.media3.exoplayer.audio.SilenceSkippingAudioProcessor
 import com.github.jing332.common.audio.AudioDecoder.Companion.readPcmChunk
+import com.github.jing332.common.audio.AudioDecoderException
 import com.github.jing332.common.audio.exo.ExoAudioDecoder
 import com.github.jing332.tts.manager.IPcmAudioCallback
 import com.github.jing332.tts.manager.IResultProcessor
 import com.github.jing332.tts.manager.TtsConfiguration
+import com.github.michaelbull.result.Err
+import com.github.michaelbull.result.Ok
+import com.github.michaelbull.result.Result
 import com.google.common.collect.ImmutableList
 import kotlinx.coroutines.runBlocking
 import java.io.InputStream
@@ -69,68 +73,75 @@ internal class ResultProcessor(
         tts: TtsConfiguration,
         targetSampleRate: Int,
         callback: IPcmAudioCallback
-    ) {
-        val processor = AudioProcessingPipeline(
-            ImmutableList.of(
-                silenceSkippingAudioProcessor()
+    ): Result<Unit, ResultProcessorError> {
+        try {
+            val processor = AudioProcessingPipeline(
+                ImmutableList.of(
+                    silenceSkippingAudioProcessor()
+                )
             )
-        )
 
-        processor.configure(
-            AudioProcessor.AudioFormat(
-                tts.audioFormat.sampleRate,
-                1,
-                C.ENCODING_PCM_16BIT
+            processor.configure(
+                AudioProcessor.AudioFormat(
+                    tts.audioFormat.sampleRate,
+                    1,
+                    C.ENCODING_PCM_16BIT
+                )
             )
-        )
 
-        processor.flush()
+            processor.flush()
 
-        val sonic =
-            if (tts.audioParams.isDefaultValue && tts.audioFormat.sampleRate == targetSampleRate) null
-            else com.github.jing332.common.audio.Sonic(tts.audioFormat.sampleRate, 1).apply {
-                speed = if (tts.audioParams.speed >= 0) 1f else tts.audioParams.speed
-                volume = if (tts.audioParams.volume >= 0) 1f else tts.audioParams.volume
-                pitch = if (tts.audioParams.pitch >= 0) 1f else tts.audioParams.pitch
+            val sonic =
+                if (tts.audioParams.isDefaultValue && tts.audioFormat.sampleRate == targetSampleRate) null
+                else com.github.jing332.common.audio.Sonic(tts.audioFormat.sampleRate, 1).apply {
+                    speed = if (tts.audioParams.speed >= 0) 1f else tts.audioParams.speed
+                    volume = if (tts.audioParams.volume >= 0) 1f else tts.audioParams.volume
+                    pitch = if (tts.audioParams.pitch >= 0) 1f else tts.audioParams.pitch
 
-                rate = tts.audioFormat.sampleRate.toFloat() / targetSampleRate.toFloat()
-            }
+                    rate = tts.audioFormat.sampleRate.toFloat() / targetSampleRate.toFloat()
+                }
 
-        suspend fun sonic(pcm: ByteArray) {
-            sonic?.apply {
-                writeBytesToStream(pcm, pcm.size)
-                callback.onPcmData(sonic.readBytesFromStream(sonic.samplesAvailable()))
-            }
-        }
-
-        suspend fun handle(pcm: ByteArray?) {
-            suspend fun read() {
-                val outBuffer = processor.output
-                val bytes = ByteArray(outBuffer.remaining())
-                outBuffer.get(bytes)
-                sonic(bytes)
-            }
-
-            if (context.cfg.silenceSkipEnabled) {
-                if (pcm != null) sonic(pcm)
-            } else if (pcm == null) {
-                processor.queueEndOfStream()
-                read()
-            } else {
-                val inBuffer = ByteBuffer.wrap(pcm)
-                while (inBuffer.hasRemaining()) {
-                    processor.queueInput(inBuffer)
-                    read()
+            suspend fun sonic(pcm: ByteArray) {
+                sonic?.apply {
+                    writeBytesToStream(pcm, pcm.size)
+                    callback.onPcmData(sonic.readBytesFromStream(sonic.samplesAvailable()))
                 }
             }
+
+            suspend fun handle(pcm: ByteArray?) {
+                suspend fun read() {
+                    val outBuffer = processor.output
+                    val bytes = ByteArray(outBuffer.remaining())
+                    outBuffer.get(bytes)
+                    sonic(bytes)
+                }
+
+                if (!context.cfg.silenceSkipEnabled) {
+                    if (pcm != null) sonic(pcm)
+                } else if (pcm == null) {
+                    processor.queueEndOfStream()
+                    read()
+                } else {
+                    val inBuffer = ByteBuffer.wrap(pcm)
+                    while (inBuffer.hasRemaining()) {
+                        processor.queueInput(inBuffer)
+                        read()
+                    }
+                }
+            }
+
+
+            try {
+                internalProcessStream(ins = ins, tts = tts, callback = { pcm -> handle(pcm = pcm) })
+            } catch (e: AudioDecoderException) {
+                return Err(AudioDecodingError(e))
+            }
+
+        } catch (e: Throwable) {
+            return Err(AudioStreamError(e))
         }
 
-        internalProcessStream(
-            ins, tts
-        ) { pcm ->
-            handle(pcm = pcm)
-        }
-
+        return Ok(Unit)
     }
 
 

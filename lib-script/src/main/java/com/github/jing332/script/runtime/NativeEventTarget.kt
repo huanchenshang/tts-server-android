@@ -1,6 +1,7 @@
-package com.github.jing332.script.rhino
+package com.github.jing332.script.runtime
 
 import com.github.jing332.script.withRhinoContext
+import io.github.oshai.kotlinlogging.KotlinLogging
 import org.mozilla.javascript.BaseFunction
 import org.mozilla.javascript.Context
 import org.mozilla.javascript.Function
@@ -9,6 +10,10 @@ import org.mozilla.javascript.ScriptableObject
 import org.mozilla.javascript.Undefined
 
 class NativeEventTarget {
+    companion object {
+        val logger = KotlinLogging.logger("NativeEventTarget")
+    }
+
     val functions = hashMapOf<String, Function>()
     private var scope: ScriptableObject? = null
 
@@ -48,7 +53,8 @@ class NativeEventTarget {
         }, ScriptableObject.READONLY)
     }
 
-    fun emit(eventName: String, vararg args: Any) {
+    fun emit(eventName: String, vararg args: Any?) {
+        logger.debug { "emit: $eventName, ${args.contentToString()}" }
         val function = functions[eventName]
         if (function != null)
             withRhinoContext {

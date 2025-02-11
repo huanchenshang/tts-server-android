@@ -47,7 +47,6 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.github.jing332.tts_server_android.R
 import com.github.jing332.tts_server_android.compose.LocalNavController
 import com.github.jing332.tts_server_android.compose.ShadowReorderableItem
-import com.github.jing332.tts_server_android.compose.navigate
 import com.github.jing332.tts_server_android.compose.systts.sizeToToggleableState
 import com.github.jing332.compose.widgets.LazyListIndexStateSaver
 import com.github.jing332.compose.widgets.TextFieldDialog
@@ -55,6 +54,7 @@ import com.github.jing332.database.dbm
 import com.github.jing332.database.entities.replace.GroupWithReplaceRule
 import com.github.jing332.database.entities.replace.ReplaceRule
 import com.github.jing332.database.entities.replace.ReplaceRuleGroup
+import com.github.jing332.tts_server_android.compose.SharedViewModel
 import com.github.jing332.tts_server_android.service.systts.SystemTtsService
 import com.github.jing332.tts_server_android.utils.MyTools
 import okhttp3.internal.toLongOrDefault
@@ -64,14 +64,13 @@ import org.burnoutcrew.reorderable.reorderable
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
 @Composable
-internal fun ManagerScreen(vm: ReplaceRuleManagerViewModel = viewModel(), finish: () -> Unit) {
+internal fun ManagerScreen(sharedVM: SharedViewModel, vm: ReplaceRuleManagerViewModel = viewModel(), finish: () -> Unit) {
     val context = LocalContext.current
     val navController = LocalNavController.current
 
     fun navigateToEdit(rule: ReplaceRule = ReplaceRule()) {
-        navController.navigate(NavRoutes.Edit.id, Bundle().apply {
-            putParcelable(NavRoutes.Edit.KEY_DATA, rule)
-        })
+        sharedVM.put(NavRoutes.Edit.KEY_DATA, rule)
+        navController.navigate(NavRoutes.Edit.id)
     }
 
     var showImportSheet by remember { mutableStateOf(false) }

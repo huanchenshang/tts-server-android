@@ -7,8 +7,8 @@ import com.github.jing332.tts.speech.plugin.engine.TtsPluginUiEngineV2
 import java.util.concurrent.TimeUnit
 
 object TtsPluginEngineManager : AbstractCachedManager<String, TtsPluginUiEngineV2>(
-    TimeUnit.SECONDS.toMinutes(10),
-    TimeUnit.SECONDS.toSeconds(1)
+    timeout = 1000L * 60L * 10L, // 10 min
+    delay = 1000L * 60L * 1L, // 1 min
 ) {
     fun getEngine(context: Context, plugin: Plugin): TtsPluginUiEngineV2 {
         return cache.get(plugin.pluginId) ?: run {

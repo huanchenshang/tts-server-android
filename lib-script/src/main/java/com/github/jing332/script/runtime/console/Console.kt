@@ -3,6 +3,17 @@ package com.github.jing332.script.runtime.console
 import com.github.jing332.script.annotation.ScriptInterface
 
 interface Console {
+    @ScriptInterface
+    fun i(data: Any?) = info(data)
+
+    @ScriptInterface
+    fun d(data: Any?) = debug(data)
+
+    @ScriptInterface
+    fun w(data: Any?) = warn(data)
+
+    @ScriptInterface
+    fun e(data: Any?) = error(data)
 
     @ScriptInterface
     fun verbose(data: Any?, vararg formatArgs: Any?)

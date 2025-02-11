@@ -1,7 +1,6 @@
 package com.github.jing332.tts_server_android.compose.systts.plugin
 
 import android.content.Intent
-import android.os.Bundle
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -13,9 +12,9 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.Input
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.AppShortcut
-import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.DeleteForever
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.EditNote
@@ -49,17 +48,16 @@ import androidx.compose.ui.semantics.role
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.stateDescription
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.github.jing332.database.dbm
+import com.github.jing332.database.entities.plugin.Plugin
 import com.github.jing332.tts_server_android.R
 import com.github.jing332.tts_server_android.compose.LocalNavController
 import com.github.jing332.tts_server_android.compose.ShadowReorderableItem
-import com.github.jing332.tts_server_android.compose.navigateSingleTop
+import com.github.jing332.tts_server_android.compose.SharedViewModel
 import com.github.jing332.tts_server_android.compose.systts.ConfigDeleteDialog
 import com.github.jing332.tts_server_android.constant.AppConst
-import com.github.jing332.database.dbm
-import com.github.jing332.database.entities.plugin.Plugin
 import com.github.jing332.tts_server_android.utils.MyTools
 import kotlinx.coroutines.flow.conflate
 import kotlinx.serialization.encodeToString
@@ -70,7 +68,7 @@ import java.util.Collections
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
 @Composable
-fun PluginManagerScreen(onFinishActivity: () -> Unit) {
+fun PluginManagerScreen(sharedVM: SharedViewModel, onFinishActivity: () -> Unit) {
     var showImportConfig by remember { mutableStateOf(false) }
     if (showImportConfig) {
         PluginImportBottomSheet(onDismissRequest = { showImportConfig = false })
@@ -112,9 +110,14 @@ fun PluginManagerScreen(onFinishActivity: () -> Unit) {
             plugin = it
         }
     }
-
     val navController = LocalNavController.current
     val context = LocalContext.current
+
+    fun onEdit(plugin: Plugin = Plugin()) {
+        sharedVM.put(NavRoutes.PluginEdit.KEY_DATA, plugin)
+        navController.navigate(NavRoutes.PluginEdit.id)
+    }
+
     Scaffold(Modifier.fillMaxSize(), topBar = {
         TopAppBar(
             title = { Text(stringResource(id = R.string.plugin_manager)) },
@@ -128,7 +131,7 @@ fun PluginManagerScreen(onFinishActivity: () -> Unit) {
             },
             actions = {
                 IconButton(onClick = {
-                    navController.navigate(NavRoutes.PluginEdit.id)
+                    onEdit()
                 }) {
                     Icon(Icons.Default.Add, stringResource(id = R.string.add_config))
                 }
@@ -149,7 +152,7 @@ fun PluginManagerScreen(onFinishActivity: () -> Unit) {
                                 showImportConfig = true
                             },
                             leadingIcon = {
-                                Icon(Icons.Default.Input, null)
+                                Icon(Icons.AutoMirrored.Filled.Input, null)
                             }
                         )
                         DropdownMenuItem(
@@ -204,12 +207,12 @@ fun PluginManagerScreen(onFinishActivity: () -> Unit) {
             itemsIndexed(list, key = { _, item -> item.id }) { _, item ->
                 val desc = remember { "${item.author} - v${item.version}" }
                 ShadowReorderableItem(reorderableState = reorderState, key = item.id) {
+                    Modifier
+                        .fillMaxWidth()
+                        .padding(vertical = 4.dp, horizontal = 8.dp)
+                        .detectReorderAfterLongPress(reorderState)
                     Item(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(vertical = 4.dp, horizontal = 8.dp)
-                            .detectReorderAfterLongPress(reorderState)
-                            .animateItemPlacement(),
+                        modifier = Modifier.animateItemPlacement(),
                         hasDefVars = item.defVars.isNotEmpty(),
                         needSetVars = item.defVars.isNotEmpty() && item.userVars.isEmpty(),
                         name = item.name,
@@ -218,19 +221,10 @@ fun PluginManagerScreen(onFinishActivity: () -> Unit) {
                         onEnabledChange = {
                             dbm.pluginDao.update(item.copy(isEnabled = it))
                         },
-                        onEdit = {
-                            navController.navigateSingleTop(
-                                NavRoutes.PluginEdit.id,
-                                Bundle().apply {
-                                    putParcelable(NavRoutes.PluginEdit.KEY_DATA, item)
-                                }
-                            )
-                        },
+                        onEdit = { onEdit(item) },
                         onSetVars = { showVarsSettings = item },
                         onDelete = { showDeleteDialog = item },
-                        onExport = {
-                            showExportConfig = listOf(item)
-                        }
+                        onExport = { showExportConfig = listOf(item) }
                     )
                 }
             }
@@ -352,13 +346,5 @@ internal fun Item(
                     color = MaterialTheme.colorScheme.primary
                 )
         }
-    }
-}
-
-@Preview
-@Composable
-fun PreviewPluginManager() {
-    MaterialTheme {
-        PluginManagerScreen(onFinishActivity = {})
     }
 }

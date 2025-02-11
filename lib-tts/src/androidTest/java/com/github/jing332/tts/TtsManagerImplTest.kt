@@ -11,11 +11,12 @@ import com.github.jing332.tts.manager.ITextProcessor
 import com.github.jing332.tts.manager.ITtsRepository
 import com.github.jing332.tts.manager.SynthesisCallback
 import com.github.jing332.tts.manager.SystemParams
-import com.github.jing332.tts.manager.TextFragment
+import com.github.jing332.tts.manager.TextSegment
 import com.github.jing332.tts.manager.TtsConfiguration
 import com.github.jing332.database.entities.systts.source.LocalTtsSource
-import com.github.jing332.database.entities.systts.source.MsTtsSource
 import com.github.jing332.tts.manager.StandbyInfo
+import com.github.michaelbull.result.Ok
+import com.github.michaelbull.result.Result
 import kotlinx.coroutines.runBlocking
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -23,79 +24,6 @@ import org.junit.runner.RunWith
 
 @RunWith(AndroidJUnit4::class)
 class TtsManagerImplTest {
-    private class TestTtsManager(context: Context) : TtsManagerImpl(ManagerContext(context)) {
-        override val repo: ITtsRepository
-            get() = object : ITtsRepository {
-                override fun onInit() {
-                }
-
-                override fun onDestroy() {
-                }
-
-                override fun getAllTts(): Map<Long, TtsConfiguration> {
-                    return mapOf(
-//                        1L to TtsConfiguration(
-//                            source = LocalTtsSource(
-//                                engine = "com.google.android.tts",
-//                                isDirectPlayMode = true
-//                            )
-//                        ),
-                        2L to TtsConfiguration(
-                            audioFormat = BaseAudioFormat(sampleRate = 24000),
-                            source = MsTtsSource(api = MsTtsSource.API_EDGE_OKHTTP),
-                            standbyInfo = StandbyInfo(
-                                1,
-                                config = TtsConfiguration(
-                                    source = LocalTtsSource(
-                                        engine = "com.google.android.tts",
-                                        isDirectPlayMode = true
-                                    )
-                                )
-                            )
-                        )
-                    )
-                }
-
-                override fun getAllBgm(): Map<Long, BgmConfiguration> {
-                    return mapOf()
-                }
-
-            }
-
-        override val textProcessor: ITextProcessor
-            get() = object : ITextProcessor {
-                private var configs: Map<Long, TtsConfiguration> = emptyMap()
-                override fun process(
-                    text: String,
-                ): List<TextFragment> {
-                    return listOf(
-//                        TextFragment(
-//                            "微软TTS一次获取",
-//                            tts = TtsConfiguration(source = MsTtsSource())
-//                        ),
-                        TextFragment(
-                            "谷歌本地TTS",
-                            tts = TtsConfiguration(
-                                source = LocalTtsSource(
-                                    engine = "com.google.android.tts",
-                                    isDirectPlayMode = true
-                                )
-                            )
-                        ),
-                        TextFragment(
-                            "微软TTS 音频流",
-                            tts = TtsConfiguration(source = MsTtsSource(api = MsTtsSource.API_EDGE_OKHTTP))
-                        ),
-                    )
-                }
-
-                override fun init(context: Context, configs: Map<Long, TtsConfiguration>) {
-                    this.configs = configs
-                }
-
-            }
-    }
-
     // get context
     fun context(): Context {
         return InstrumentationRegistry.getInstrumentation().targetContext
@@ -111,7 +39,7 @@ class TtsManagerImplTest {
         var audioTrack: AudioTrack? = null
 
 
-        val manager = TestTtsManager(context)
+        val manager = TtsManagerImpl.global
         manager.init()
 
         manager.synthesize(

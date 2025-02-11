@@ -2,8 +2,6 @@ package com.github.jing332.database.entities.systts
 
 import com.github.jing332.database.dbm
 import com.github.jing332.database.entities.systts.source.LocalTtsSource
-import com.github.jing332.database.entities.systts.source.MsTtsSource
-import com.github.jing332.database.entities.systts.source.MsTtsSource.Companion.msTtsToFloat
 import com.github.jing332.database.entities.systts.v1.SystemTts
 import com.github.jing332.database.entities.systts.v1.tts.BgmTTS
 import com.github.jing332.database.entities.systts.v1.tts.LocalTTS
@@ -30,19 +28,6 @@ object SystemTtsMigration {
 //                            pitch = tts.pitch,
                             extraParams = tts.extraParams,
                             isDirectPlayMode = tts.isDirectPlayMode
-                        )
-                    }
-
-                    is MsTTS -> {
-                        val tts = v1.tts as MsTTS
-                        MsTtsSource(
-                            voice = tts.voiceName,
-                            locale = tts.locale,
-                            speed = tts.rate.msTtsToFloat(),
-                            volume = tts.volume.msTtsToFloat(),
-                            pitch = tts.pitch.msTtsToFloat(),
-                            api = tts.api,
-                            format = tts.format,
                         )
                     }
 

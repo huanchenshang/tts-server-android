@@ -1,11 +1,11 @@
 package com.github.jing332.tts.manager.event
 
 import com.github.jing332.tts.manager.SystemParams
-import com.github.jing332.tts.manager.TextFragment
+import com.github.jing332.tts.manager.TextSegment
 import com.github.jing332.tts.manager.TtsConfiguration
 
 sealed interface EventType {
-    open class Error(open val cause: Exception? = null) : EventType
+    open class Error(open val cause: Throwable? = null) : EventType
 
     data class Request(
         val params: SystemParams,
@@ -22,7 +22,7 @@ sealed interface EventType {
     data class RequestError(
         val params: SystemParams,
         val config: TtsConfiguration,
-        override val cause: Exception
+        override val cause: Throwable?
     ) : Error(cause)
 
     data class RequestTimeout(
@@ -32,23 +32,35 @@ sealed interface EventType {
 
     data class TextProcessorError(
         val text: String,
-        override val cause: Exception
+        override val cause: Throwable?
     ) : Error(cause)
 
     data class ResultProcessorError(
         val params: SystemParams,
         val config: TtsConfiguration,
-        override val cause: Exception
+        override val cause: Throwable?
+    ) : Error(cause)
+
+    data class AudioDecodingError(
+        val params: SystemParams,
+        val config: TtsConfiguration,
+        override val cause: Throwable?
+    ) : Error(cause)
+
+    data class AudioStreamError(
+        val params: SystemParams,
+        val config: TtsConfiguration,
+        override val cause: Throwable?
     ) : Error(cause)
 
     data class DirectPlayError(
-        val fragment: TextFragment,
-        override val cause: Exception
+        val fragment: TextSegment,
+        override val cause: Throwable?
     ) : Error(cause)
 
-    data class DirectPlay(val fragment: TextFragment) : EventType
+    data class DirectPlay(val fragment: TextSegment) : EventType
     data class StandbyTts(val params: SystemParams, val tts: TtsConfiguration) : EventType
 
     object ConfigEmptyError : Error()
-    data object TimesEnded : EventType
+    data object RequestTimesEnded : EventType
 }

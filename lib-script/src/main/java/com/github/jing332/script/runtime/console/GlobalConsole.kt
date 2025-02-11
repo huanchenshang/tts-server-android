@@ -7,7 +7,7 @@ import io.github.oshai.kotlinlogging.KotlinLogging
 
 class GlobalConsole : ConsoleImpl() {
     companion object {
-        val logger: KLogger = KotlinLogging.logger { this::class.java.simpleName }
+        val logger: KLogger = KotlinLogging.logger("JS-Console")
         fun get(): GlobalConsole = GlobalConsole().apply {
             addLogListener {
 

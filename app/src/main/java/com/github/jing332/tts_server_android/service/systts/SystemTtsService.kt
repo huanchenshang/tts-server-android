@@ -17,7 +17,6 @@ import android.speech.tts.SynthesisRequest
 import android.speech.tts.TextToSpeech
 import android.speech.tts.TextToSpeechService
 import android.speech.tts.Voice
-import android.util.Log
 import androidx.core.content.ContextCompat
 import com.github.jing332.common.LogLevel
 import com.github.jing332.common.utils.longToast
@@ -41,10 +40,10 @@ import com.github.jing332.tts_server_android.constant.AppLog
 import com.github.jing332.tts_server_android.constant.KeyConst
 import com.github.jing332.tts_server_android.constant.SystemNotificationConst
 import com.github.michaelbull.result.onFailure
+import io.github.oshai.kotlinlogging.KotlinLogging
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
-import kotlinx.coroutines.job
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import java.util.Locale
@@ -54,7 +53,7 @@ import kotlin.system.exitProcess
 @Suppress("DEPRECATION")
 class SystemTtsService : TextToSpeechService(), IEventListener {
     companion object {
-        const val TAG = "SysTtsService"
+        private val logger = KotlinLogging.logger("SystemTtsService")
         const val ACTION_ON_LOG = "SYS_TTS_ON_LOG"
         const val ACTION_UPDATE_CONFIG = "on_config_changed"
         const val ACTION_UPDATE_REPLACER = "on_replacer_changed"
@@ -218,7 +217,7 @@ class SystemTtsService : TextToSpeechService(), IEventListener {
     }
 
     override fun onStop() {
-        Log.d(TAG, "onStop")
+        logger.info { "onStop" }
         synthesizerJob?.cancel()
         updateNotification(getString(R.string.systts_state_idle), "")
     }
@@ -282,11 +281,10 @@ class SystemTtsService : TextToSpeechService(), IEventListener {
                 }
 
 
-            }.job
-            synthesizerJob!!.join()
+            }.apply { join() }
         }
         callback.done()
-        Log.i(TAG, "done...................")
+        logger.info { "callback.done()" }
 
         mNotificationJob = mScope.launch {
             delay(5000)
@@ -444,7 +442,7 @@ class SystemTtsService : TextToSpeechService(), IEventListener {
     private fun logE(msg: String) = sendLog(LogLevel.ERROR, msg)
 
     private fun sendLog(@LogLevel level: Int, msg: String) {
-        Log.d(TAG, "$level, $msg")
+        logger.info { "$level: $msg" }
         val intent =
             Intent(ACTION_ON_LOG).putExtra(KeyConst.KEY_DATA, AppLog(level, msg))
         AppConst.localBroadcast.sendBroadcast(intent)
@@ -452,7 +450,10 @@ class SystemTtsService : TextToSpeechService(), IEventListener {
 
     override fun onEvent(event: EventType) {
         when (event) {
-            is EventType.Error -> logE(event.cause.toString())
+            is EventType.Error -> {
+                logger.error(event.cause) { "EventType.Error" }
+                logE(event.cause.toString())
+            }
             is EventType.Request -> logI(
                 getString(
                     R.string.systts_log_request_audio,
@@ -471,7 +472,7 @@ class SystemTtsService : TextToSpeechService(), IEventListener {
                 getString(
                     R.string.systts_log_success,
                     getString(R.string.unknown),
-                     "${event.timeCost}ms"
+                    "${event.timeCost}ms"
                 )
             )
 
@@ -481,12 +482,14 @@ class SystemTtsService : TextToSpeechService(), IEventListener {
                     SysTtsConfig.requestTimeout
                 )
             )
+
             is EventType.StandbyTts -> logI(
                 getString(
                     R.string.systts_set_standby
                 ) + event.tts
             )
-            EventType.TimesEnded -> logW("到达重试上限，跳过！")
+
+            EventType.RequestTimesEnded -> logW("到达重试上限，跳过！")
         }
     }
 

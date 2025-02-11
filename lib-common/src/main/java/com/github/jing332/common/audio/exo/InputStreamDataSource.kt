@@ -3,6 +3,7 @@ package com.github.jing332.common.audio.exo
 import android.annotation.SuppressLint
 import android.net.Uri
 import androidx.media3.common.C
+import androidx.media3.common.PlaybackException
 import androidx.media3.datasource.BaseDataSource
 import androidx.media3.datasource.DataSpec
 import okio.buffer
@@ -26,7 +27,11 @@ class InputStreamDataSource(
     override fun open(dataSpec: DataSpec): Long {
         this.dataSpec = dataSpec
         transferInitializing(dataSpec)
-        bufferedSource.skip(dataSpec.position)
+        if (bufferedSource.isOpen)
+            bufferedSource.skip(dataSpec.position)
+        else
+            return 0
+
         bytesRemaining = dataSpec.length
 
         opened = true
@@ -47,7 +52,15 @@ class InputStreamDataSource(
             if (bytesRemaining == C.LENGTH_UNSET.toLong()) readLength
             else min(bytesRemaining, readLength.toLong()).toInt()
 
-        val bytesRead = bufferedSource.read(buffer, offset, bytesToRead)
+        val bytesRead = try {
+            bufferedSource.read(buffer, offset, bytesToRead)
+        } catch (e: Exception) {
+            throw InputStreamDataSourceException(
+                reason = PlaybackException.ERROR_CODE_IO_UNSPECIFIED,
+                message = e.message,
+                cause = e
+            )
+        }
         if (bytesRead == -1) {
             if (bytesRemaining != C.LENGTH_UNSET.toLong()) {
                 // End of stream reached having not read sufficient data.

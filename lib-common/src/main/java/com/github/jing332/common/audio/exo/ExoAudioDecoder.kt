@@ -4,7 +4,6 @@ import android.annotation.SuppressLint
 import android.content.Context
 import androidx.media3.common.PlaybackException
 import androidx.media3.common.Player
-import androidx.media3.common.util.UnstableApi
 import androidx.media3.exoplayer.DefaultRenderersFactory
 import androidx.media3.exoplayer.ExoPlayer
 import androidx.media3.exoplayer.audio.AudioSink
@@ -12,18 +11,24 @@ import androidx.media3.exoplayer.source.MediaSource
 import com.drake.net.utils.withMain
 import com.github.jing332.common.audio.AudioDecoderException
 import com.github.jing332.common.audio.ExoPlayerHelper
-import kotlinx.coroutines.*
+import com.github.jing332.common.utils.rootCause
+import kotlinx.coroutines.cancel
+import kotlinx.coroutines.suspendCancellableCoroutine
+import java.io.Closeable
 import java.io.InputStream
 import java.nio.ByteBuffer
+import kotlin.coroutines.Continuation
+import kotlin.coroutines.resume
+import kotlin.coroutines.resumeWithException
 
 @SuppressLint("UnsafeOptInUsageError")
-class ExoAudioDecoder(val context: Context) {
+class ExoAudioDecoder(val context: Context) : Closeable {
     companion object {
         private const val CANCEL_MESSAGE_ENDED = "CANCEL_MESSAGE_ENDED"
         private const val CANCEL_MESSAGE_ERROR = "CANCEL_MESSAGE_ERROR"
     }
 
-    private var mWaitJob: Job? = null
+    private var mContinuation: Continuation<Unit>? = null
     var callback: Callback? = null
 
     private val exoPlayer by lazy {
@@ -50,7 +55,7 @@ class ExoAudioDecoder(val context: Context) {
                 override fun onPlaybackStateChanged(playbackState: Int) {
                     when (playbackState) {
                         ExoPlayer.STATE_ENDED -> {
-                            mWaitJob?.cancel(CANCEL_MESSAGE_ENDED)
+                            mContinuation?.resume(Unit)
                         }
                     }
 
@@ -59,7 +64,7 @@ class ExoAudioDecoder(val context: Context) {
 
                 override fun onPlayerError(error: PlaybackException) {
                     super.onPlayerError(error)
-                    mWaitJob?.cancel(CANCEL_MESSAGE_ERROR, error)
+                    mContinuation?.resumeWithException(error)
                 }
             })
 
@@ -67,40 +72,31 @@ class ExoAudioDecoder(val context: Context) {
         }
     }
 
+    @Throws(AudioDecoderException::class)
     suspend fun doDecode(bytes: ByteArray) {
         decodeInternal(ExoPlayerHelper.createMediaSourceFromByteArray(bytes))
     }
 
+    @Throws(AudioDecoderException::class)
     suspend fun doDecode(inputStream: InputStream) {
         decodeInternal(ExoPlayerHelper.createMediaSourceFromInputStream(inputStream))
     }
 
-    private suspend fun decodeInternal(mediaSource: MediaSource) {
-        withMain {
-            exoPlayer.setMediaSource(mediaSource)
-            exoPlayer.prepare()
-        }
+    private suspend fun decodeInternal(mediaSource: MediaSource) = withMain {
+        exoPlayer.setMediaSource(mediaSource)
+        exoPlayer.prepare()
 
-        var throwable: Throwable? = null
-        coroutineScope {
-            mWaitJob = launch {
-                try {
-                    awaitCancellation()
-                } catch (e: CancellationException) {
-                    if (e.message == CANCEL_MESSAGE_ERROR) {
-                        throwable = e.cause
-                        exoPlayer.stop()
-                    }
+        try {
+            suspendCancellableCoroutine<Unit> { continuation ->
+                mContinuation = continuation //直接把continuation存起来，方便后续的resumeWithException 和 resume
+                continuation.invokeOnCancellation {
+                    exoPlayer.stop()
                 }
             }
-        }
-        mWaitJob?.join()
-        mWaitJob = null
-
-        throwable?.let {
+        } catch (e: Throwable) { //直接捕获Throwable
             throw AudioDecoderException(
-                message = "ExoDecoder failed：${it.message}",
-                cause = it
+                message = "${e.rootCause?.localizedMessage}",
+                cause = e
             )
         }
     }
@@ -108,6 +104,13 @@ class ExoAudioDecoder(val context: Context) {
 
     fun interface Callback {
         fun onReadPcmAudio(byteBuffer: ByteBuffer)
+    }
+
+    override fun close() {
+        exoPlayer.release()
+        mContinuation?.context?.cancel()
+        mContinuation = null
+        callback = null
     }
 
 }

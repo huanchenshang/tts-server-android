@@ -6,7 +6,6 @@ import com.github.jing332.database.entities.systts.EmptyConfiguration
 import com.github.jing332.database.entities.systts.SystemTtsV2
 import com.github.jing332.database.entities.systts.TtsConfigurationDTO
 import com.github.jing332.database.entities.systts.source.LocalTtsSource
-import com.github.jing332.database.entities.systts.source.MsTtsSource
 import com.github.jing332.database.entities.systts.source.PluginTtsSource
 
 object ItemDescriptorFactory {

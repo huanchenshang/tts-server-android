@@ -5,11 +5,12 @@ import org.mozilla.javascript.Context
 import org.mozilla.javascript.Function
 import org.mozilla.javascript.Scriptable
 import org.mozilla.javascript.Undefined
+import org.mozilla.javascript.annotations.JSGetter
 import kotlin.time.measureTimedValue
 
 fun <R> withRhinoContext(block: (Context) -> R): R {
     val cx = RhinoContextFactory.enterContext()
-    try {
+    try {@JSGetter
         return block(cx)
     } finally {
         Context.exit()

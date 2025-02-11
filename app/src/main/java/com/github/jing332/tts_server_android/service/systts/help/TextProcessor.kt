@@ -13,7 +13,7 @@ import com.github.jing332.tts.SpeechRuleNotFound
 import com.github.jing332.tts.TextProcessorError
 import com.github.jing332.tts.TtsError
 import com.github.jing332.tts.manager.ITextProcessor
-import com.github.jing332.tts.manager.TextFragment
+import com.github.jing332.tts.manager.TextSegment
 import com.github.jing332.tts.manager.TtsConfiguration
 import com.github.jing332.tts_server_android.conf.SystemTtsConfig
 import com.github.jing332.tts_server_android.model.rhino.speech_rule.SpeechRuleEngine
@@ -94,21 +94,21 @@ class TextProcessor : ITextProcessor {
     override fun process(
         text: String,
         forceConfigId: Long?
-    ): com.github.michaelbull.result.Result<List<TextFragment>, TextProcessorError> {
-        val resultList = mutableListOf<TextFragment>()
+    ): com.github.michaelbull.result.Result<List<TextSegment>, TextProcessorError> {
+        val resultList = mutableListOf<TextSegment>()
         val replacedText = textReplacer.replace(text, ReplaceExecution.BEFORE)
 
-        fun add(vararg fragments: TextFragment) {
+        fun add(vararg fragments: TextSegment) {
             fragments.forEach { f ->
                 resultList.add(
-                    TextFragment(text = textReplacer.replace(f.text, ReplaceExecution.AFTER), f.tts)
+                    TextSegment(text = textReplacer.replace(f.text, ReplaceExecution.AFTER), f.tts)
                 )
             }
         }
 
         fun splitAndAdd(text: String, config: TtsConfiguration) {
             splitText(text).forEach {
-                add(TextFragment(text = it, tts = config))
+                add(TextSegment(text = it, tts = config))
             }
         }
 

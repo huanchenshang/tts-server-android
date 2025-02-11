@@ -1,5 +1,6 @@
-package com.github.jing332.script.rhino
+package com.github.jing332.script.runtime
 
+import io.github.oshai.kotlinlogging.KotlinLogging
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import okhttp3.Response
@@ -13,18 +14,25 @@ import org.mozilla.javascript.IdScriptableObject
 import org.mozilla.javascript.ScriptRuntime
 import org.mozilla.javascript.Scriptable
 import org.mozilla.javascript.ScriptableObject
+import org.mozilla.javascript.Undefined
 import org.mozilla.javascript.annotations.JSConstructor
-import org.mozilla.javascript.annotations.JSGetter
 import java.util.concurrent.TimeUnit
 
-class NativeWebSocket(val url: String = "") : IdScriptableObject() {
+// https://developer.mozilla.org/zh-CN/docs/Web/API/WebSocket
+class NativeWebSocket constructor(
+    val url: String = "",
+    val headers: Map<CharSequence, CharSequence> = emptyMap()
+) : IdScriptableObject() {
     constructor() : this("")
 
     companion object {
+        val logger = KotlinLogging.logger("NativeWebSocket")
+
         const val Id_constructor = 1
         const val Id_send = 2
         const val Id_close = 3
-        const val MAX_PROTOTYPE_ID = Id_close
+        const val Id_cancel = 4
+        const val MAX_PROTOTYPE_ID = Id_cancel
 
         const val WEBSOCKET_TAG = "Websocket"
 
@@ -81,6 +89,11 @@ class NativeWebSocket(val url: String = "") : IdScriptableObject() {
                 arity = 2
                 s = "close"
             }
+
+            Id_cancel -> {
+                arity = 0
+                s = "cancel"
+            }
         }
         initPrototypeMethod(WEBSOCKET_TAG, id, s, arity)
     }
@@ -91,6 +104,7 @@ class NativeWebSocket(val url: String = "") : IdScriptableObject() {
             "constructor" -> Id_constructor
             "send" -> Id_send
             "close" -> Id_close
+            "cancel" -> Id_cancel
             else -> 0
         }
     }
@@ -102,30 +116,32 @@ class NativeWebSocket(val url: String = "") : IdScriptableObject() {
     }
 
     override fun execIdCall(
-        f: IdFunctionObject?,
+        f: IdFunctionObject,
         cx: Context?,
         scope: Scriptable?,
         thisObj: Scriptable?,
         args: Array<out Any>?
     ): Any {
-        if (!f!!.hasTag(WEBSOCKET_TAG)) {
+        if (!f.hasTag(WEBSOCKET_TAG)) {
             return super.execIdCall(f, cx, scope, thisObj, args)
         }
         when (f.methodId()) {
             Id_constructor -> {
-                println("Id_constructor")
-
                 return js_constructor(args)
             }
 
             Id_send -> {
                 when (val arg0 = args!![0]) {
                     is CharSequence -> {
-                        return ws?.send(arg0.toString()) ?: false
+                        val text = arg0.toString()
+                        logger.trace { "send text message: $text" }
+                        return ws?.send(text) ?: false
                     }
 
                     is ByteArray -> {
-                        return ws?.send(arg0.toByteString()) ?: false
+                        val bytes = arg0.toByteString()
+                        logger.trace { "send binary message: ${bytes.size} bytes" }
+                        return ws?.send(bytes) ?: false
                     }
                 }
             }
@@ -133,33 +149,42 @@ class NativeWebSocket(val url: String = "") : IdScriptableObject() {
             Id_close -> {
                 val code = ScriptRuntime.toInt32(args!![0])
                 val reason = ScriptRuntime.toString(args[1])
-
+                logger.trace { "closing: $code, $reason" }
                 return ws?.close(code, reason) ?: false
             }
 
+            Id_cancel -> {
+                ws?.cancel()
+                return Undefined.instance
+            }
         }
 
         return super.execIdCall(f, cx, scope, thisObj, args)
     }
 
+    @Suppress("UNCHECKED_CAST")
     @JSConstructor
     private fun js_constructor(
         args: Array<out Any>?
     ): Any {
         val url = args!![0].toString()
+        val headers = args[1] as? Map<CharSequence, CharSequence> ?: emptyMap()
         val obj = NativeWebSocket(url)
         obj.defineProperty(
             "readyState",
-            this@NativeWebSocket,
-            this@NativeWebSocket::class.java.getMethod(
-                "js_getReadyState", ScriptableObject::class.java
-            ),
+            ::readyState,
             null,
             ScriptableObject.READONLY
         )
         event.init(obj)
 
-        val req = Request.Builder().url(url).build()
+        val req = Request.Builder().url(url).apply {
+            for (header in headers) {
+                addHeader(header.key.toString(), header.value.toString())
+            }
+        }.build()
+
+        logger.trace { "connecting to $url" }
         ws = client.newWebSocket(req, object : WebSocketListener() {
             override fun onOpen(webSocket: WebSocket, response: Response) {
                 readyState = WS_OPEN
@@ -172,33 +197,27 @@ class NativeWebSocket(val url: String = "") : IdScriptableObject() {
             }
 
             override fun onMessage(webSocket: WebSocket, bytes: ByteString) {
-                val b = bytes.toByteArray()
-                event.emit("message", b)
-                event.emit("binary", b)
+                event.emit("message", bytes)
+                event.emit("binary", bytes)
             }
 
             override fun onClosing(webSocket: WebSocket, code: Int, reason: String) {
                 readyState = WS_CLOSING
-                event.emit("closing", code, reason)
+                ws?.close(code, reason) // call onClosed
+//                event.emit("closing", code, reason)
             }
 
             override fun onClosed(webSocket: WebSocket, code: Int, reason: String) {
                 readyState = WS_CLOSED
-                event.emit("closed", code, reason)
+                event.emit("close", code, reason)
             }
 
             override fun onFailure(webSocket: WebSocket, t: Throwable, response: Response?) {
                 readyState = WS_CLOSED
-                event.emit("failure", t.message ?: "", response ?: Unit)
+                event.emit("error", t.message ?: "", response)
             }
         })
 
         return obj
     }
-
-    @JSGetter
-    fun js_getReadyState(obj: ScriptableObject): Any {
-        return readyState
-    }
-
 }

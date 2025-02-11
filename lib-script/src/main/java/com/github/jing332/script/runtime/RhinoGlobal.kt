@@ -1,12 +1,10 @@
 package com.github.jing332.script.runtime
 
 import com.github.jing332.script.rhino.ModuleSourceProvider
-import com.github.jing332.script.rhino.NativeWebSocket
 import org.mozilla.javascript.BaseFunction
 import org.mozilla.javascript.Context
 import org.mozilla.javascript.ImporterTopLevel
 import org.mozilla.javascript.LazilyLoadedCtor
-import org.mozilla.javascript.NativeJavaPackage
 import org.mozilla.javascript.Scriptable
 import org.mozilla.javascript.ScriptableObject
 import org.mozilla.javascript.Undefined

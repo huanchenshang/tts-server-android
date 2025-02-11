@@ -2,28 +2,37 @@ package com.github.jing332.tts_server_android
 
 import android.content.Context
 import android.os.Build
+import ch.qos.logback.classic.Logger
+import ch.qos.logback.classic.LoggerContext
+import ch.qos.logback.classic.util.LogbackMDCAdapter
+import ch.qos.logback.core.spi.LogbackLock
 import com.github.jing332.common.utils.ClipboardUtils
 import com.github.jing332.common.utils.longToast
 import com.github.jing332.common.utils.runOnUI
 import com.github.jing332.tts_server_android.constant.AppConst
 import io.github.oshai.kotlinlogging.KotlinLogging
+import org.slf4j.LoggerFactory
 import java.time.LocalDateTime
 import java.util.logging.LogManager
 import kotlin.math.log
 import kotlin.system.exitProcess
 
 
-class CrashHandler(var context: Context) : Thread.UncaughtExceptionHandler {
+class CrashHandler(val context: Context) : Thread.UncaughtExceptionHandler {
+    companion object{
+        const val TAG = "CrashHandler"
+    }
     private var mDefaultHandler = Thread.getDefaultUncaughtExceptionHandler()
-    private val logger = KotlinLogging.logger { this::class.java.name }
+    private val logger = KotlinLogging.logger(TAG)
 
     init {
         Thread.setDefaultUncaughtExceptionHandler(this)
-        logger.debug { "setDefaultUncaughtExceptionHandler" }
     }
 
     override fun uncaughtException(t: Thread, e: Throwable) {
         handleException(e)
+        val ctx = LoggerFactory.getILoggerFactory() as LoggerContext
+        ctx.stop()
         mDefaultHandler?.uncaughtException(t, e)
     }
 
@@ -34,10 +43,12 @@ class CrashHandler(var context: Context) : Thread.UncaughtExceptionHandler {
         val device = Build.DEVICE
         val androidVersion = Build.VERSION.RELEASE
         val modelName = Build.MODEL
-        logger.trace(e) {
+
+        logger.error (e) {
             "$brand / $device / $modelName / $androidVersion" +
                     "\n$versionName ($versionCode)"
         }
+        if (BuildConfig.DEBUG) return
 
         context.longToast("TTS Server已崩溃 上传日志中 稍后将会复制到剪贴板")
         val log = "\n${LocalDateTime.now()}" +

@@ -3,11 +3,13 @@ package com.github.jing332.tts_server_android.compose.codeeditor
 import android.app.Application
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import com.github.jing332.common.LogEntry
 import com.github.jing332.script.JsBeautify
 import com.github.jing332.server.script.ScriptRemoteServer
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asSharedFlow
+import kotlinx.coroutines.launch
 import java.net.BindException
 import java.net.SocketException
 
