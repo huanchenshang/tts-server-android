@@ -18,7 +18,6 @@ import androidx.compose.material.icons.filled.AppShortcut
 import androidx.compose.material.icons.filled.DeleteForever
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.EditNote
-import androidx.compose.material.icons.filled.Input
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.filled.Output
 import androidx.compose.material3.Checkbox
@@ -50,6 +49,7 @@ import androidx.compose.ui.semantics.stateDescription
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.github.jing332.compose.rememberLazyListReorderCache
 import com.github.jing332.database.dbm
 import com.github.jing332.database.entities.plugin.Plugin
 import com.github.jing332.tts_server_android.R
@@ -187,11 +187,12 @@ fun PluginManagerScreen(sharedVM: SharedViewModel, onFinishActivity: () -> Unit)
         val flowAll = remember { dbm.pluginDao.flowAll().conflate() }
         val list by flowAll.collectAsStateWithLifecycle(emptyList())
 
-        val reorderState = rememberReorderableLazyListState(onMove = { from, to ->
-            val mutList = list.toMutableList()
-            Collections.swap(mutList, from.index, to.index)
+        val cache = rememberLazyListReorderCache(list)
 
-            mutList.forEachIndexed { index, plugin ->
+        val reorderState = rememberReorderableLazyListState(onMove = { from, to ->
+            cache.move(from.index, to.index)
+        }, onDragEnd = { from, to ->
+            cache.list.forEachIndexed { index, plugin ->
                 if (index != plugin.order)
                     dbm.pluginDao.update(plugin.copy(order = index))
             }
@@ -204,7 +205,7 @@ fun PluginManagerScreen(sharedVM: SharedViewModel, onFinishActivity: () -> Unit)
                 .padding(paddingValues)
                 .reorderable(reorderState)
         ) {
-            itemsIndexed(list, key = { _, item -> item.id }) { _, item ->
+            itemsIndexed(cache.list, key = { _, item -> item.id }) { _, item ->
                 val desc = remember { "${item.author} - v${item.version}" }
                 ShadowReorderableItem(reorderableState = reorderState, key = item.id) {
                     Modifier
@@ -212,7 +213,9 @@ fun PluginManagerScreen(sharedVM: SharedViewModel, onFinishActivity: () -> Unit)
                         .padding(vertical = 4.dp, horizontal = 8.dp)
                         .detectReorderAfterLongPress(reorderState)
                     Item(
-                        modifier = Modifier.animateItemPlacement(),
+                        modifier = Modifier
+                            .padding(horizontal = 8.dp, vertical = 4.dp)
+                            .detectReorderAfterLongPress(reorderState),
                         hasDefVars = item.defVars.isNotEmpty(),
                         needSetVars = item.defVars.isNotEmpty() && item.userVars.isEmpty(),
                         name = item.name,
