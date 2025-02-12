@@ -55,11 +55,13 @@ open class TtsPluginEngineV2(val context: Context, val plugin: Plugin) {
 
     protected var engine: RhinoScriptEngine = RhinoScriptEngine(runtime)
 
-    open fun execute(script: String): Any? = engine.execute(script.toScriptSource())
+    open fun execute(script: String): Any? =
+        engine.execute(script.toScriptSource(sourceName = plugin.pluginId))
 
     init {
         eval()
     }
+
     @Suppress("UNCHECKED_CAST")
     private fun eval() {
         execute(plugin.code)
@@ -140,9 +142,9 @@ open class TtsPluginEngineV2(val context: Context, val plugin: Plugin) {
         volume: Float = 1f,
         pitch: Float = 1f
     ): InputStream {
-        val r =   (rate * 50f).toInt()
-        val v =  (volume * 50f).toInt()
-        val p =   (pitch * 50f).toInt()
+        val r = (rate * 50f).toInt()
+        val v = (volume * 50f).toInt()
+        val p = (pitch * 50f).toInt()
         val result = try {
             runInterruptible {
                 engine.invokeMethod(

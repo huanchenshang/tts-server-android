@@ -1,7 +1,7 @@
 package com.github.jing332.tts.manager
 
 import com.github.jing332.tts.AudioDecodingError
-import com.github.jing332.tts.AudioStreamError
+import com.github.jing332.tts.AudioSourceError
 import com.github.jing332.tts.ConfigEmptyError
 import com.github.jing332.tts.GetBgm
 import com.github.jing332.tts.InitializationError
@@ -24,6 +24,8 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withTimeoutOrNull
+import java.io.ByteArrayInputStream
+import java.io.InputStream
 
 abstract class AbstractTtsManager() : ITtsManager {
     private val logger: KLogger
@@ -58,9 +60,13 @@ abstract class AbstractTtsManager() : ITtsManager {
             block()
             return false
         } catch (e: Throwable) {
-            eventListener?.onEvent(EventType.Error(Exception(message())))
+            onEvent(EventType.Error(Exception(message())))
         }
         return true
+    }
+
+    private fun onEvent(event: EventType) {
+        eventListener?.onEvent(event)
     }
 
     private suspend fun textProcess(
@@ -88,7 +94,7 @@ abstract class AbstractTtsManager() : ITtsManager {
     ) {
         suspend fun retry() {
             return if (config.standbyInfo?.config != null && config.standbyInfo.tryTimesWhenTrigger > retries) {
-                eventListener?.onEvent(EventType.StandbyTts(params, config))
+                onEvent(EventType.StandbyTts(params, config))
                 requestAndProcess(
                     channel,
                     params,
@@ -101,43 +107,56 @@ abstract class AbstractTtsManager() : ITtsManager {
         }
 
         if (retries > maxRetries) {
-            eventListener?.onEvent(EventType.RequestTimesEnded)
+            onEvent(EventType.RequestCountEnded)
             return
         }
+
+        onEvent(EventType.Request(params, config, retries))
 
         val time = System.currentTimeMillis()
         val result = withTimeoutOrNull(context.cfg.requestTimeout) {
             ttsRequester.request(params, config)
         }
         if (result == null) { // timed out
-            eventListener?.onEvent(EventType.RequestTimeout(params, config))
+            onEvent(EventType.RequestTimeout(params, config))
             return retry()
         }
 
         result.onSuccess { ret ->
-            eventListener?.onEvent(
-                EventType.RequestSuccess(
-                    timeCost = System.currentTimeMillis() - time,
-                    params = params,
-                    config = config
+            ret.onStream { stream ->
+                var size: Int = 0
+                val niceStream: InputStream =
+                    if (context.cfg.streamPlayEnabled) stream
+                    else stream.use {
+                        val bytes = it.readBytes()
+                        size = bytes.size
+                        ByteArrayInputStream(bytes)
+                    }
+
+                onEvent(
+                    EventType.RequestSuccess(
+                        timeCost = System.currentTimeMillis() - time,
+                        size = size,
+                        params = params,
+                        config = config
+                    )
                 )
-            )
-            ret.onStream {
+
                 resultProcessor.processStream(
-                    ins = it,
+                    ins = niceStream,
                     tts = config,
                     targetSampleRate = maxSampleRate,
                     callback = { pcmAudio -> channel.send(pcmAudio) }
                 ).onFailure { e ->
                     when (e) {
                         is AudioDecodingError -> {
-                            eventListener?.onEvent(
+                            onEvent(
                                 EventType.AudioDecodingError(params, config, e.cause)
                             )
                         }
 
-                        is AudioStreamError -> eventListener?.onEvent(
-                            EventType.AudioStreamError(params, config, e.cause)
+                        is AudioSourceError -> onEvent(
+                            EventType.AudioSourceError(params, config, e.cause)
                         )
                     }
 
@@ -153,11 +172,11 @@ abstract class AbstractTtsManager() : ITtsManager {
         }.onFailure {
             when (it) {
                 is RequestError -> {
-                    eventListener?.onEvent(EventType.RequestError(params, config, it.cause))
+                    onEvent(EventType.RequestError(params, config, it.cause))
                 }
 
                 is InitializationError -> {
-                    eventListener?.onEvent(
+                    onEvent(
                         EventType.RequestError(
                             params,
                             config,
@@ -194,10 +213,10 @@ abstract class AbstractTtsManager() : ITtsManager {
                 }
 
                 is DirectPlayCallbackWithConfig -> try {
-                    eventListener?.onEvent(EventType.DirectPlay(data.fragment))
+                    onEvent(EventType.DirectPlay(data.fragment))
                     data.callback.play()
                 } catch (e: Exception) {
-                    eventListener?.onEvent(EventType.DirectPlayError(data.fragment, e))
+                    onEvent(EventType.DirectPlayError(data.fragment, e))
                 }
 
                 is TtsError -> {

@@ -5,10 +5,11 @@ import androidx.media3.common.C
 import androidx.media3.common.audio.AudioProcessingPipeline
 import androidx.media3.common.audio.AudioProcessor
 import androidx.media3.common.util.UnstableApi
+import androidx.media3.exoplayer.ExoPlaybackException
 import androidx.media3.exoplayer.audio.SilenceSkippingAudioProcessor
 import com.github.jing332.common.audio.AudioDecoder.Companion.readPcmChunk
-import com.github.jing332.common.audio.AudioDecoderException
 import com.github.jing332.common.audio.exo.ExoAudioDecoder
+import com.github.jing332.common.utils.rootCause
 import com.github.jing332.tts.manager.IPcmAudioCallback
 import com.github.jing332.tts.manager.IResultProcessor
 import com.github.jing332.tts.manager.TtsConfiguration
@@ -19,12 +20,14 @@ import com.google.common.collect.ImmutableList
 import kotlinx.coroutines.runBlocking
 import java.io.InputStream
 import java.nio.ByteBuffer
+import kotlin.jvm.Throws
 
 internal class ResultProcessor(
     private val context: ManagerContext,
 ) : IResultProcessor {
     private val mDecoder by lazy { ExoAudioDecoder(context.androidContext) }
 
+    @Throws(ExoPlaybackException::class)
     private suspend fun internalProcessStream(
         ins: InputStream,
         tts: TtsConfiguration,
@@ -133,12 +136,15 @@ internal class ResultProcessor(
 
             try {
                 internalProcessStream(ins = ins, tts = tts, callback = { pcm -> handle(pcm = pcm) })
-            } catch (e: AudioDecoderException) {
-                return Err(AudioDecodingError(e))
+            } catch (e: ExoPlaybackException) {
+                return if (e.type == ExoPlaybackException.TYPE_SOURCE)
+                    Err(AudioSourceError(e.rootCause))
+                else
+                    Err(AudioDecodingError(e))
             }
 
         } catch (e: Throwable) {
-            return Err(AudioStreamError(e))
+            return Err(AudioSourceError(e))
         }
 
         return Ok(Unit)

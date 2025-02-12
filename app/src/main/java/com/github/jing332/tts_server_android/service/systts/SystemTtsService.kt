@@ -18,6 +18,7 @@ import android.speech.tts.TextToSpeech
 import android.speech.tts.TextToSpeechService
 import android.speech.tts.Voice
 import androidx.core.content.ContextCompat
+import com.github.jing332.common.LogEntry
 import com.github.jing332.common.LogLevel
 import com.github.jing332.common.utils.longToast
 import com.github.jing332.common.utils.registerGlobalReceiver
@@ -36,7 +37,6 @@ import com.github.jing332.tts_server_android.R
 import com.github.jing332.tts_server_android.compose.MainActivity
 import com.github.jing332.tts_server_android.conf.SysTtsConfig
 import com.github.jing332.tts_server_android.constant.AppConst
-import com.github.jing332.tts_server_android.constant.AppLog
 import com.github.jing332.tts_server_android.constant.KeyConst
 import com.github.jing332.tts_server_android.constant.SystemNotificationConst
 import com.github.michaelbull.result.onFailure
@@ -444,22 +444,20 @@ class SystemTtsService : TextToSpeechService(), IEventListener {
     private fun sendLog(@LogLevel level: Int, msg: String) {
         logger.info { "$level: $msg" }
         val intent =
-            Intent(ACTION_ON_LOG).putExtra(KeyConst.KEY_DATA, AppLog(level, msg))
+            Intent(ACTION_ON_LOG).putExtra(KeyConst.KEY_DATA, LogEntry(level, msg))
         AppConst.localBroadcast.sendBroadcast(intent)
     }
 
     override fun onEvent(event: EventType) {
         when (event) {
-            is EventType.Error -> {
-                logger.error(event.cause) { "EventType.Error" }
-                logE(event.cause.toString())
-            }
-            is EventType.Request -> logI(
-                getString(
-                    R.string.systts_log_request_audio,
-                    event.params.text.toHtmlBold()
-                )
-            )
+            is EventType.Request ->
+                if (event.retries > 0)
+                    logW(getString(R.string.systts_log_start_retry, event.retries))
+                else
+                    logI(
+                        getString(R.string.systts_log_request_audio, event.params.text.toHtmlBold())
+                    )
+
 
             is EventType.DirectPlay -> logI(
                 getString(
@@ -489,7 +487,16 @@ class SystemTtsService : TextToSpeechService(), IEventListener {
                 ) + event.tts
             )
 
-            EventType.RequestTimesEnded -> logW("到达重试上限，跳过！")
+            EventType.RequestCountEnded -> logW("到达重试上限，跳过！")
+
+            is EventType.AudioSourceError -> logE("音频源错误: ${event.cause}")
+
+            is EventType.AudioDecodingError -> logE("音频解码错误: ${event.cause}")
+
+            is EventType.Error -> {
+                logger.error(event.cause) { "EventType.Error" }
+                logE(event.cause.toString())
+            }
         }
     }
 

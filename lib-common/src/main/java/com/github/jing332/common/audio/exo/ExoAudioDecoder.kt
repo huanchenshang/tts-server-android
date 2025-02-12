@@ -5,6 +5,7 @@ import android.content.Context
 import androidx.media3.common.PlaybackException
 import androidx.media3.common.Player
 import androidx.media3.exoplayer.DefaultRenderersFactory
+import androidx.media3.exoplayer.ExoPlaybackException
 import androidx.media3.exoplayer.ExoPlayer
 import androidx.media3.exoplayer.audio.AudioSink
 import androidx.media3.exoplayer.source.MediaSource
@@ -72,12 +73,12 @@ class ExoAudioDecoder(val context: Context) : Closeable {
         }
     }
 
-    @Throws(AudioDecoderException::class)
+    @Throws(ExoPlaybackException::class)
     suspend fun doDecode(bytes: ByteArray) {
         decodeInternal(ExoPlayerHelper.createMediaSourceFromByteArray(bytes))
     }
 
-    @Throws(AudioDecoderException::class)
+    @Throws(ExoPlaybackException::class)
     suspend fun doDecode(inputStream: InputStream) {
         decodeInternal(ExoPlayerHelper.createMediaSourceFromInputStream(inputStream))
     }
@@ -86,18 +87,12 @@ class ExoAudioDecoder(val context: Context) : Closeable {
         exoPlayer.setMediaSource(mediaSource)
         exoPlayer.prepare()
 
-        try {
-            suspendCancellableCoroutine<Unit> { continuation ->
-                mContinuation = continuation //直接把continuation存起来，方便后续的resumeWithException 和 resume
-                continuation.invokeOnCancellation {
-                    exoPlayer.stop()
-                }
+        // throw ExoPlayerException
+        suspendCancellableCoroutine<Unit> { continuation ->
+            mContinuation = continuation //直接把continuation存起来，方便后续的resumeWithException 和 resume
+            continuation.invokeOnCancellation {
+                exoPlayer.stop()
             }
-        } catch (e: Throwable) { //直接捕获Throwable
-            throw AudioDecoderException(
-                message = "${e.rootCause?.localizedMessage}",
-                cause = e
-            )
         }
     }
 

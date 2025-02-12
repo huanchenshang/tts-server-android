@@ -10,11 +10,12 @@ sealed interface EventType {
     data class Request(
         val params: SystemParams,
         val config: TtsConfiguration,
-        val times: Int
+        val retries: Int
     ) : EventType
 
     data class RequestSuccess(
         val timeCost: Long,
+        val size: Int,
         val params: SystemParams,
         val config: TtsConfiguration,
     ) : EventType
@@ -47,7 +48,7 @@ sealed interface EventType {
         override val cause: Throwable?
     ) : Error(cause)
 
-    data class AudioStreamError(
+    data class AudioSourceError(
         val params: SystemParams,
         val config: TtsConfiguration,
         override val cause: Throwable?
@@ -62,5 +63,5 @@ sealed interface EventType {
     data class StandbyTts(val params: SystemParams, val tts: TtsConfiguration) : EventType
 
     object ConfigEmptyError : Error()
-    data object RequestTimesEnded : EventType
+    data object RequestCountEnded : EventType
 }

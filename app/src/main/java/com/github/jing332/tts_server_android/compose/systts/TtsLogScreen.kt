@@ -14,12 +14,12 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.github.jing332.common.LogEntry
 import com.github.jing332.tts_server_android.R
 import com.github.jing332.tts_server_android.compose.nav.NavTopAppBar
 import com.github.jing332.compose.widgets.LocalBroadcastReceiver
 import com.github.jing332.tts_server_android.constant.KeyConst
 import com.github.jing332.tts_server_android.service.systts.SystemTtsService
-import com.github.jing332.tts_server_android.constant.AppLog
 
 @Suppress("DEPRECATION")
 @OptIn(ExperimentalMaterial3Api::class)
@@ -27,8 +27,8 @@ import com.github.jing332.tts_server_android.constant.AppLog
 internal fun TtsLogScreen(vm: TtsLogViewModel = viewModel()) {
     LocalBroadcastReceiver(intentFilter = IntentFilter(SystemTtsService.ACTION_ON_LOG)) {
         if (it?.action == SystemTtsService.ACTION_ON_LOG) {
-            it.getParcelableExtra<AppLog>(KeyConst.KEY_DATA)?.let { log ->
-                println("ACTION_ON_LOG ${log.msg}")
+            it.getParcelableExtra<LogEntry>(KeyConst.KEY_DATA)?.let { log ->
+                println("ACTION_ON_LOG ${log.message}")
                 vm.logs.add(log)
             }
         }

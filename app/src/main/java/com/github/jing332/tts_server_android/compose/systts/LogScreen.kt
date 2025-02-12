@@ -4,6 +4,7 @@ import android.view.HapticFeedbackConstants
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.combinedClickable
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
@@ -12,6 +13,7 @@ import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.text.selection.SelectionContainer
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.KeyboardDoubleArrowDown
 import androidx.compose.material3.Icon
@@ -26,23 +28,25 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.core.text.HtmlCompat
+import com.github.jing332.common.LogEntry
+import com.github.jing332.common.toArgb
 import com.github.jing332.common.utils.ClipboardUtils
 import com.github.jing332.common.utils.toast
 import com.github.jing332.compose.ComposeExtensions.toAnnotatedString
 import com.github.jing332.tts_server_android.R
-import com.github.jing332.tts_server_android.constant.AppLog
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun LogScreen(
     modifier: Modifier,
-    list: List<AppLog>,
+    list: List<LogEntry>,
     lazyListState: LazyListState = rememberLazyListState()
 ) {
     val scope = rememberCoroutineScope()
@@ -69,32 +73,36 @@ fun LogScreen(
                 }
         }
 
+        val darkTheme = isSystemInDarkTheme()
         LazyColumn(Modifier.fillMaxSize(), state = lazyListState) {
-            itemsIndexed(list, key = { index, _ -> index }) { _, item ->
+            itemsIndexed(list, key = { index, _ -> index }) { _, log ->
                 val style = MaterialTheme.typography.bodyMedium
                 val spanned = remember {
-                    HtmlCompat.fromHtml(item.msg, HtmlCompat.FROM_HTML_MODE_COMPACT)
+                    HtmlCompat.fromHtml(log.message, HtmlCompat.FROM_HTML_MODE_COMPACT)
                         .toAnnotatedString()
                 }
 
-                Text(
-                    text = spanned,
-                    style = style,
-                    lineHeight = style.lineHeight * 0.75f,
-                    modifier = Modifier
-                        .combinedClickable(
-                            onClick = {
-                                println("onClick")
-                            },
-                            onLongClick = {
-                                view.isHapticFeedbackEnabled = true
-                                view.performHapticFeedback(HapticFeedbackConstants.LONG_PRESS)
-                                ClipboardUtils.copyText("tts-server-log", spanned.text)
-                                context.toast(R.string.copied)
-                            }
-                        )
-                        .padding(horizontal = 4.dp)
-                )
+                SelectionContainer {
+                    Text(
+                        text = spanned,
+                        color = Color(log.level.toArgb(isDarkTheme = darkTheme)),
+                        style = style,
+                        lineHeight = style.lineHeight * 0.75f,
+                        modifier = Modifier
+                            .combinedClickable(
+                                onClick = {
+                                    println("onClick")
+                                },
+                                onLongClick = {
+                                    view.isHapticFeedbackEnabled = true
+                                    view.performHapticFeedback(HapticFeedbackConstants.LONG_PRESS)
+                                    ClipboardUtils.copyText("tts-server-log", spanned.text)
+                                    context.toast(R.string.copied)
+                                }
+                            )
+                            .padding(horizontal = 4.dp, vertical = 2.dp)
+                    )
+                }
             }
         }
 

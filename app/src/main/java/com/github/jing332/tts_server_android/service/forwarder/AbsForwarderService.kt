@@ -18,6 +18,7 @@ import androidx.annotation.DrawableRes
 import androidx.annotation.StringRes
 import androidx.core.content.ContextCompat
 import com.drake.net.utils.withMain
+import com.github.jing332.common.LogEntry
 import com.github.jing332.common.LogLevel
 import com.github.jing332.common.utils.ClipboardUtils
 import com.github.jing332.common.utils.NetworkUtils
@@ -26,8 +27,7 @@ import com.github.jing332.common.utils.startForegroundCompat
 import com.github.jing332.common.utils.toast
 import com.github.jing332.tts_server_android.R
 import com.github.jing332.tts_server_android.constant.AppConst
-import com.github.jing332.tts_server_android.constant.AppLog
-import com.github.jing332.tts_server_android.constant.KeyConst
+ import com.github.jing332.tts_server_android.constant.KeyConst
 import com.github.jing332.tts_server_android.ui.ImportConfigActivity
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -117,13 +117,13 @@ abstract class AbsForwarderService(
         AppConst.localBroadcast.sendBroadcast(intent)
     }
 
-    protected fun sendLog(log: AppLog) {
+    protected fun sendLog(log: LogEntry) {
         val intent = Intent(actionLog).apply { putExtra(KeyConst.KEY_DATA, log) }
         AppConst.localBroadcast.sendBroadcast(intent)
     }
 
     protected fun sendLog(@LogLevel level: Int, msg: String) {
-        sendLog(AppLog(level, msg))
+        sendLog(LogEntry(level, msg))
     }
 
     override fun onDestroy() {
