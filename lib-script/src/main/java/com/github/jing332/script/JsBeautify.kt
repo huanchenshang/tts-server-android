@@ -18,7 +18,7 @@ class JsBeautify(context: Context) {
                 cx.evaluateReader(
                     scope, reader, "<beautifier.js>", 1, null
                 )
-                formatJsFunc = (scope.get("beautifier") as ScriptableObject).get("js") as Function
+                formatJsFunc = (scope.get("js_beautify") as ScriptableObject) as Function
             }
         }
     }

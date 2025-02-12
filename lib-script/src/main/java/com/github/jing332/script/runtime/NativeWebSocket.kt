@@ -54,8 +54,7 @@ class NativeWebSocket constructor(
 
     private var readyState: Int = WS_CLOSED
     private var ws: WebSocket? = null
-    private val event = NativeEventTarget()
-
+    private lateinit var event: NativeEventTarget
 
     override fun getClassName(): String = "Websocket"
 
@@ -176,7 +175,7 @@ class NativeWebSocket constructor(
             null,
             ScriptableObject.READONLY
         )
-        event.init(obj)
+        event = NativeEventTarget(obj)
 
         val req = Request.Builder().url(url).apply {
             for (header in headers) {

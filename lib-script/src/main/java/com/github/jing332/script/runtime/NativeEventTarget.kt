@@ -1,5 +1,6 @@
 package com.github.jing332.script.runtime
 
+import com.github.jing332.common.utils.firstCharUpperCase
 import com.github.jing332.script.withRhinoContext
 import io.github.oshai.kotlinlogging.KotlinLogging
 import org.mozilla.javascript.BaseFunction
@@ -9,21 +10,23 @@ import org.mozilla.javascript.Scriptable
 import org.mozilla.javascript.ScriptableObject
 import org.mozilla.javascript.Undefined
 
-class NativeEventTarget {
+class NativeEventTarget(val scope: ScriptableObject) {
     companion object {
         val logger = KotlinLogging.logger("NativeEventTarget")
     }
 
     val functions = hashMapOf<String, Function>()
-    private var scope: ScriptableObject? = null
 
     private fun addEventListener(eventName: String, function: Function) {
         functions[eventName] = function
     }
 
-    fun init(dest: ScriptableObject) {
-        scope = dest
-        dest.defineProperty("on", object : BaseFunction() {
+    init {
+        install(scope)
+    }
+
+    private fun install(scope: ScriptableObject) {
+        scope.defineProperty("on", object : BaseFunction() {
             override fun call(
                 cx: Context?,
                 scope: Scriptable?,
@@ -38,7 +41,7 @@ class NativeEventTarget {
             }
         }, ScriptableObject.READONLY)
 
-        dest.defineProperty("addEventListener", object : BaseFunction() {
+        scope.defineProperty("addEventListener", object : BaseFunction() {
             override fun call(
                 cx: Context?,
                 scope: Scriptable?,
@@ -55,11 +58,12 @@ class NativeEventTarget {
 
     fun emit(eventName: String, vararg args: Any?) {
         logger.debug { "emit: $eventName, ${args.contentToString()}" }
-        val function = functions[eventName]
-        if (function != null)
-            withRhinoContext {
-                function.call(it, scope, scope, args)
-            }
+        val function =
+            functions[eventName] ?: scope.get("on${eventName.firstCharUpperCase()}") as? Function
+
+        withRhinoContext {
+            function?.call(it, scope, scope, args)
+        }
     }
 
 

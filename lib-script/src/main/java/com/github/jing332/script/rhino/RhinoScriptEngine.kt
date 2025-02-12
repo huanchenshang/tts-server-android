@@ -32,7 +32,7 @@ open class RhinoScriptEngine(val runtime: RhinoScriptRuntime = RhinoScriptRuntim
 
 
     override fun execute(source: ScriptSource): Any? = withRhinoContext { cx ->
-        val sourceName = source.sourceName.ifEmpty { "<Unknown source>" }
+        val sourceName = source.sourceName.ifEmpty { "<Unknown>" }
         scope = cx.initStandardObjects().also {
             it.prototype = globalScope
         }

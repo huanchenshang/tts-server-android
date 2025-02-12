@@ -10,7 +10,7 @@ import kotlin.time.measureTimedValue
 
 fun <R> withRhinoContext(block: (Context) -> R): R {
     val cx = RhinoContextFactory.enterContext()
-    try {@JSGetter
+    try {
         return block(cx)
     } finally {
         Context.exit()

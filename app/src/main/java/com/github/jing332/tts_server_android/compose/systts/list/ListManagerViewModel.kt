@@ -156,14 +156,14 @@ class ListManagerViewModel : ViewModel() {
     }
 
     private fun importDefaultListData(context: Context) {
-        val json = context.assets.open("defaultData/list.json").readAllText()
-        val list =
-            AppConst.jsonBuilder.decodeFromString<List<GroupWithSystemTts>>(
-                json
-            )
-        viewModelScope.launch(Dispatchers.IO) {
-            dbm.systemTtsV2.insertGroupWithTts(*list.toTypedArray())
-        }
+//        val json = context.assets.open("defaultData/list.json").readAllText()
+//        val list =
+//            AppConst.jsonBuilder.decodeFromString<List<GroupWithSystemTts>>(
+//                json
+//            )
+//        viewModelScope.launch(Dispatchers.IO) {
+//            dbm.systemTtsV2.insertGroupWithTts(*list.toTypedArray())
+//        }
     }
 
 }

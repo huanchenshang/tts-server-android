@@ -124,3 +124,10 @@ fun String.bytesToReadable(bytes: Long): String {
         else -> "$bytes B"
     }
 }
+
+/**
+ * @return first char upper case
+ */
+fun String.firstCharUpperCase(): String {
+    return replaceFirstChar { if (it.isLowerCase()) it.titlecase(Locale.getDefault()) else it.toString() }
+}

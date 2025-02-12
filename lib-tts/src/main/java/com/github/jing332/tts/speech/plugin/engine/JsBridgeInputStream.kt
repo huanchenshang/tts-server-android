@@ -4,11 +4,11 @@ import android.util.Log
 import androidx.annotation.Keep
 import com.github.jing332.script.runtime.exception.ScriptException
 import kotlinx.coroutines.sync.Mutex
+import org.mozilla.javascript.Context
 import java.io.IOException
 import java.io.InputStream
 import java.io.PipedInputStream
 import java.io.PipedOutputStream
-import java.util.concurrent.locks.ReentrantLock
 
 class JsBridgeInputStream : InputStream() {
     companion object {
@@ -127,10 +127,17 @@ class JsBridgeInputStream : InputStream() {
 
             override fun error(data: Any?) {
                 Log.d(TAG, "${this}.error(${data})")
-                errorCause = if (data is Exception)
-                    data
-                else
-                    ScriptException("JavaScript: " + (data ?: "null"))
+                errorCause = Context.reportRuntimeError(
+                    data.toString()
+                ).run {
+                    ScriptException(
+                        sourceName = sourceName(),
+                        lineNumber = lineNumber(),
+                        columnNumber = columnNumber(),
+                        message = message,
+                        cause = this
+                    )
+                }
 
                 try {
                     close()
