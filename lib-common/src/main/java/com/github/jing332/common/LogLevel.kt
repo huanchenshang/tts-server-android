@@ -31,6 +31,16 @@ fun Int.toArgb(isDarkTheme: Boolean = false): Long =
         else -> if (isDarkTheme) Color.WHITE.toLong() else Color.BLACK.toLong()
     }
 
+fun String.toLogLevel():Int{
+    return when (this.first().toString()) {
+        "V" -> LogLevel.TRACE
+        "D" -> LogLevel.DEBUG
+        "I" -> LogLevel.INFO
+        "W" -> LogLevel.WARN
+        "E" -> LogLevel.ERROR
+        else -> LogLevel.INFO
+    }
+}
 
 fun Int.toLogLevelChar(): String {
     return when (this) {

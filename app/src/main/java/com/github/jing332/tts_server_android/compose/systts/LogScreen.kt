@@ -16,9 +16,9 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.text.selection.SelectionContainer
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.KeyboardDoubleArrowDown
+import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.SmallFloatingActionButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -73,6 +73,11 @@ fun LogScreen(
                 }
         }
 
+        if (list.isEmpty())
+            Box(Modifier.align(Alignment.Center)) {
+                Text(text = stringResource(R.string.empty_list), style = MaterialTheme.typography.displaySmall)
+            }
+
         val darkTheme = isSystemInDarkTheme()
         LazyColumn(Modifier.fillMaxSize(), state = lazyListState) {
             itemsIndexed(list, key = { index, _ -> index }) { _, log ->
@@ -109,9 +114,9 @@ fun LogScreen(
         AnimatedVisibility(
             modifier = Modifier
                 .align(Alignment.BottomCenter)
-                .padding(12.dp), visible = !isAtBottom
+                .padding(48.dp), visible = !isAtBottom
         ) {
-            SmallFloatingActionButton(
+            FloatingActionButton(
                 shape = CircleShape,
                 onClick = {
                     scope.launch {

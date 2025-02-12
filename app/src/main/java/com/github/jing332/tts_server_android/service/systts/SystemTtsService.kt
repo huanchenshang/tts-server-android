@@ -53,7 +53,8 @@ import kotlin.system.exitProcess
 @Suppress("DEPRECATION")
 class SystemTtsService : TextToSpeechService(), IEventListener {
     companion object {
-        private val logger = KotlinLogging.logger("SystemTtsService")
+        const val TAG = "SystemTtsService"
+        private val logger = KotlinLogging.logger(TAG)
         const val ACTION_ON_LOG = "SYS_TTS_ON_LOG"
         const val ACTION_UPDATE_CONFIG = "on_config_changed"
         const val ACTION_UPDATE_REPLACER = "on_replacer_changed"
@@ -217,7 +218,7 @@ class SystemTtsService : TextToSpeechService(), IEventListener {
     }
 
     override fun onStop() {
-        logger.info { "onStop" }
+        logger.info { getString(R.string.cancel) }
         synthesizerJob?.cancel()
         updateNotification(getString(R.string.systts_state_idle), "")
     }
@@ -284,7 +285,7 @@ class SystemTtsService : TextToSpeechService(), IEventListener {
             }.apply { join() }
         }
         callback.done()
-        logger.info { "callback.done()" }
+        logger.info { "" }
 
         mNotificationJob = mScope.launch {
             delay(5000)
@@ -436,16 +437,20 @@ class SystemTtsService : TextToSpeechService(), IEventListener {
         }
     }
 
-    private fun logD(msg: String) = sendLog(LogLevel.DEBUG, msg)
-    private fun logI(msg: String) = sendLog(LogLevel.INFO, msg)
-    private fun logW(msg: String) = sendLog(LogLevel.WARN, msg)
-    private fun logE(msg: String) = sendLog(LogLevel.ERROR, msg)
+    private fun logD(msg: String) = logger.debug(msg)
+    private fun logI(msg: String) = logger.info(msg)
+    private fun logW(msg: String) = logger.warn(msg)
+    private fun logE(msg: String) {
+        updateNotification("⚠️ " + getString(R.string.error), msg)
+
+        logger.error(msg)
+    }
 
     private fun sendLog(@LogLevel level: Int, msg: String) {
-        logger.info { "$level: $msg" }
-        val intent =
-            Intent(ACTION_ON_LOG).putExtra(KeyConst.KEY_DATA, LogEntry(level, msg))
-        AppConst.localBroadcast.sendBroadcast(intent)
+//        logger.info { "$level: $msg" }
+//        val intent =
+//            Intent(ACTION_ON_LOG).putExtra(KeyConst.KEY_DATA, LogEntry(level, msg))
+//        AppConst.localBroadcast.sendBroadcast(intent)
     }
 
     override fun onEvent(event: EventType) {

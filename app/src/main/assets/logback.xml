@@ -23,7 +23,7 @@
             <pattern>%d{MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n</pattern>
         </encoder>
 
-        <filter class="com.github.jing332.tts_server_android.CrashFilter"/>
+        <filter class="com.github.jing332.tts_server_android.CrashFilter" />
     </appender>
 
 
@@ -36,9 +36,19 @@
         </encoder>
     </appender>
 
+    <appender name="SystemTTS" class="ch.qos.logback.core.FileAppender">
+        <file>${LOG_DIR}/system_tts.log</file>
+        <encoder>
+            <pattern>%date | %-5level | %msg%n</pattern>
+        </encoder>
+
+        <filter class="com.github.jing332.tts_server_android.SysttsFilter" />
+    </appender>
+
     <root level="TRACE">
         <appender-ref ref="logcat" />
-        <appender-ref ref="Log" />
         <appender-ref ref="CrashLog" />
+        <appender-ref ref="Log" />
+        <appender-ref ref="SystemTTS" />
     </root>
 </configuration>

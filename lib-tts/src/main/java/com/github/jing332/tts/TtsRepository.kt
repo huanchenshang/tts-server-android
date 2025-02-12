@@ -39,7 +39,7 @@ internal class TtsRepository(
         val map = mutableMapOf<Long, TtsConfiguration>()
         val standbyConfigs =
             groupWithTts.flatMap { it.list }
-                .filter { it.isEnabled && it.config is TtsConfigurationDTO }
+                .filter { it.isEnabled  && (it.config as? TtsConfigurationDTO)?.speechRule?.isStandby == true }
                 .map {
                     val config = it.config as TtsConfigurationDTO
                     TtsConfiguration(

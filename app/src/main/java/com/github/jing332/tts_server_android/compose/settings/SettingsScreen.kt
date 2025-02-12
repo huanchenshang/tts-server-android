@@ -262,14 +262,14 @@ fun SettingsScreen(drawerState: DrawerState) {
                 icon = { Icon(Icons.Default.StackedLineChart, null) }
             )
 
-//            var streamPlay by remember { SystemTtsConfig.isStreamPlayModeEnabled }
-//            SwitchPreference(
-//                title = { Text(stringResource(id = R.string.stream_audio_mode)) },
-//                subTitle = { Text(stringResource(id = R.string.stream_audio_mode_summary)) },
-//                checked = streamPlay,
-//                onCheckedChange = { streamPlay = it },
-//                icon = { Icon(Icons.Default.Waves, null) }
-//            )
+            var streamPlay by remember { SystemTtsConfig.isStreamPlayModeEnabled }
+            SwitchPreference(
+                title = { Text(stringResource(id = R.string.stream_audio_mode)) },
+                subTitle = { Text(stringResource(id = R.string.stream_audio_mode_summary)) },
+                checked = streamPlay,
+                onCheckedChange = { streamPlay = it },
+                icon = { Icon(Icons.Default.Waves, null) }
+            )
 
 //            var skipSilentText by remember { SystemTtsConfig.isSkipSilentText }
 //            SwitchPreference(

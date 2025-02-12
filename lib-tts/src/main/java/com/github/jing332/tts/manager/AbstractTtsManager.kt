@@ -94,7 +94,7 @@ abstract class AbstractTtsManager() : ITtsManager {
     ) {
         suspend fun retry() {
             return if (config.standbyInfo?.config != null && config.standbyInfo.tryTimesWhenTrigger > retries) {
-                onEvent(EventType.StandbyTts(params, config))
+                onEvent(EventType.StandbyTts(params, config.standbyInfo.config))
                 requestAndProcess(
                     channel,
                     params,
