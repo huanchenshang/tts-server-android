@@ -111,7 +111,7 @@
     <string name="systts_set_dialogue_min_match_word_count">Set Chinese length for dialogue</string>
     <string name="systts_set_dialogue_min_info">The number of Chinese characters (including Chinese symbols) in the character\'s dialogue,
         that is, only when it is greater than or equal to this value, it will be read as a dialogue, otherwise the narration will be used.</string>
-    <string name="request_timeout">Set request timeout</string>
+    <string name="request_timeout">Request timeout</string>
     <string name="request_timeout_summary">After the waiting time for requesting audio exceeds the set value, the request will be canceled and retried automatically.</string>
     <string name="systts_http_edit_title">Edit custom TTS</string>
     <string name="systts_http_request_header">Http Request header</string>
@@ -436,10 +436,12 @@
     <string name="clear_text_content">Clear the text</string>
     <string name="exclude_from_recent">Exclude From Recent</string>
     <string name="exclude_from_recent_summary">Hide this application in [Recent Tasks].</string>
-    <string name="not_support_audition">不支持试听！</string>
-    <string name="systts_log_direct_play">直接播放：%1$s</string>
-    <string name="format_code">格式化</string>
-    <string name="undo">撤销</string>
-    <string name="redo">重做</string>
-    <string name="config_empty_error">无可用的TTS配置，请检查是否启用。</string>
+    <string name="not_support_audition">Auditions are not supported！</string>
+    <string name="systts_log_direct_play">Direct play：%1$s</string>
+    <string name="format_code">Format code</string>
+    <string name="undo">Undo</string>
+    <string name="redo">Redo</string>
+    <string name="config_empty_error">No available TTS configuration, please check if it is enabled.</string>
+    <string name="silent_audio">Fast-paced playback</string>
+    <string name="silent_audio_summary">Remove silent and pause parts from the audio</string>
 </resources>

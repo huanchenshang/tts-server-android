@@ -7,10 +7,8 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.MenuOpen
-import androidx.compose.material.icons.automirrored.filled.TextSnippet
 import androidx.compose.material.icons.filled.AccessTime
 import androidx.compose.material.icons.filled.ArrowCircleUp
-import androidx.compose.material.icons.filled.Audiotrack
 import androidx.compose.material.icons.filled.ColorLens
 import androidx.compose.material.icons.filled.FileOpen
 import androidx.compose.material.icons.filled.Groups
@@ -20,7 +18,6 @@ import androidx.compose.material.icons.filled.Language
 import androidx.compose.material.icons.filled.Link
 import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material.icons.filled.NotificationsNone
-import androidx.compose.material.icons.filled.PlayCircleOutline
 import androidx.compose.material.icons.filled.Repeat
 import androidx.compose.material.icons.filled.SelectAll
 import androidx.compose.material.icons.filled.SettingsBackupRestore
@@ -253,8 +250,8 @@ fun SettingsScreen(drawerState: DrawerState) {
 
             var silenceAudio by remember { SystemTtsConfig.isSilenceSkipAudio }
             SwitchPreference(
-                title = { Text("Silence Audio") },
-                subTitle = {  },
+                title = { Text(stringResource(R.string.silent_audio)) },
+                subTitle = { Text(stringResource(R.string.silent_audio_summary)) },
                 checked = silenceAudio,
                 onCheckedChange = {
                     silenceAudio = it

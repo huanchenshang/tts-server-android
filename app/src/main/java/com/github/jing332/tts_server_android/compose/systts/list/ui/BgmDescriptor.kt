@@ -18,5 +18,8 @@ data class BgmDescriptor(val context: Context, val systemTts: SystemTtsV2) : Ite
     override val type: String
         get() = "BGM"
 
+    override val bottom: String
+        get() = context.getString(R.string.total_n_folders, config.musicList.size.toString())
+
 
 }

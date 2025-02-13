@@ -4,6 +4,7 @@ package com.github.jing332.tts_server_android.compose.systts.list.ui
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
@@ -252,6 +253,7 @@ class LocalTtsUI() : IConfigUI() {
                         }
 
                         AppSpinner(
+                            modifier = Modifier.padding(vertical = 2.dp),
                             label = { Text(stringResource(id = R.string.label_tts_engine)) },
                             value = source.engine,
                             values = vm.engines.map { it.name },
@@ -263,6 +265,7 @@ class LocalTtsUI() : IConfigUI() {
                         )
 
                         AppSpinner(
+                            modifier = Modifier.padding(vertical = 2.dp),
                             label = { Text(stringResource(id = R.string.label_language)) },
                             value = source.locale,
                             values = vm.locales.map { it.toLanguageTag() },
@@ -275,6 +278,7 @@ class LocalTtsUI() : IConfigUI() {
                         )
 
                         AppSpinner(
+                            modifier = Modifier.padding(vertical = 2.dp),
                             label = { Text(stringResource(id = R.string.label_voice)) },
                             value = source.voice,
                             values = vm.voices.map { it.name },

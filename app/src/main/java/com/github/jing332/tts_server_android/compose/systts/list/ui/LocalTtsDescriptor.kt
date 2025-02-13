@@ -24,7 +24,7 @@ class LocalTtsDescriptor(val context: Context, val systemTts: SystemTtsV2) :
             val volumeStr =
                 if (source.volume == LocalTtsSource.VOLUME_FOLLOW) strFollow else source.volume
 
-            return source.locale + "\n" + context.getString(
+            return source.voice + "<br>" + context.getString(
                 R.string.systts_play_params_description,
                 "<b>${rateStr}</b>",
                 "<b>${volumeStr}</b>",

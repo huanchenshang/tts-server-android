@@ -446,4 +446,6 @@
     <string name="undo">撤销</string>
     <string name="redo">重做</string>
     <string name="config_empty_error">无可用的TTS配置，请检查是否启用。</string>
+    <string name="silent_audio">快节奏播放</string>
+    <string name="silent_audio_summary">去除音频中的静音、停顿部分</string>
 </resources>

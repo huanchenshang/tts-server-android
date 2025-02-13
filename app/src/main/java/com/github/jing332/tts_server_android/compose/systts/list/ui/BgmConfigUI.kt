@@ -52,6 +52,7 @@ import com.github.jing332.common.utils.toScale
 import com.github.jing332.common.utils.toast
 import com.github.jing332.compose.ComposeExtensions.clickableRipple
 import com.github.jing332.compose.widgets.AppSelectionDialog
+import com.github.jing332.compose.widgets.LabelSlider
 import com.github.jing332.database.entities.systts.BgmConfiguration
 import com.github.jing332.database.entities.systts.SystemTtsV2
 import com.github.jing332.tts_server_android.R
@@ -235,9 +236,9 @@ class BgmConfigUI : IConfigUI() {
                 id = R.string.label_speech_volume,
                 if (config.volume == 0f) stringResource(id = R.string.follow) else config.volume.toString()
             )
-        IntSlider(
+        LabelSlider(
             modifier = Modifier.padding(top = 8.dp),
-            label = volStr, value = config.volume.toFloat(),
+            text = volStr, value = config.volume.toFloat(),
             onValueChange = {
                 onSystemTtsChange(systemTts.copy(config = config.copy(volume = it.toScale(2))))
             }, valueRange = 0f..1f

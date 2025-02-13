@@ -110,7 +110,7 @@
     <!-- 系统TTS 设置 -->
     <string name="systts_set_dialogue_min_match_word_count">設置對話最小匹配漢字數</string>
     <string name="systts_set_dialogue_min_info">人物對話的漢字數（包括中文符號），即只有在大於等於此值時才作為對話朗讀，反之使用旁白。</string>
-    <string name="request_timeout">設定請求逾時</string>
+    <string name="request_timeout">請求逾時</string>
     <string name="request_timeout_summary">請求音訊的等待時間超過設定值後，將取消請求並自動重試。</string>
     <string name="systts_http_edit_title">編輯自定義TTS</string>
     <string name="systts_http_request_header">頭欄位</string>
@@ -432,4 +432,6 @@
     <string name="undo">撤销</string>
     <string name="redo">重做</string>
     <string name="config_empty_error">无可用的TTS配置，请检查是否启用。</string>
+    <string name="silent_audio">快节奏播放</string>
+    <string name="silent_audio_summary">去除音频中的静音、停顿部分</string>
 </resources>
