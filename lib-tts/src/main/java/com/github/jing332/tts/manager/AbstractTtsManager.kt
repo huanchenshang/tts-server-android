@@ -3,9 +3,10 @@ package com.github.jing332.tts.manager
 import com.github.jing332.tts.AudioDecodingError
 import com.github.jing332.tts.AudioSourceError
 import com.github.jing332.tts.ConfigEmptyError
-import com.github.jing332.tts.GetBgm
+import com.github.jing332.tts.GetBgmError
 import com.github.jing332.tts.InitializationError
 import com.github.jing332.tts.ManagerContext
+import com.github.jing332.tts.RepoInitError
 import com.github.jing332.tts.RequestError
 import com.github.jing332.tts.TtsError
 import com.github.jing332.tts.manager.event.EventType
@@ -43,6 +44,7 @@ abstract class AbstractTtsManager() : ITtsManager {
     abstract val repo: ITtsRepository
     abstract val bgmPlayer: IBgmPlayer
 
+    private var isInitialized: Boolean = false
     private var maxSampleRate: Int = 16000
     private var mAllTts: Map<Long, TtsConfiguration> = mapOf()
         set(value) {
@@ -90,7 +92,7 @@ abstract class AbstractTtsManager() : ITtsManager {
         config: TtsConfiguration,
 
         retries: Int = 0,
-        maxRetries: Int = context.cfg.maxRetryTimes,
+        maxRetries: Int = context.cfg.maxRetryTimes(),
     ) {
         suspend fun retry() {
             return if (config.standbyInfo?.config != null && config.standbyInfo.tryTimesWhenTrigger > retries) {
@@ -114,7 +116,7 @@ abstract class AbstractTtsManager() : ITtsManager {
         onEvent(EventType.Request(params, config, retries))
 
         val time = System.currentTimeMillis()
-        val result = withTimeoutOrNull(context.cfg.requestTimeout) {
+        val result = withTimeoutOrNull(context.cfg.requestTimeout()) {
             ttsRequester.request(params, config)
         }
         if (result == null) { // timed out
@@ -126,7 +128,7 @@ abstract class AbstractTtsManager() : ITtsManager {
             ret.onStream { stream ->
                 var size: Int = 0
                 val niceStream: InputStream =
-                    if (context.cfg.streamPlayEnabled) stream
+                    if (context.cfg.streamPlayEnabled()) stream
                     else stream.use {
                         val bytes = it.readBytes()
                         size = bytes.size
@@ -190,7 +192,7 @@ abstract class AbstractTtsManager() : ITtsManager {
     }
 
     private suspend fun internalSynthesize(
-        params: SystemParams, callback: SynthesisCallback, forceConfigId: Long? = null
+        params: SystemParams, callback: SynthesisCallback, forceConfigId: Long?
     ): Result<Unit, TtsError> = coroutineScope {
         if (mAllTts.isEmpty()) {
             return@coroutineScope Err(ConfigEmptyError)
@@ -203,6 +205,7 @@ abstract class AbstractTtsManager() : ITtsManager {
             for (fragment in list) {
                 requestAndProcess(channel, params.copy(text = fragment.text), fragment.tts)
             }
+            logger.debug { "channel.close()..." }
             channel.close()
         }
 
@@ -217,6 +220,8 @@ abstract class AbstractTtsManager() : ITtsManager {
                     data.callback.play()
                 } catch (e: Exception) {
                     onEvent(EventType.DirectPlayError(data.fragment, e))
+                } finally {
+                    logger.debug { "direct play done" }
                 }
 
                 is TtsError -> {
@@ -224,6 +229,7 @@ abstract class AbstractTtsManager() : ITtsManager {
                 }
             }
         }
+        logger.debug { "channel closed" }
 
         Ok(Unit)
     }
@@ -233,18 +239,33 @@ abstract class AbstractTtsManager() : ITtsManager {
     override val isSynthesizing: Boolean
         get() = mutex.isLocked
 
+
     override suspend fun synthesize(
         params: SystemParams, forceConfigId: Long?, callback: SynthesisCallback
     ): Result<Unit, TtsError> = mutex.withLock {
-        bgmPlayer.onPlay()
+        logger.atTrace {
+            message = "synthesize"
+            payload = mapOf(
+                "forceConfigId" to forceConfigId,
+                "params" to params,
+            )
+        }
+
+        bgmPlayer.play()
         try {
-            internalSynthesize(params, callback)
-        } finally { // job cancelled
-            bgmPlayer.onStop()
+            internalSynthesize(params, callback, forceConfigId)
+        } finally {
+            bgmPlayer.stop()
         }
     }
 
-    override fun init(): Result<Unit, TtsError> {
+    override suspend fun  init(): Result<Unit, TtsError> = mutex.withLock {
+        try {
+            repo.init()
+        } catch (e: Exception) {
+            return Err(RepoInitError(e))
+        }
+
         mAllTts = repo.getAllTts()
         if (mAllTts.isEmpty()) return Err(ConfigEmptyError)
 
@@ -252,26 +273,27 @@ abstract class AbstractTtsManager() : ITtsManager {
             return Err(it)
         }
 
-        val bgmList = mutableListOf<Pair<String, Float>>()
+        val bgmList = mutableListOf<BgmSource>()
         try {
             repo.getAllBgm().forEach { bgm ->
-                bgm.value.musicList.forEach { path ->
-                    bgmList.add(path to bgm.value.volume / 1000f)
+                bgm.musicList.forEach {
+                    bgmList.add(BgmSource(path = it, volume = bgm.volume))
                 }
             }
         } catch (e: Exception) {
-            return Err(GetBgm(e))
+            return Err(GetBgmError(e))
         }
 
         bgmPlayer.setPlayList(list = bgmList)
-
+        isInitialized = true
         return Ok(Unit)
     }
 
 
-    override fun destroy() {
-        ttsRequester.onDestroy()
-        bgmPlayer.onDestroy()
+    override suspend fun destroy() {
+        repo.destroy()
+        ttsRequester.destroy()
+        bgmPlayer.destroy()
     }
 
 

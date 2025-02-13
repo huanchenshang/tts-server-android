@@ -42,7 +42,7 @@ internal class ResultProcessor(
                 }
             }
 
-            if (context.cfg.streamPlayEnabled)
+            if (context.cfg.streamPlayEnabled())
                 mDecoder.doDecode(ins)
             else
                 ins.use {
@@ -119,7 +119,7 @@ internal class ResultProcessor(
                     sonic(bytes)
                 }
 
-                if (!context.cfg.silenceSkipEnabled) {
+                if (!context.cfg.silenceSkipEnabled()) {
                     if (pcm != null) sonic(pcm)
                 } else if (pcm == null) {
                     processor.queueEndOfStream()

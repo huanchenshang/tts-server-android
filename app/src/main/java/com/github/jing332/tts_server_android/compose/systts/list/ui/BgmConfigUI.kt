@@ -48,6 +48,7 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import com.github.jing332.common.utils.ASFUriUtils.getPath
 import com.github.jing332.common.utils.FileUtils.audioList
+import com.github.jing332.common.utils.toScale
 import com.github.jing332.common.utils.toast
 import com.github.jing332.compose.ComposeExtensions.clickableRipple
 import com.github.jing332.compose.widgets.AppSelectionDialog
@@ -232,14 +233,14 @@ class BgmConfigUI : IConfigUI() {
         val volStr =
             stringResource(
                 id = R.string.label_speech_volume,
-                if (config.volume == 0) stringResource(id = R.string.follow) else config.volume.toString()
+                if (config.volume == 0f) stringResource(id = R.string.follow) else config.volume.toString()
             )
         IntSlider(
             modifier = Modifier.padding(top = 8.dp),
             label = volStr, value = config.volume.toFloat(),
             onValueChange = {
-                onSystemTtsChange(systemTts.copy(config = config.copy(volume = it.toInt())))
-            }, valueRange = 0f..1000f
+                onSystemTtsChange(systemTts.copy(config = config.copy(volume = it.toScale(2))))
+            }, valueRange = 0f..1f
         )
     }
 

@@ -1,6 +1,5 @@
 package com.github.jing332.common.utils
 
-import android.annotation.SuppressLint
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
@@ -11,15 +10,6 @@ import kotlin.math.pow
 object StringUtils {
     private val silentPattern by lazy { Pattern.compile("[\\s\\p{C}\\p{P}\\p{Z}\\p{S}]") }
     private val splitSentencesRegex by lazy { Pattern.compile("[。？?！!;；]") }
-
-    fun Long.sizeToReadable(): String {
-        val bytes = this
-        val unit = 1024
-        if (bytes < unit) return "$bytes B"
-        val exp = (ln(bytes.toDouble()) / ln(unit.toDouble())).toInt()
-        val pre = "KMGTPE"[exp - 1] + "i"
-        return String.format("%.1f %sB", bytes / unit.toDouble().pow(exp.toDouble()), pre)
-    }
 
     fun formattedDate(): String =
         SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault()).format(Date())
@@ -130,4 +120,16 @@ fun String.bytesToReadable(bytes: Long): String {
  */
 fun String.firstCharUpperCase(): String {
     return replaceFirstChar { if (it.isLowerCase()) it.titlecase(Locale.getDefault()) else it.toString() }
+}
+
+fun Int.sizeToReadable(locale: Locale = Locale.getDefault()): String =
+    this.toLong().sizeToReadable(locale)
+
+fun Long.sizeToReadable(locale: Locale = Locale.getDefault()): String {
+    val bytes = this
+    val unit = 1024
+    if (bytes < unit) return "$bytes B"
+    val exp = (ln(bytes.toDouble()) / ln(unit.toDouble())).toInt()
+    val pre = "KMGTPE"[exp - 1] + "i"
+    return String.format(locale, "%.1f %sB", bytes / unit.toDouble().pow(exp.toDouble()), pre)
 }

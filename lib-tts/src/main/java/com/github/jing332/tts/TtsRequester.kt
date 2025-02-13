@@ -43,7 +43,7 @@ class TtsRequester(
         }
     }
 
-    override fun onDestroy() {
+    override fun destroy() {
     }
 
 }

@@ -8,13 +8,17 @@ import androidx.media3.exoplayer.ExoPlayer
 import com.github.jing332.common.utils.FileUtils
 import com.github.jing332.common.utils.FileUtils.mimeType
 import com.github.jing332.common.utils.runOnUI
+import com.github.jing332.tts.manager.BgmSource
 import com.github.jing332.tts.manager.IBgmPlayer
+import io.github.oshai.kotlinlogging.KotlinLogging
 import java.io.File
+import kotlin.math.pow
 
 
 class BgmPlayer(val context: ManagerContext) : IBgmPlayer {
     companion object {
         const val TAG = "BgmPlayer"
+        val logger = KotlinLogging.logger(TAG)
     }
 
     private val exoPlayer by lazy {
@@ -24,71 +28,83 @@ class BgmPlayer(val context: ManagerContext) : IBgmPlayer {
                     super.onMediaItemTransition(mediaItem, reason)
                     val volume = mediaItem?.localConfiguration?.tag
                     if (volume != null && volume is Float && volume != this@apply.volume)
-                        this@apply.volume = volume
+                        this@apply.volume = volume.pow(1.5f)
                 }
 
                 override fun onPlayerError(error: PlaybackException) {
                     super.onPlayerError(error)
 
+                    logger.error(error){"bgm error, skip current media"}
                     removeMediaItem(currentMediaItemIndex)
                     seekToNextMediaItem()
                     prepare()
                 }
             })
             repeatMode = Player.REPEAT_MODE_ALL
-            shuffleModeEnabled = context.cfg.bgmShuffleEnabled
+            shuffleModeEnabled = context.cfg.bgmShuffleEnabled()
         }
     }
-    private val currentPlayList = mutableListOf<Pair<String, Float>>()
+    private val currentPlayList = mutableListOf<BgmSource>()
 
-    override fun onStop() {
+    override fun stop() {
+        logger.debug { "bgm stop" }
         runOnUI { exoPlayer.pause() }
     }
 
-    override fun onDestroy() {
+    override fun destroy() {
+        logger.debug { "bgm destroy" }
         runOnUI {
             exoPlayer.release()
         }
     }
 
-    override fun onPlay() {
+    override fun play() {
+        logger.debug { "bgm play" }
         runOnUI {
             if (!exoPlayer.isPlaying) exoPlayer.play()
         }
     }
 
     override fun setPlayList(
-        list: List<Pair<String, Float>>,
-    ) {
-        if (list == currentPlayList) return
+        list: List<BgmSource>,
+    ) = runOnUI{
+        logger.atDebug {
+            message = "bgm setPlayList"
+            payload = mapOf("list" to list)
+        }
+
+        if (list == currentPlayList) return@runOnUI
         currentPlayList.clear()
         currentPlayList.addAll(list)
 
         exoPlayer.stop()
         exoPlayer.clearMediaItems()
-        for (path in list) {
-            val file = File(path.first)
+        for (source in list) {
+            val file = File(source.path)
             if (file.isDirectory) {
                 val allFiles = FileUtils.getAllFilesInFolder(file)
-                    .run { if (context.cfg.bgmShuffleEnabled) this.shuffled() else this }
+                    .run { if (context.cfg.bgmShuffleEnabled()) this.shuffled() else this }
                 for (subFile in allFiles) {
-                    if (!addMediaItem(path.first, subFile)) continue
+                    if (!addMediaItem(source.volume, subFile)) continue
                 }
             } else if (file.isFile) {
-                addMediaItem(path.first, file)
+                addMediaItem(source.volume, file)
             }
         }
         exoPlayer.prepare()
     }
 
-    private fun addMediaItem(tag: Any, file: File): Boolean {
+    private fun addMediaItem(volume: Float, file: File): Boolean {
         val mime = file.mimeType
         // 非audio或未知则跳过
         if (mime == null || !mime.startsWith("audio")) return false
 
-        Log.d(TAG, file.absolutePath)
+        logger.atTrace {
+            message = "bgm addMediaItem"
+            payload = mapOf("file" to file)
+        }
         val item =
-            MediaItem.Builder().setTag(tag).setUri(file.absolutePath).build()
+            MediaItem.Builder().setTag(volume).setUri(file.absolutePath).build()
         exoPlayer.addMediaItem(item)
 
         return true

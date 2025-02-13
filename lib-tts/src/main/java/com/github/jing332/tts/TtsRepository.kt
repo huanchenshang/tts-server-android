@@ -2,7 +2,6 @@ package com.github.jing332.tts
 
 import com.github.jing332.database.dbm
 import com.github.jing332.database.entities.systts.BgmConfiguration
-import com.github.jing332.database.entities.systts.IConfiguration
 import com.github.jing332.database.entities.systts.TtsConfigurationDTO
 import com.github.jing332.tts.manager.ITtsRepository
 import com.github.jing332.tts.manager.StandbyInfo
@@ -12,34 +11,20 @@ internal class TtsRepository(
     val context: ManagerContext,
 ) : ITtsRepository {
 
-    private val cache = mutableMapOf<Long, IConfiguration>()
-    override fun onInit() {
-        val list = dbm.systemTtsV2.allEnabled
-        for (tts in list) {
-            cache[tts.id] = tts.config
-        }
+    override fun init() {
+
     }
 
-    override fun onDestroy() {
-        cache.clear()
+    override fun destroy() {
     }
 
-    private inline fun <reified T : IConfiguration> filterConfigType(): Map<Long, T> {
-        val map = mutableMapOf<Long, T>()
-        for (tts in cache) {
-            if (tts.value is T) {
-                map[tts.key] = tts.value as T
-            }
-        }
-        return map
-    }
 
     override fun getAllTts(): Map<Long, TtsConfiguration> {
         val groupWithTts = dbm.systemTtsV2.getAllGroupWithTts()
         val map = mutableMapOf<Long, TtsConfiguration>()
         val standbyConfigs =
             groupWithTts.flatMap { it.list }
-                .filter { it.isEnabled  && (it.config as? TtsConfigurationDTO)?.speechRule?.isStandby == true }
+                .filter { it.isEnabled && (it.config as? TtsConfigurationDTO)?.speechRule?.isStandby == true }
                 .map {
                     val config = it.config as TtsConfigurationDTO
                     TtsConfiguration(
@@ -77,5 +62,7 @@ internal class TtsRepository(
     }
 
 
-    override fun getAllBgm(): Map<Long, BgmConfiguration> = filterConfigType<BgmConfiguration>()
+    override fun getAllBgm(): List<BgmConfiguration> {
+        return dbm.systemTtsV2.allEnabled.map { it.config }.filterIsInstance<BgmConfiguration>()
+    }
 }

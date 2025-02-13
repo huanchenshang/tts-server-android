@@ -5,7 +5,7 @@ import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.viewModelScope
-import com.github.jing332.common.utils.StringUtils.sizeToReadable
+import com.github.jing332.common.utils.sizeToReadable
 import com.github.jing332.database.entities.plugin.Plugin
 import com.github.jing332.database.entities.systts.source.PluginTtsSource
 import com.github.jing332.script.runtime.console.ConsoleImpl

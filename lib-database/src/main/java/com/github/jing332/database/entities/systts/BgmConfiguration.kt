@@ -5,5 +5,5 @@ import kotlinx.serialization.Serializable
 
 @Serializable
 @SerialName("bgm")
-data class BgmConfiguration(val musicList: List<String> = emptyList(), val volume: Int = 1000) :
+data class BgmConfiguration(val musicList: List<String> = emptyList(), val volume: Float = 1f) :
     IConfiguration()

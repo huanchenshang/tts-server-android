@@ -3,7 +3,8 @@ package com.github.jing332.tts
 sealed interface TtsError
 
 data object ConfigEmptyError : TtsError
-data class GetBgm(val cause: Throwable?) : TtsError
+data class GetBgmError(val cause: Throwable?) : TtsError
+data class RepoInitError(val cause: Throwable?) : TtsError
 
 sealed interface TextProcessorError : TtsError
 data object ForceConfigIdNotFound : TextProcessorError

@@ -10,9 +10,7 @@ import androidx.media3.exoplayer.ExoPlayer
 import androidx.media3.exoplayer.audio.AudioSink
 import androidx.media3.exoplayer.source.MediaSource
 import com.drake.net.utils.withMain
-import com.github.jing332.common.audio.AudioDecoderException
 import com.github.jing332.common.audio.ExoPlayerHelper
-import com.github.jing332.common.utils.rootCause
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.suspendCancellableCoroutine
 import java.io.Closeable
@@ -75,12 +73,13 @@ class ExoAudioDecoder(val context: Context) : Closeable {
 
     @Throws(ExoPlaybackException::class)
     suspend fun doDecode(bytes: ByteArray) {
-        decodeInternal(ExoPlayerHelper.createMediaSourceFromByteArray(bytes))
+        if (bytes.isNotEmpty())
+            decodeInternal(ExoPlayerHelper.createMediaSourceFromByteArray(context, bytes))
     }
 
     @Throws(ExoPlaybackException::class)
     suspend fun doDecode(inputStream: InputStream) {
-        decodeInternal(ExoPlayerHelper.createMediaSourceFromInputStream(inputStream))
+        decodeInternal(ExoPlayerHelper.createMediaSourceFromInputStream(context, inputStream))
     }
 
     private suspend fun decodeInternal(mediaSource: MediaSource) = withMain {

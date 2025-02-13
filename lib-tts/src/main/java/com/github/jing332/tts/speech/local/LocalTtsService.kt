@@ -29,8 +29,8 @@ class LocalTtsService(
     private val engine: String
 ) : ITtsService<LocalTtsSource>() {
     companion object {
-        const val TAG = "LocalTtsEngine"
-        private val logger = KotlinLogging.logger { LocalTtsService::class.java.name }
+        const val TAG = "LocalTtsService"
+        private val logger = KotlinLogging.logger(TAG)
     }
 
     private val saveDir by lazy { context.cacheDir.absolutePath + "/local_tts_audio" }

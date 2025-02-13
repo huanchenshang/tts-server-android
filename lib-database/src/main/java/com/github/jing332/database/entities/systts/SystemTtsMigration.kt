@@ -11,7 +11,7 @@ object SystemTtsMigration {
     fun v1Tov2(v1: SystemTts): SystemTtsV2? {
         val config = if (v1.tts is BgmTTS) BgmConfiguration(
             musicList = (v1.tts as BgmTTS).musicList.toList(),
-            v1.tts.volume
+            volume = v1.tts.volume / 1000f
         )
         else
             TtsConfigurationDTO(

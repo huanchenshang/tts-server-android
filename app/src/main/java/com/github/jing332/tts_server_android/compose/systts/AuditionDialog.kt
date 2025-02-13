@@ -1,6 +1,5 @@
 package com.github.jing332.tts_server_android.compose.systts
 
-import android.util.Log
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -24,10 +23,8 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.drake.net.utils.withMain
 import com.github.jing332.common.audio.AudioPlayer
-import com.github.jing332.common.utils.ClipboardUtils
-import com.github.jing332.common.utils.StringUtils.sizeToReadable
+import com.github.jing332.common.utils.sizeToReadable
 import com.github.jing332.common.utils.toast
-import com.github.jing332.compose.ComposeExtensions.clickableRipple
 import com.github.jing332.compose.widgets.AppDialog
 import com.github.jing332.compose.widgets.LoadingContent
 import com.github.jing332.database.entities.systts.SystemTtsV2

@@ -31,7 +31,7 @@ class DebugSystemTtsActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
 
         val initialText = """
-            
+            “大哥。”二长老上前一步，“何必为这叛徒神伤？”
         """.trimIndent()
 
         setContent {
@@ -80,6 +80,12 @@ class DebugSystemTtsActivity : AppCompatActivity() {
                             }
 
                         })
+                        tts.voices.forEach {
+                            log += "voice: ${it.name}\n"
+
+                            if (it.name.startsWith("晓晓"))
+                                tts.voice = it
+                        }
                         tts.speak(text, TextToSpeech.QUEUE_FLUSH, null, null)
                     }
                     LaunchedEffect(key1 = Unit) {

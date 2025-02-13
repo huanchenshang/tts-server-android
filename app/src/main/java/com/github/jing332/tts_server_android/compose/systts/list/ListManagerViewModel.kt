@@ -47,22 +47,23 @@ class ListManagerViewModel : ViewModel() {
         item: SystemTtsV2,
         enabled: Boolean
     ) {
-        if (!SystemTtsConfig.isVoiceMultipleEnabled.value && enabled)
-
-            dbm.systemTtsV2.allEnabled.forEach { systts ->
-                if (systts.config is TtsConfigurationDTO) {
-                    val config = systts.config as TtsConfigurationDTO
-                    val itemConfig = item.config as TtsConfigurationDTO
-                    if (config.speechRule.target == itemConfig.speechRule.target) {
-                        if (config.speechRule.tagRuleId == itemConfig.speechRule.tagRuleId
-                            && config.speechRule.tag == itemConfig.speechRule.tag
-                            && config.speechRule.tagName == itemConfig.speechRule.tagName
-                            && config.speechRule.isStandby == itemConfig.speechRule.isStandby
-                        )
-                            dbm.systemTtsV2.update(systts.copy(isEnabled = false))
+        if (!SystemTtsConfig.isVoiceMultipleEnabled.value && enabled) {
+            val itemConfig = (item.config as? TtsConfigurationDTO)
+            if (itemConfig != null)
+                dbm.systemTtsV2.allEnabled.forEach { systts ->
+                    if (systts.config is TtsConfigurationDTO) {
+                        val config = systts.config as TtsConfigurationDTO
+                        if (config.speechRule.target == itemConfig.speechRule.target) {
+                            if (config.speechRule.tagRuleId == itemConfig.speechRule.tagRuleId
+                                && config.speechRule.tag == itemConfig.speechRule.tag
+                                && config.speechRule.tagName == itemConfig.speechRule.tagName
+                                && config.speechRule.isStandby == itemConfig.speechRule.isStandby
+                            )
+                                dbm.systemTtsV2.update(systts.copy(isEnabled = false))
+                        }
                     }
                 }
-            }
+        }
 
         dbm.systemTtsV2.update(item.copy(isEnabled = enabled))
     }

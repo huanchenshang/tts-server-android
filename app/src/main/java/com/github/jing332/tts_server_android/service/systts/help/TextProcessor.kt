@@ -19,6 +19,7 @@ import com.github.jing332.tts_server_android.conf.SystemTtsConfig
 import com.github.jing332.tts_server_android.model.rhino.speech_rule.SpeechRuleEngine
 import com.github.michaelbull.result.Err
 import com.github.michaelbull.result.Ok
+import com.github.michaelbull.result.Result
 import io.github.oshai.kotlinlogging.KotlinLogging
 import kotlin.random.Random
 
@@ -50,7 +51,7 @@ class TextProcessor : ITextProcessor {
     override fun init(
         context: Context,
         configs: Map<Long, TtsConfiguration>
-    ): com.github.michaelbull.result.Result<Unit, TtsError> {
+    ): Result<Unit, TtsError> {
         if (isMultiVoice) {
             val ruleId = configs.values.toList().component1().speechInfo.tagRuleId
             val speechRule =
@@ -67,8 +68,12 @@ class TextProcessor : ITextProcessor {
                 singleVoice = this.configs.random(random)
         }
 
-        textReplacer.load()
+        loadReplacer()
         return Ok(Unit)
+    }
+
+    fun loadReplacer() {
+        textReplacer.load()
     }
 
     private fun splitText(text: String): List<String> {
@@ -84,6 +89,13 @@ class TextProcessor : ITextProcessor {
         }
     }
 
+    private fun replace(text: String, @ReplaceExecution execution: Int): String {
+        return if (isReplaceEnabled)
+            textReplacer.replace(text, execution)
+        else
+            text
+    }
+
     /**
      * [ForceConfigIdNotFound] forceConfigId not fount in configs
      *
@@ -94,14 +106,14 @@ class TextProcessor : ITextProcessor {
     override fun process(
         text: String,
         forceConfigId: Long?
-    ): com.github.michaelbull.result.Result<List<TextSegment>, TextProcessorError> {
+    ): Result<List<TextSegment>, TextProcessorError> {
         val resultList = mutableListOf<TextSegment>()
-        val replacedText = textReplacer.replace(text, ReplaceExecution.BEFORE)
+        val replacedText = replace(text, ReplaceExecution.BEFORE)
 
         fun add(vararg fragments: TextSegment) {
             fragments.forEach { f ->
                 resultList.add(
-                    TextSegment(text = textReplacer.replace(f.text, ReplaceExecution.AFTER), f.tts)
+                    TextSegment(text = replace(f.text, ReplaceExecution.AFTER), f.tts)
                 )
             }
         }

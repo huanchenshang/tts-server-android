@@ -1,10 +1,12 @@
 package com.github.jing332.tts.manager
 
 interface IBgmPlayer {
-    fun onPlay()
-    fun onStop()
-    fun onDestroy()
+    fun play()
+    fun stop()
+    fun destroy()
     fun setPlayList(
-        list: List<Pair<String, Float>>
+        list: List<BgmSource>
     )
 }
+
+data class BgmSource(val path: String, val volume: Float)

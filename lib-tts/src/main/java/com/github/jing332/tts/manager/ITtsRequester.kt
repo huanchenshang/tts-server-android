@@ -1,7 +1,6 @@
 package com.github.jing332.tts.manager
 
 import com.github.jing332.tts.RequesterError
-import com.github.michaelbull.result.Result
 import java.io.InputStream
 
 interface ITtsRequester {
@@ -10,7 +9,7 @@ interface ITtsRequester {
         tts: TtsConfiguration
     ): com.github.michaelbull.result.Result<Result, RequesterError>
 
-    fun onDestroy()
+    fun destroy()
 
     data class Result @JvmOverloads constructor(
         val callback: ISyncPlayCallback? = null,
