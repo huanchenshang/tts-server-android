@@ -55,7 +55,7 @@ class TextProcessor : ITextProcessor {
             val ruleId = configs.values.toList().component1().speechInfo.tagRuleId
             val speechRule =
                 dbm.speechRuleDao.getByRuleId(ruleId) ?: return Err(SpeechRuleNotFound(ruleId))
-            engine = SpeechRuleEngine(context, speechRule)
+            engine = SpeechRuleEngine(context, speechRule).apply { eval() }
             this.configs =
                 configs.entries.map { it.value.copy(speechInfo = it.value.speechInfo.copy(configId = it.key)) }
             speechRules = this.configs.map { it.speechInfo }

@@ -39,7 +39,7 @@
     <appender name="SystemTTS" class="ch.qos.logback.core.FileAppender">
         <file>${LOG_DIR}/system_tts.log</file>
         <encoder>
-            <pattern>%date | %-5level | %msg%n</pattern>
+            <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} | %-5level | %msg%n</pattern>
         </encoder>
 
         <filter class="com.github.jing332.tts_server_android.SysttsFilter" />

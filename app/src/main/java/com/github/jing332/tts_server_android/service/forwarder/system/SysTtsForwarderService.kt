@@ -122,7 +122,8 @@ class SysTtsForwarderService(
                 getSysTtsEngines().map { Engine(name = it.name, it.label) }
 
 
-        }).apply { start(wait = true) }
+        })
+        mServer?.start(wait = true)
     }
 
     override fun closeServer() {

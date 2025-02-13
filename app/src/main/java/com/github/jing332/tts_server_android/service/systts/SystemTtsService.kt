@@ -39,6 +39,7 @@ import com.github.jing332.tts_server_android.conf.SysTtsConfig
 import com.github.jing332.tts_server_android.constant.AppConst
 import com.github.jing332.tts_server_android.constant.KeyConst
 import com.github.jing332.tts_server_android.constant.SystemNotificationConst
+import com.github.jing332.tts_server_android.service.systts.help.TextProcessor
 import com.github.michaelbull.result.onFailure
 import io.github.oshai.kotlinlogging.KotlinLogging
 import kotlinx.coroutines.CoroutineScope
@@ -89,7 +90,7 @@ class SystemTtsService : TextToSpeechService(), IEventListener {
                 streamPlayEnabled = SysTtsConfig.isStreamPlayModeEnabled,
                 silenceSkipEnabled = SysTtsConfig.isSkipSilentAudio
             )
-
+            textProcessor = TextProcessor()
         }
     }
 
@@ -128,7 +129,9 @@ class SystemTtsService : TextToSpeechService(), IEventListener {
         mWakeLock?.acquire(60 * 20 * 100)
         mWifiLock.acquire()
 
-        mTtsManager.init()
+        mTtsManager.init().onFailure {
+            logE("init failed: ${it.toString()}")
+        }
     }
 
     override fun onDestroy() {
@@ -278,14 +281,14 @@ class SystemTtsService : TextToSpeechService(), IEventListener {
 
                     }
                 ).onFailure {
-
+                    logE("error: $it")
                 }
 
 
             }.apply { join() }
         }
         callback.done()
-        logger.info { "" }
+        logger.trace { "done..." }
 
         mNotificationJob = mScope.launch {
             delay(5000)

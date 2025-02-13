@@ -9,6 +9,7 @@ import com.github.jing332.database.dbm
 import com.github.jing332.database.entities.SpeechRule
 import com.github.jing332.database.entities.systts.TtsConfigurationDTO
 import com.github.jing332.script.runtime.console.ConsoleImpl
+import com.github.jing332.script.runtime.console.GlobalConsole
 import com.github.jing332.tts_server_android.constant.SpeechTarget
 import com.github.jing332.tts_server_android.model.rhino.speech_rule.SpeechRuleEngine
 import kotlinx.coroutines.Dispatchers
@@ -21,6 +22,7 @@ class SpeechRuleEditViewModel(val app: Application) : AndroidViewModel(app) {
 
     private lateinit var mSpeechRule: SpeechRule
     private lateinit var mRuleEngine: SpeechRuleEngine
+    private val console = GlobalConsole.get()
 
     val speechRule: SpeechRule
         get() = mSpeechRule
@@ -33,6 +35,7 @@ class SpeechRuleEditViewModel(val app: Application) : AndroidViewModel(app) {
         mSpeechRule = rule
         _codeLiveData.value = rule.code
         mRuleEngine = SpeechRuleEngine(app, rule)
+        mRuleEngine.console = console
     }
 
     fun updateCode(code: String) {
@@ -40,7 +43,7 @@ class SpeechRuleEditViewModel(val app: Application) : AndroidViewModel(app) {
     }
 
     fun getConsole(): ConsoleImpl {
-        return mRuleEngine.console
+        return console
     }
 
     fun evalRuleInfo(code: String) {

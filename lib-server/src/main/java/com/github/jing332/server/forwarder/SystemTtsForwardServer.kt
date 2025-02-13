@@ -89,7 +89,7 @@ class SystemTtsForwardServer(val port: Int, val callback: Callback) : Server {
     }
 
     override fun stop() {
-        ktor.stop()
+        ktor.stop(100)
     }
 
     interface Callback : BaseCallback {

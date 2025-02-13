@@ -3,9 +3,12 @@ package com.github.jing332.tts_server_android.compose.systts
 import android.view.HapticFeedbackConstants
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.background
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
@@ -17,6 +20,7 @@ import androidx.compose.foundation.text.selection.SelectionContainer
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.KeyboardDoubleArrowDown
 import androidx.compose.material3.FloatingActionButton
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -33,9 +37,11 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import androidx.core.graphics.toColor
 import androidx.core.text.HtmlCompat
 import com.github.jing332.common.LogEntry
 import com.github.jing332.common.toArgb
+import com.github.jing332.common.toLogLevelChar
 import com.github.jing332.common.utils.ClipboardUtils
 import com.github.jing332.common.utils.toast
 import com.github.jing332.compose.ComposeExtensions.toAnnotatedString
@@ -75,38 +81,39 @@ fun LogScreen(
 
         if (list.isEmpty())
             Box(Modifier.align(Alignment.Center)) {
-                Text(text = stringResource(R.string.empty_list), style = MaterialTheme.typography.displaySmall)
+                Text(
+                    text = stringResource(R.string.empty_list),
+                    style = MaterialTheme.typography.displaySmall
+                )
             }
 
         val darkTheme = isSystemInDarkTheme()
-        LazyColumn(Modifier.fillMaxSize(), state = lazyListState) {
-            itemsIndexed(list, key = { index, _ -> index }) { _, log ->
-                val style = MaterialTheme.typography.bodyMedium
-                val spanned = remember {
-                    HtmlCompat.fromHtml(log.message, HtmlCompat.FROM_HTML_MODE_COMPACT)
-                        .toAnnotatedString()
-                }
+        SelectionContainer {
+            LazyColumn(Modifier.fillMaxSize(), state = lazyListState) {
+                itemsIndexed(list, key = { index, _ -> index }) { index, log ->
+                    val style = MaterialTheme.typography.bodyMedium
+                    val spanned = remember {
+                        HtmlCompat.fromHtml(log.message, HtmlCompat.FROM_HTML_MODE_COMPACT)
+                            .toAnnotatedString()
+                    }
 
-                SelectionContainer {
-                    Text(
-                        text = spanned,
-                        color = Color(log.level.toArgb(isDarkTheme = darkTheme)),
-                        style = style,
-                        lineHeight = style.lineHeight * 0.75f,
-                        modifier = Modifier
-                            .combinedClickable(
-                                onClick = {
-                                    println("onClick")
-                                },
-                                onLongClick = {
-                                    view.isHapticFeedbackEnabled = true
-                                    view.performHapticFeedback(HapticFeedbackConstants.LONG_PRESS)
-                                    ClipboardUtils.copyText("tts-server-log", spanned.text)
-                                    context.toast(R.string.copied)
-                                }
+                    Column(modifier = Modifier.padding(horizontal = 4.dp, vertical = 2.dp)) {
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Text(text = log.time, style = MaterialTheme.typography.bodySmall)
+                            Text(
+                                text = "\t${log.level.toLogLevelChar()}",
+                                style = MaterialTheme.typography.bodySmall
                             )
-                            .padding(horizontal = 4.dp, vertical = 2.dp)
-                    )
+                        }
+                        Text(
+                            text = spanned,
+                            color = Color(log.level.toArgb(isDarkTheme = darkTheme)),
+                            style = style,
+                            lineHeight = style.lineHeight * 0.75f,
+                        )
+                        if (index < list.size - 1)
+                            HorizontalDivider(thickness = 0.3.dp)
+                    }
                 }
             }
         }

@@ -9,6 +9,7 @@ import com.github.jing332.script.simple.SimpleScriptEngine
 import com.github.jing332.script.source.toScriptSource
 import com.github.jing332.tts_server_android.R
 import org.mozilla.javascript.NativeObject
+import org.mozilla.javascript.ScriptRuntime
 
 class SpeechRuleEngine(
     val context: Context,
@@ -36,9 +37,12 @@ class SpeechRuleEngine(
     }
 
     val engine = SimpleScriptEngine(context, rule.ruleId)
-    val console: ConsoleImpl
-        get() = (engine.runtime?.console as? ConsoleImpl)
+    var console: ConsoleImpl
+        get() = (engine.runtime.console as? ConsoleImpl)
             ?: throw IllegalStateException("runtime.console is null")
+        set(value) {
+            engine.runtime.console = value
+        }
 
 
     private val objJS
@@ -65,7 +69,7 @@ class SpeechRuleEngine(
                 ) as TagsDataMap
 
             runCatching {
-                rule.version = (get("version") as Double).toInt()
+                rule.version = ScriptRuntime.toNumber(get("version")).toInt()
             }.onFailure {
                 throw NumberFormatException(context.getString(R.string.plugin_bad_format))
             }

@@ -39,14 +39,6 @@ import io.github.rosemoe.sora.lang.styling.textStyle
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 internal fun TtsLogScreen(vm: TtsLogViewModel = viewModel()) {
-    LocalBroadcastReceiver(intentFilter = IntentFilter(SysttsFilter.ACTION_ON_LOG)) {
-        if (it?.action == SysttsFilter.ACTION_ON_LOG) {
-            it.getStringExtra(KeyConst.KEY_DATA)?.let { log ->
-                vm.add(log)
-            }
-        }
-    }
-
     Scaffold(
         topBar = {
             NavTopAppBar(title = {

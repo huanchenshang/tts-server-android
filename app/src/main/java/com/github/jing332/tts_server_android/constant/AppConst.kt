@@ -13,7 +13,6 @@ import java.util.Locale
 @SuppressLint("SimpleDateFormat")
 @Suppress("DEPRECATION")
 object AppConst {
-    const val PACKET_NAME = "com.github.jing332.tts_server_android"
 
     val fileProviderAuthor = BuildConfig.APPLICATION_ID + ".fileprovider"
     val localBroadcast by lazy { LocalBroadcastManager.getInstance(App.context) }
