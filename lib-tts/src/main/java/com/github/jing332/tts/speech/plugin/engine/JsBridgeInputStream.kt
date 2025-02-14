@@ -5,6 +5,7 @@ import androidx.annotation.Keep
 import com.github.jing332.script.runtime.exception.ScriptException
 import kotlinx.coroutines.sync.Mutex
 import org.mozilla.javascript.Context
+import org.mozilla.javascript.RhinoException
 import java.io.IOException
 import java.io.InputStream
 import java.io.PipedInputStream
@@ -127,9 +128,7 @@ class JsBridgeInputStream : InputStream() {
 
             override fun error(data: Any?) {
                 Log.d(TAG, "${this}.error(${data})")
-                errorCause = Context.reportRuntimeError(
-                    data.toString()
-                ).run {
+                errorCause = Context.reportRuntimeError(data.toString()).run {
                     ScriptException(
                         sourceName = sourceName(),
                         lineNumber = lineNumber(),
@@ -138,7 +137,6 @@ class JsBridgeInputStream : InputStream() {
                         cause = this
                     )
                 }
-
                 try {
                     close()
                 } catch (ignored: IOException) {

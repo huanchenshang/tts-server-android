@@ -5,13 +5,8 @@ import com.github.jing332.common.utils.StringUtils
 import com.github.jing332.database.constants.ReplaceExecution
 import com.github.jing332.database.dbm
 import com.github.jing332.database.entities.systts.SpeechRuleInfo
-import com.github.jing332.tts.ConfigEmptyError
-import com.github.jing332.tts.ForceConfigIdNotFound
-import com.github.jing332.tts.HandleTextError
-import com.github.jing332.tts.NoMatchingConfigFound
-import com.github.jing332.tts.SpeechRuleNotFound
-import com.github.jing332.tts.TextProcessorError
-import com.github.jing332.tts.TtsError
+import com.github.jing332.tts.ConfigType
+import com.github.jing332.tts.error.TextProcessorError
 import com.github.jing332.tts.manager.ITextProcessor
 import com.github.jing332.tts.manager.TextSegment
 import com.github.jing332.tts.manager.TtsConfiguration
@@ -45,17 +40,18 @@ class TextProcessor : ITextProcessor {
     private var speechRules: List<SpeechRuleInfo> = emptyList()
     private val random by lazy { Random(System.currentTimeMillis()) }
 
-    /**
-     * [ConfigEmptyError]
-     */
     override fun init(
         context: Context,
-        configs: Map<Long, TtsConfiguration>
-    ): Result<Unit, TtsError> {
+        configs: Map<Long, TtsConfiguration>,
+    ): Result<Unit, TextProcessorError> {
         if (isMultiVoice) {
             val ruleId = configs.values.toList().component1().speechInfo.tagRuleId
             val speechRule =
-                dbm.speechRuleDao.getByRuleId(ruleId) ?: return Err(SpeechRuleNotFound(ruleId))
+                dbm.speechRuleDao.getByRuleId(ruleId) ?: return Err(
+                    TextProcessorError.MissingRule(
+                        ruleId
+                    )
+                )
             engine = SpeechRuleEngine(context, speechRule).apply { eval() }
             this.configs =
                 configs.entries.map { it.value.copy(speechInfo = it.value.speechInfo.copy(configId = it.key)) }
@@ -63,7 +59,7 @@ class TextProcessor : ITextProcessor {
         } else {
             this.configs = configs.values.toList()
             if (this.configs.isEmpty()) {
-                return Err(ConfigEmptyError)
+                return Err(TextProcessorError.MissingConfig(ConfigType.SINGLE_VOICE))
             } else
                 singleVoice = this.configs.random(random)
         }
@@ -96,16 +92,9 @@ class TextProcessor : ITextProcessor {
             text
     }
 
-    /**
-     * [ForceConfigIdNotFound] forceConfigId not fount in configs
-     *
-     * [HandleTextError] An error occurred in JavaScript
-     *
-     * [NoMatchingConfigFound] No matching config found
-     */
     override fun process(
         text: String,
-        forceConfigId: Long?
+        presetConfigId: Long?,
     ): Result<List<TextSegment>, TextProcessorError> {
         val resultList = mutableListOf<TextSegment>()
         val replacedText = replace(text, ReplaceExecution.BEFORE)
@@ -124,33 +113,49 @@ class TextProcessor : ITextProcessor {
             }
         }
 
-        if (forceConfigId != null) {
-            val config = configs.find { it.speechInfo.configId == forceConfigId }
+        if (presetConfigId != null) {
+            val config = configs.find { it.speechInfo.configId == presetConfigId }
             if (config == null) {
-                return Err(ForceConfigIdNotFound)
+                return Err(
+                    TextProcessorError.MissingConfig(
+                        ConfigType.PRESET,
+                        presetConfigId.toString()
+                    )
+                )
             } else
                 splitAndAdd(text, config)
         } else if (isMultiVoice) {
             val fragments = try {
                 engine.handleText(replacedText, speechRules)
             } catch (e: Exception) {
-                return Err(HandleTextError(e))
+                return Err(TextProcessorError.HandleText(e))
             }
             fragments.forEach { txtWithTag ->
                 if (txtWithTag.text.isNotBlank()) {
-                    val sameTagList = configs.filter { it.speechInfo.tag == txtWithTag.tag }
+                    val sameTagList = configs.filter {
+                        !it.speechInfo.isStandby && it.speechInfo.tag == txtWithTag.tag
+                    }
                     val configFromId = sameTagList.find { it.speechInfo.configId == txtWithTag.id }
 
                     // Exact match ID > random match in tag > random match in all
                     val config = configFromId
                         ?: sameTagList.randomOrNull(random)
                         ?: singleVoice
-                        ?: return Err(NoMatchingConfigFound)
+                        ?: return Err(
+                            TextProcessorError.MissingConfig(
+                                ConfigType.TAG,
+                                "tag=${txtWithTag.tag}, id=${txtWithTag.id}"
+                            )
+                        )
                     splitAndAdd(txtWithTag.text, config)
                 }
             }
         } else {
-            val singleVoice = singleVoice ?: return Err(NoMatchingConfigFound)
+            val singleVoice = singleVoice ?: return Err(
+                TextProcessorError.MissingConfig(
+                    ConfigType.SINGLE_VOICE, "single voice"
+                )
+            )
             splitAndAdd(replacedText, singleVoice)
         }
 

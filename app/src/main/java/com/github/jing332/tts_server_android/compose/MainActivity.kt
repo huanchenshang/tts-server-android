@@ -3,12 +3,10 @@
 package com.github.jing332.tts_server_android.compose
 
 import android.Manifest
-import android.annotation.SuppressLint
 import android.app.Activity
 import android.app.ActivityManager
 import android.content.Context
 import android.content.Intent
-import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import android.os.SystemClock
@@ -70,20 +68,13 @@ import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.unit.dp
-import androidx.core.net.toUri
 import androidx.lifecycle.viewmodel.compose.viewModel
-import androidx.navigation.NavController
-import androidx.navigation.NavDeepLinkRequest
-import androidx.navigation.NavDestination
 import androidx.navigation.NavHostController
 import androidx.navigation.NavOptions
-import androidx.navigation.NavType
-import androidx.navigation.Navigator
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
-import androidx.navigation.navArgument
 import com.github.jing332.common.DateFormatConst
 import com.github.jing332.common.utils.longToast
 import com.github.jing332.common.utils.performLongPress
@@ -101,7 +92,6 @@ import com.github.jing332.tts_server_android.compose.systts.SystemTtsScreen
 import com.github.jing332.tts_server_android.compose.systts.list.ui.widgets.TtsEditContainerScreen
 import com.github.jing332.tts_server_android.compose.theme.AppTheme
 import com.github.jing332.tts_server_android.conf.AppConfig
-import com.github.jing332.tts_server_android.constant.AppConst
 import com.github.jing332.tts_server_android.service.systts.SystemTtsService
 import com.github.jing332.tts_server_android.ui.AppHelpDocumentActivity
 import com.github.jing332.tts_server_android.utils.MyTools.killBattery

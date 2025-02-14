@@ -6,6 +6,7 @@ import com.github.jing332.database.entities.systts.TtsConfigurationDTO
 import com.github.jing332.tts.manager.ITtsRepository
 import com.github.jing332.tts.manager.StandbyInfo
 import com.github.jing332.tts.manager.TtsConfiguration
+import com.github.jing332.tts.manager.TtsConfiguration.Companion.toVO
 
 internal class TtsRepository(
     val context: ManagerContext,
@@ -27,33 +28,24 @@ internal class TtsRepository(
                 .filter { it.isEnabled && (it.config as? TtsConfigurationDTO)?.speechRule?.isStandby == true }
                 .map {
                     val config = it.config as TtsConfigurationDTO
-                    TtsConfiguration(
-                        speechInfo = config.speechRule,
-                        audioParams = config.audioParams,
-                        audioFormat = config.audioFormat,
-                        source = config.source,
-                        standbyInfo = null
-                    )
+                    config.toVO()
                 }
         for (group in groupWithTts) {
             for (tts in group.list.sortedBy { it.order }) {
                 if (!tts.isEnabled) continue
                 val c = tts.config; if (c !is TtsConfigurationDTO) continue
 
+                val standby = standbyConfigs.find {
+                    it.speechInfo.target == c.speechRule.target &&
+                            it.speechInfo.tagRuleId == c.speechRule.tagRuleId &&
+                            it.speechInfo.tagName == c.speechRule.tagName
+                }
                 map[tts.id] = TtsConfiguration(
                     speechInfo = c.speechRule,
                     audioParams = c.audioParams,
                     audioFormat = c.audioFormat,
                     source = c.source,
-                    standbyInfo =
-                    if (standbyConfigs.isEmpty()) null
-                    else {
-                        StandbyInfo(config = standbyConfigs.find {
-                            it.speechInfo.target == c.speechRule.target &&
-                                    it.speechInfo.tagRuleId == c.speechRule.tagRuleId &&
-                                    it.speechInfo.tag == c.speechRule.tagName
-                        })
-                    }
+                    standbyConfig = standby
                 )
             }
         }

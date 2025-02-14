@@ -39,6 +39,7 @@ import io.github.oshai.kotlinlogging.KotlinLogging
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import okio.IOException
 import splitties.init.appCtx
 
 
@@ -98,6 +99,8 @@ fun AuditionDialog(
                 withContext(Dispatchers.Main) {
                     onDismissRequest()
                 }
+            } catch (e: IOException) {
+                error = e.cause.toString()
             } catch (e: Exception) {
                 error = e.message ?: e.toString()
                 logger.warn { e.stackTraceToString() }

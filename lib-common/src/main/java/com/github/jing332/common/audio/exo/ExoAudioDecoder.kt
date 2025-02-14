@@ -11,9 +11,10 @@ import androidx.media3.exoplayer.audio.AudioSink
 import androidx.media3.exoplayer.source.MediaSource
 import com.drake.net.utils.withMain
 import com.github.jing332.common.audio.ExoPlayerHelper
+import com.github.jing332.common.utils.runOnUI
 import kotlinx.coroutines.cancel
+import kotlinx.coroutines.isActive
 import kotlinx.coroutines.suspendCancellableCoroutine
-import java.io.Closeable
 import java.io.InputStream
 import java.nio.ByteBuffer
 import kotlin.coroutines.Continuation
@@ -21,12 +22,7 @@ import kotlin.coroutines.resume
 import kotlin.coroutines.resumeWithException
 
 @SuppressLint("UnsafeOptInUsageError")
-class ExoAudioDecoder(val context: Context) : Closeable {
-    companion object {
-        private const val CANCEL_MESSAGE_ENDED = "CANCEL_MESSAGE_ENDED"
-        private const val CANCEL_MESSAGE_ERROR = "CANCEL_MESSAGE_ERROR"
-    }
-
+class ExoAudioDecoder(val context: Context) {
     private var mContinuation: Continuation<Unit>? = null
     var callback: Callback? = null
 
@@ -82,16 +78,27 @@ class ExoAudioDecoder(val context: Context) : Closeable {
         decodeInternal(ExoPlayerHelper.createMediaSourceFromInputStream(context, inputStream))
     }
 
-    private suspend fun decodeInternal(mediaSource: MediaSource) = withMain {
-        exoPlayer.setMediaSource(mediaSource)
-        exoPlayer.prepare()
+    private suspend fun decodeInternal(mediaSource: MediaSource) {
+        withMain {
+            if (exoPlayer.isReleased)
+                throw IllegalStateException("ExoPlayer is released")
 
-        // throw ExoPlayerException
-        suspendCancellableCoroutine<Unit> { continuation ->
-            mContinuation = continuation //直接把continuation存起来，方便后续的resumeWithException 和 resume
-            continuation.invokeOnCancellation {
-                exoPlayer.stop()
+            exoPlayer.setMediaSource(mediaSource)
+            exoPlayer.prepare()
+        }
+
+        try {
+            // throw ExoPlayerException
+            suspendCancellableCoroutine<Unit> { continuation ->
+                mContinuation = continuation
+                continuation.invokeOnCancellation {
+                    runOnUI {
+                        exoPlayer.stop()
+                    }
+                }
             }
+        } finally {
+            mContinuation = null
         }
     }
 
@@ -100,9 +107,11 @@ class ExoAudioDecoder(val context: Context) : Closeable {
         fun onReadPcmAudio(byteBuffer: ByteBuffer)
     }
 
-    override fun close() {
-        exoPlayer.release()
-        mContinuation?.context?.cancel()
+    suspend fun destroy() {
+        withMain {
+            if (!exoPlayer.isReleased) exoPlayer.release()
+        }
+        mContinuation?.context?.apply { if (isActive) cancel() }
         mContinuation = null
         callback = null
     }

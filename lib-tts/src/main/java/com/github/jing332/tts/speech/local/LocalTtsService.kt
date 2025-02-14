@@ -5,24 +5,25 @@ import android.os.Bundle
 import android.os.SystemClock
 import android.speech.tts.TextToSpeech
 import android.speech.tts.UtteranceProgressListener
-import android.util.Log
-import com.github.jing332.common.utils.SyncLock
 import com.github.jing332.database.entities.systts.AudioParams
 import com.github.jing332.database.entities.systts.source.LocalTtsParameter
 import com.github.jing332.database.entities.systts.source.LocalTtsSource
 import com.github.jing332.tts.exception.EngineException
-import com.github.jing332.tts.exception.EngineStopException
 import com.github.jing332.tts.manager.SystemParams
 import com.github.jing332.tts.speech.EngineState
 import com.github.jing332.tts.speech.ITtsService
 import io.github.oshai.kotlinlogging.KotlinLogging
-import kotlinx.coroutines.NonCancellable
+import kotlinx.coroutines.cancel
 import kotlinx.coroutines.coroutineScope
-import kotlinx.coroutines.withContext
+import kotlinx.coroutines.suspendCancellableCoroutine
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 import java.io.File
 import java.io.InputStream
 import java.util.Locale
-import kotlin.coroutines.cancellation.CancellationException
+import kotlin.coroutines.Continuation
+import kotlin.coroutines.resume
+import kotlin.math.log
 
 class LocalTtsService(
     private val context: Context,
@@ -37,13 +38,19 @@ class LocalTtsService(
 
     private var tts: TextToSpeech? = null
 
-    private val mWaiter = SyncLock()
+    private val mutex by lazy { Mutex() }
+    private var mContinuation: Continuation<Unit>? = null
     private var currentTaskId = ""
 
-    private suspend fun initLocalEngine(engine: String) {
-        if (state !is EngineState.Uninitialized)
-            return
+    private suspend fun <R> withLock(block: suspend () -> R) = coroutineScope {
+        mutex.withLock { block() }
+    }
 
+    private suspend fun initLocalEngine(engine: String) = withLock {
+        if (state !is EngineState.Uninitialized)
+            return@withLock
+
+        var initContinuation: Continuation<Unit>? = null
         state = EngineState.Initializing
         tts = TextToSpeech(
             context,
@@ -54,19 +61,19 @@ class LocalTtsService(
                     state =
                         EngineState.Uninitialized(reason = EngineException("Local TTS engine init failed"))
                 }
-                mWaiter.cancel()
+                initContinuation?.resume(Unit)
             },
             engine
         )
         tts?.setOnUtteranceProgressListener(object : UtteranceProgressListener() {
             override fun onStart(utteranceId: String?) {
-
+                logger.debug { "TextToSpeech onStart $utteranceId" }
             }
 
             override fun onDone(utteranceId: String?) {
-                Log.d(TAG, "tts done")
+                logger.debug { "TextToSpeech onDone $utteranceId" }
                 if (utteranceId == currentTaskId) {
-                    mWaiter.cancel()
+                    mContinuation?.resume(Unit)
                 }
             }
 
@@ -76,12 +83,15 @@ class LocalTtsService(
 
 
         })
-        mWaiter.await()
+
+        suspendCancellableCoroutine<Unit> {
+            initContinuation = it
+        }
     }
 
     private fun stopLocalEngine() {
         tts?.stop()
-        mWaiter.cancel(CancellationException(EngineStopException()))
+        mContinuation?.context?.cancel()
     }
 
     private fun destroyLocalEngine() {
@@ -98,7 +108,8 @@ class LocalTtsService(
         params: AudioParams,
     ): Bundle {
         engine.apply {
-            locale.let { language = Locale.forLanguageTag(it) }
+            if (locale.isNotEmpty())
+                language = Locale.forLanguageTag(locale)
 
             if (voice.isNotEmpty())
                 voices?.forEach {
@@ -107,8 +118,6 @@ class LocalTtsService(
                         this.voice = it
                     }
                 }
-
-
 
             logger.debug { "setParams: $params" }
             setSpeechRate(params.speed)
@@ -126,49 +135,47 @@ class LocalTtsService(
         source: LocalTtsSource,
         text: String,
         params: AudioParams,
-    ): File = coroutineScope {
+    ): File = withLock {
         currentTaskId = SystemClock.elapsedRealtime().toString()
 
         File(saveDir).apply { if (!exists()) mkdirs() }
         val file = File("$saveDir/$engine.wav")
-        Log.d(TAG, "synthesizeToFile: ${file.absolutePath}")
+        logger.debug { "synthesizeToFile: $file" }
         val bundle =
             setEnginePlayParams(tts!!, source.locale, source.voice, source.extraParams, params)
         tts?.synthesizeToFile(text, bundle, file, currentTaskId)
-        try {
-            mWaiter.await()
-        } catch (e: CancellationException) {
-            if (e.cause is EngineStopException)
+
+        suspendCancellableCoroutine<Unit> {
+            mContinuation = it
+            it.invokeOnCancellation {
                 kotlin.runCatching {
                     file.delete()
                 }
+            }
         }
 
-        return@coroutineScope file
+        return@withLock file
     }
 
     private suspend fun directPlay(
         source: LocalTtsSource,
         text: String,
         params: AudioParams,
-    ) {
+    ) = coroutineScope {
         currentTaskId = SystemClock.elapsedRealtime().toString()
         val bundle =
             setEnginePlayParams(tts!!, source.locale, source.voice, source.extraParams, params)
         tts?.speak(text, TextToSpeech.QUEUE_FLUSH, bundle, currentTaskId)
-        await()
-    }
 
-    private suspend fun await() {
-        try {
-            mWaiter.await()
-        } catch (e: CancellationException) {
-            withContext(NonCancellable) {
+        suspendCancellableCoroutine<Unit> {
+            mContinuation = it
+
+            it.invokeOnCancellation {
                 stopLocalEngine()
             }
-            throw e
         }
     }
+
 
     private suspend fun init(source: LocalTtsSource, params: SystemParams): AudioParams {
         initLocalEngine(engine)

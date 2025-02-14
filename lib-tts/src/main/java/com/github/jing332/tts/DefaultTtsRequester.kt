@@ -1,5 +1,7 @@
 package com.github.jing332.tts
 
+import com.github.jing332.tts.error.RequesterError
+import com.github.jing332.tts.error.RequesterError.RequestError
 import com.github.jing332.tts.manager.ITtsRequester
 import com.github.jing332.tts.manager.SystemParams
 import com.github.jing332.tts.manager.TtsConfiguration
@@ -8,16 +10,15 @@ import com.github.michaelbull.result.Err
 import com.github.michaelbull.result.Ok
 import com.github.michaelbull.result.Result
 
-class TtsRequester(
+class DefaultTtsRequester(
     var context: ManagerContext,
 ) : ITtsRequester {
-
     override suspend fun request(
         params: SystemParams, tts: TtsConfiguration
-    ): Result<ITtsRequester.Result, RequesterError> {
+    ): Result<ITtsRequester.Response, RequesterError> {
         val engine =
             CachedEngineManager.getEngine(context.androidContext, tts.source) ?: return Err(
-                InitializationError("engine ${tts.source} not found")
+                RequesterError.StateError("engine ${tts.source} not found")
             )
         if (engine.state != EngineState.Initialized) {
             engine.onInit()
@@ -25,7 +26,7 @@ class TtsRequester(
 
         return if (engine.isSyncPlay(tts.source)) {
             Ok(
-                ITtsRequester.Result(
+                ITtsRequester.Response(
                     callback = ITtsRequester.ISyncPlayCallback {
                         engine.syncPlay(params, tts.source)
                     }
@@ -34,10 +35,10 @@ class TtsRequester(
         } else {
             try {
                 Ok(
-                    ITtsRequester.Result(stream = engine.getStream(params, tts.source))
+                    ITtsRequester.Response(stream = engine.getStream(params, tts.source))
                 )
             } catch (e: Exception) {
-                Err(RequestError(e))
+                Err(RequesterError.RequestError(e))
             }
 
         }

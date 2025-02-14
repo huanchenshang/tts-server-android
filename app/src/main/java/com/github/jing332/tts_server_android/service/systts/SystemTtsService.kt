@@ -8,6 +8,7 @@ import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
+import android.content.res.Resources
 import android.graphics.Color
 import android.media.AudioFormat
 import android.net.wifi.WifiManager
@@ -17,6 +18,8 @@ import android.speech.tts.SynthesisRequest
 import android.speech.tts.TextToSpeech
 import android.speech.tts.TextToSpeechService
 import android.speech.tts.Voice
+import android.util.Log
+import androidx.annotation.StringRes
 import androidx.core.content.ContextCompat
 import com.github.jing332.common.utils.longToast
 import com.github.jing332.common.utils.registerGlobalReceiver
@@ -26,14 +29,18 @@ import com.github.jing332.common.utils.startForegroundCompat
 import com.github.jing332.common.utils.toHtmlBold
 import com.github.jing332.database.dbm
 import com.github.jing332.database.entities.systts.TtsConfigurationDTO
-import com.github.jing332.tts.ConfigEmptyError
-import com.github.jing332.tts.ForceConfigIdNotFound
+
 import com.github.jing332.tts.TtsManagerConfig
 import com.github.jing332.tts.TtsManagerImpl
+import com.github.jing332.tts.error.StreamProcessorError
+import com.github.jing332.tts.error.SynthesisError
+import com.github.jing332.tts.error.TextProcessorError
 import com.github.jing332.tts.manager.ITtsManager
 import com.github.jing332.tts.manager.SystemParams
-import com.github.jing332.tts.manager.event.EventType
-import com.github.jing332.tts.manager.event.IEventListener
+import com.github.jing332.tts.manager.event.ErrorEvent
+import com.github.jing332.tts.manager.event.Event
+import com.github.jing332.tts.manager.event.IEventDispatcher
+import com.github.jing332.tts.manager.event.NormalEvent
 import com.github.jing332.tts_server_android.R
 import com.github.jing332.tts_server_android.compose.MainActivity
 import com.github.jing332.tts_server_android.conf.SysTtsConfig
@@ -44,18 +51,21 @@ import com.github.michaelbull.result.Err
 import com.github.michaelbull.result.Ok
 import com.github.michaelbull.result.Result
 import com.github.michaelbull.result.onFailure
+import com.github.michaelbull.result.onSuccess
 import io.github.oshai.kotlinlogging.KotlinLogging
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.async
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import java.util.Locale
+import kotlin.jvm.Throws
 import kotlin.system.exitProcess
 
 
 @Suppress("DEPRECATION")
-class SystemTtsService : TextToSpeechService(), IEventListener {
+class SystemTtsService : TextToSpeechService(), IEventDispatcher {
     companion object {
         const val TAG = "SystemTtsService"
         private val logger = KotlinLogging.logger(TAG)
@@ -86,8 +96,8 @@ class SystemTtsService : TextToSpeechService(), IEventListener {
     private val mTextProcessor = TextProcessor()
     private val mTtsManager: ITtsManager by lazy {
         TtsManagerImpl.global.apply {
-            context.androidContext = this@SystemTtsService
-            context.eventListener = this@SystemTtsService
+            context.androidContext = this@SystemTtsService.applicationContext
+            context.event = this@SystemTtsService
             context.cfg = TtsManagerConfig(
                 requestTimeout = SysTtsConfig::requestTimeout,
                 maxRetryTimes = SysTtsConfig::maxRetryCount,
@@ -140,21 +150,7 @@ class SystemTtsService : TextToSpeechService(), IEventListener {
 
     fun initManager() {
         mScope.launch {
-            mTtsManager.init().onFailure {
-                when (it) {
-                    ConfigEmptyError -> {
-                        getString(R.string.config_empty_error).let {
-                            longToast(it)
-                            logE(it)
-                        }
-                    }
-
-                    else -> {
-                        logE("init failed: $it")
-                        longToast("init failed: $it")
-                    }
-                }
-            }
+            mTtsManager.init()
         }
     }
 
@@ -207,7 +203,7 @@ class SystemTtsService : TextToSpeechService(), IEventListener {
     override fun onGetDefaultVoiceNameFor(
         lang: String?,
         country: String?,
-        variant: String?
+        variant: String?,
     ): String {
         return DEFAULT_VOICE_NAME
     }
@@ -281,8 +277,8 @@ class SystemTtsService : TextToSpeechService(), IEventListener {
 
     override fun onSynthesizeText(
         request: SynthesisRequest,
-        callback: android.speech.tts.SynthesisCallback
-    ) = runBlocking {
+        callback: android.speech.tts.SynthesisCallback,
+    ) {
         mNotificationJob?.cancel()
         reNewWakeLock()
         startForegroundService()
@@ -291,46 +287,56 @@ class SystemTtsService : TextToSpeechService(), IEventListener {
         updateNotification(getString(R.string.systts_state_synthesizing), text)
 
         if (text.isBlank()) {
+            logger.debug { "空文本请求，跳过" }
             callback.start(16000, AudioFormat.ENCODING_PCM_16BIT, 1)
             callback.done()
         } else
-            synthesizerJob = mScope.launch {
+            runBlocking {
                 // If the voiceName is not empty, get the configuration ID from the voiceName.
                 var cfgId: Long? = getConfigIdFromVoiceName(request.voiceName ?: "").onFailure {
                     longToast(R.string.voice_name_bad_format)
                     callback.error(TextToSpeech.ERROR_INVALID_REQUEST)
-                    return@launch
+                    return@runBlocking
                 }.value
+                synthesizerJob = async {
+                    mTtsManager.synthesize(
+                        params = SystemParams(text = request.charSequenceText.toString()),
+                        forceConfigId = cfgId,
+                        callback = object :
+                            com.github.jing332.tts.manager.SynthesisCallback {
+                            override fun onSynthesizeStart(sampleRate: Int) {
+                                callback.start(
+                                    /* sampleRateInHz = */ sampleRate,
+                                    /* audioFormat = */ AudioFormat.ENCODING_PCM_16BIT,
+                                    /* channelCount = */ 1
+                                )
+                            }
 
-                mTtsManager.synthesize(
-                    params = SystemParams(text = request.charSequenceText.toString()),
-                    forceConfigId = cfgId,
-                    callback = object :
-                        com.github.jing332.tts.manager.SynthesisCallback {
-                        override fun onSynthesizeStart(sampleRate: Int) {
-                            callback.start(
-                                /* sampleRateInHz = */ sampleRate,
-                                /* audioFormat = */ AudioFormat.ENCODING_PCM_16BIT,
-                                /* channelCount = */ 1
-                            )
+                            override fun onSynthesizeAvailable(audio: ByteArray) {
+                                writeToCallBack(callback, audio)
+                            }
+
                         }
+                    ).onSuccess {
+                        logger.debug { "done" }
+                        callback.done()
+                    }.onFailure {
+                        logE("error: $it")
+                        when (it) {
+                            SynthesisError.ConfigEmpty -> {
+                                callback.error(TextToSpeech.ERROR_SYNTHESIS)
+                            }
 
-                        override fun onSynthesizeAvailable(audio: ByteArray) {
-                            writeToCallBack(callback, audio)
+                            SynthesisError.NotFoundPresetConfig -> {
+                                longToast(getString(R.string.tts_config_not_exist))
+                                callback.error(TextToSpeech.ERROR_INVALID_REQUEST)
+                            }
                         }
-
-                    }
-                ).onFailure {
-                    logE("error: $it")
-                    if (it is ForceConfigIdNotFound) {
-                        longToast(getString(R.string.tts_config_not_exist))
-                        callback.error(TextToSpeech.ERROR_INVALID_REQUEST)
                     }
                 }
+                synthesizerJob?.join()
             }
-        synthesizerJob?.join()
-        callback.done()
-        logger.debug { "done" }
+
 
         mNotificationJob = mScope.launch {
             delay(5000)
@@ -341,7 +347,7 @@ class SystemTtsService : TextToSpeechService(), IEventListener {
 
     private fun writeToCallBack(
         callback: android.speech.tts.SynthesisCallback,
-        pcmData: ByteArray
+        pcmData: ByteArray,
     ) {
         try {
             val maxBufferSize: Int = callback.maxBufferSize
@@ -489,64 +495,125 @@ class SystemTtsService : TextToSpeechService(), IEventListener {
     private fun logD(msg: String) = logger.debug(msg)
     private fun logI(msg: String) = logger.info(msg)
     private fun logW(msg: String) = logger.warn(msg)
-    private fun logE(msg: String) {
+    private fun logE(msg: String, throwable: Throwable? = null) {
         updateNotification("⚠️ " + getString(R.string.error), msg)
+        Log.e(TAG, msg, throwable)
 
         logger.error(msg)
     }
 
-    override fun onEvent(event: EventType) {
+    @Throws(Resources.NotFoundException::class)
+    private fun logE(@StringRes strId: Int, throwable: Throwable? = null) {
+        logE(getString(strId, throwable), throwable)
+    }
+
+    override fun dispatch(event: Event) {
         when (event) {
-            is EventType.Request ->
-                if (event.retries > 0)
-                    logW(getString(R.string.systts_log_start_retry, event.retries))
+            is ErrorEvent -> errorEvent(event)
+            is NormalEvent -> normalEvent(event)
+            else -> {
+                logE("Unknown event: $event")
+            }
+        }
+    }
+
+    private fun normalEvent(e: NormalEvent) {
+        when (e) {
+            is NormalEvent.Request ->
+                if (e.retries > 0)
+                    logW(getString(R.string.systts_log_start_retry, e.retries))
                 else
                     logI(
                         getString(
                             R.string.systts_log_request_audio,
-                            event.params.text.toHtmlBold() + "<br>" + event.config.source.voice
+                            e.request.text.toHtmlBold() + "<br>" + e.request.config.source.voice
                         )
                     )
 
 
-            is EventType.DirectPlay -> logI(
+            is NormalEvent.DirectPlay -> logI(
                 getString(
                     R.string.systts_log_direct_play,
-                    event.fragment.text.toHtmlBold()
+                    e.request.text.toHtmlBold()
                 )
             )
 
-            is EventType.RequestSuccess -> logI(
+            is NormalEvent.ReadAllFromStream -> {
+                if (e.size > 0)
+                    logI(
+                        getString(
+                            R.string.systts_log_success,
+                            e.size.sizeToReadable(),
+                            "${e.costTime}ms"
+                        ) + "<br> ${e.request.text}"
+                    )
+            }
+
+            is NormalEvent.HandleStream ->
+                logI(
+                    getString(
+                        R.string.loading_audio_stream,
+                        e.request.params.text
+                    )
+                )
+
+            is NormalEvent.StandbyTts -> logI(
                 getString(
-                    R.string.systts_log_success,
-                    if (event.size > 0) event.size.sizeToReadable() else getString(R.string.unknown),
-                    "${event.timeCost}ms"
-                )
+                    R.string.use_standby_tts
+                ) + e.request.config.source.voice
             )
 
-            is EventType.RequestTimeout -> logW(
+            NormalEvent.RequestCountEnded -> logW(getString(R.string.reach_retry_limit))
+        }
+    }
+
+    private fun errorEvent(e: ErrorEvent) {
+        when (e) {
+            is ErrorEvent.TextProcessor -> handleTextProcessorError(e.error)
+            is ErrorEvent.Request -> logE(R.string.systts_log_failed, e.cause)
+            is ErrorEvent.RequestTimeout -> logW(
                 getString(
                     R.string.failed_timed_out,
                     SysTtsConfig.requestTimeout
                 )
             )
 
-            is EventType.StandbyTts -> logI(
-                getString(
-                    R.string.systts_set_standby
-                ) + event.tts
-            )
+            ErrorEvent.ConfigEmpty -> {}
+            is ErrorEvent.BgmLoading -> {}
+            is ErrorEvent.Repository -> {}
+            is ErrorEvent.DirectPlay -> logE(getString(R.string.systts_log_direct_play, e.cause))
+            is ErrorEvent.ResultProcessor -> e.error.let { processor ->
+                when (processor) {
+                    is StreamProcessorError.AudioDecoding -> logE(
+                        getString(
+                            R.string.audio_decoding_error,
+                            processor.error.toString()
+                        )
+                    )
 
-            EventType.RequestCountEnded -> logW("到达重试上限，跳过！")
+                    is StreamProcessorError.AudioSource -> logE(
+                        getString(
+                            R.string.audio_source_error,
+                            processor.error.toString()
+                        )
+                    )
 
-            is EventType.AudioSourceError -> logE("音频源错误: ${event.cause}")
-
-            is EventType.AudioDecodingError -> logE("音频解码错误: ${event.cause}")
-
-            is EventType.Error -> {
-                logger.error(event.cause) { "EventType.Error" }
-                logE(event.cause.toString())
+                    is StreamProcessorError.HandleError -> logE(
+                        getString(
+                            R.string.stream_handle_error,
+                            processor.error.toString()
+                        )
+                    )
+                }
             }
+        }
+    }
+
+    private fun handleTextProcessorError(err: TextProcessorError) {
+        when (err) {
+            is TextProcessorError.HandleText -> logE("", err.error)
+            is TextProcessorError.MissingConfig -> TODO()
+            is TextProcessorError.MissingRule -> TODO()
         }
     }
 

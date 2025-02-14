@@ -66,12 +66,6 @@ class TtsManagerImplTest {
                     }
                 }
 
-                override fun onSynthesizeError(code: Int, reason: Exception?) {
-                    reason?.printStackTrace()
-                }
-
-                override fun onSynthesizeFinish() {
-                }
 
                 override fun onSynthesizeAvailable(audio: ByteArray) {
 //                    println("onSynthesizeAvailable: ${audio.size}")

@@ -345,7 +345,7 @@
     <string name="import_file_as">导入文件为…</string>
     <string name="systts_no_speech_target_all">⚠️ 缺少{朗读全部}，使用默认！ 请确保开启多语音选项。</string>
     <string name="stream_audio_mode">流式播放音频</string>
-    <string name="stream_audio_mode_summary">即边下边播，对网络稳定性要求高。(开启后将无法自动失败重试/备用TTS)</string>
+    <string name="stream_audio_mode_summary">即边下边播，对网络稳定性要求高。</string>
     <string name="use_exo_decoder">使用ExoPlayer解码器</string>
     <string name="use_exo_decoder_summary">ExoPlayer为谷歌开发的媒体播放器，其兼容性更高。开启后将直接用其内部解码器进行音频解码。</string>
     <string name="plugin_not_define_vars">此插件未定义变量</string>
@@ -442,4 +442,10 @@
     <string name="config_empty_error">无可用的TTS配置，请检查是否启用。</string>
     <string name="silent_audio">快节奏播放</string>
     <string name="silent_audio_summary">去除音频中的静音、停顿部分</string>
+    <string name="loading_audio_stream">加载流：%1$s</string>
+    <string name="audio_decoding_error">解码错误：%1$s</string>
+    <string name="audio_source_error">源错误：%1$s</string>
+    <string name="stream_handle_error">流错误：%1$s</string>
+    <string name="use_standby_tts">使用备用TTS：%1$s</string>
+    <string name="reach_retry_limit">到达重试上限，跳过！</string>
 </resources>

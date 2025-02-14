@@ -1,16 +1,15 @@
 package com.github.jing332.tts.manager
 
-import com.github.jing332.tts.AudioDecodingError
-import com.github.jing332.tts.AudioSourceError
-import com.github.jing332.tts.ConfigEmptyError
-import com.github.jing332.tts.GetBgmError
-import com.github.jing332.tts.InitializationError
+import com.github.jing332.common.utils.StringUtils
+import com.github.jing332.tts.ConfigType
 import com.github.jing332.tts.ManagerContext
-import com.github.jing332.tts.RepoInitError
-import com.github.jing332.tts.RequestError
-import com.github.jing332.tts.TtsError
-import com.github.jing332.tts.manager.event.EventType
-import com.github.jing332.tts.manager.event.IEventListener
+import com.github.jing332.tts.error.RequesterError
+import com.github.jing332.tts.error.SynthesisError
+import com.github.jing332.tts.error.TextProcessorError
+import com.github.jing332.tts.manager.event.ErrorEvent
+import com.github.jing332.tts.manager.event.Event
+import com.github.jing332.tts.manager.event.NormalEvent
+import com.github.jing332.tts.speech.EmptyInputStream
 import com.github.michaelbull.result.Err
 import com.github.michaelbull.result.Ok
 import com.github.michaelbull.result.Result
@@ -21,30 +20,30 @@ import kotlinx.coroutines.CoroutineName
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withTimeoutOrNull
-import java.io.ByteArrayInputStream
 import java.io.InputStream
+import kotlin.math.pow
 
 abstract class AbstractTtsManager() : ITtsManager {
     private val logger: KLogger
         get() = context.logger
-
-    private val eventListener: IEventListener?
-        get() = context.eventListener
 
 
     abstract val context: ManagerContext
 
     abstract val textProcessor: ITextProcessor
     abstract val ttsRequester: ITtsRequester
-    abstract val resultProcessor: IResultProcessor
+    abstract val streamProcessor: IResultProcessor
     abstract val repo: ITtsRepository
     abstract val bgmPlayer: IBgmPlayer
 
-    private var isInitialized: Boolean = false
+    var isInitialized: Boolean = false
+        private set
+
     private var maxSampleRate: Int = 16000
     private var mAllTts: Map<Long, TtsConfiguration> = mapOf()
         set(value) {
@@ -54,182 +53,168 @@ abstract class AbstractTtsManager() : ITtsManager {
                     ?: 16000
         }
 
+    private fun event(event: Event) {
+        context.event?.dispatch(event)
+    }
+
     /**
-     * @return true if error
+     * @return null means presetConfigId is not found from database
      */
-    private inline fun <R> catchError(message: () -> String, block: () -> R): Boolean {
-        try {
-            block()
-            return false
-        } catch (e: Throwable) {
-            onEvent(EventType.Error(Exception(message())))
-        }
-        return true
-    }
-
-    private fun onEvent(event: EventType) {
-        eventListener?.onEvent(event)
-    }
-
     private suspend fun textProcess(
-        channel: Channel<Any>,
+        channel: Channel<ChannelPayload>,
         params: SystemParams,
-        forceConfigId: Long?
-    ): List<TextSegment> {
-        val processRet = textProcessor.process(params.text, forceConfigId)
-        processRet.onSuccess { list ->
-            return list
-        }.onFailure { err ->
-            channel.send(err)
-        }
+        presetConfigId: Long?,
+    ): List<TextSegment>? {
+        textProcessor
+            .process(params.text, presetConfigId)
+            .onSuccess { list -> return list.filterNot { StringUtils.isSilent(it.text) } }
+            .onFailure { err: TextProcessorError ->
+                event(ErrorEvent.TextProcessor(err))
+                if (err is TextProcessorError.MissingConfig && err.type == ConfigType.PRESET)
+                    return null
+
+            }
 
         return emptyList()
     }
 
-    private suspend fun requestAndProcess(
-        channel: Channel<Any>,
-        params: SystemParams,
-        config: TtsConfiguration,
-
-        retries: Int = 0,
-        maxRetries: Int = context.cfg.maxRetryTimes(),
-    ) {
-        suspend fun retry() {
-            return if (config.standbyInfo?.config != null && config.standbyInfo.tryTimesWhenTrigger > retries) {
-                onEvent(EventType.StandbyTts(params, config.standbyInfo.config))
-                requestAndProcess(
-                    channel,
-                    params,
-                    config.standbyInfo.config,
-                    retries + 1,
-                    maxRetries
-                )
-            } else
-                requestAndProcess(channel, params, config, retries + 1, maxRetries)
-        }
-
-        if (retries > maxRetries) {
-            onEvent(EventType.RequestCountEnded)
-            return
-        }
-
-        onEvent(EventType.Request(params, config, retries))
-
-        val time = System.currentTimeMillis()
+    /**
+     * @return null means request failed, [EmptyInputStream] means direct play
+     *
+     */
+    private suspend fun requestInternal(
+        request: RequestPayload,
+        playCallback: suspend (ITtsRequester.ISyncPlayCallback) -> Unit,
+    ): InputStream? {
         val result = withTimeoutOrNull(context.cfg.requestTimeout()) {
-            ttsRequester.request(params, config)
+            ttsRequester.request(request.params, request.config)
         }
         if (result == null) { // timed out
-            onEvent(EventType.RequestTimeout(params, config))
-            return retry()
+            event(ErrorEvent.RequestTimeout(request))
+            return null
         }
 
-        result.onSuccess { ret ->
-            ret.onStream { stream ->
-                var size: Int = 0
-                val niceStream: InputStream =
-                    if (context.cfg.streamPlayEnabled()) stream
-                    else stream.use {
-                        val bytes = it.readBytes()
-                        size = bytes.size
-                        ByteArrayInputStream(bytes)
-                    }
-
-                onEvent(
-                    EventType.RequestSuccess(
-                        timeCost = System.currentTimeMillis() - time,
-                        size = size,
-                        params = params,
-                        config = config
-                    )
-                )
-
-                resultProcessor.processStream(
-                    ins = niceStream,
-                    tts = config,
-                    targetSampleRate = maxSampleRate,
-                    callback = { pcmAudio -> channel.send(pcmAudio) }
-                ).onFailure { e ->
-                    when (e) {
-                        is AudioDecodingError -> {
-                            onEvent(
-                                EventType.AudioDecodingError(params, config, e.cause)
-                            )
-                        }
-
-                        is AudioSourceError -> onEvent(
-                            EventType.AudioSourceError(params, config, e.cause)
-                        )
-                    }
-
-                    return retry()
-                }
-            }.onCallback {
-                channel.send(
-                    DirectPlayCallbackWithConfig(
-                        fragment = TextSegment(params.text, config), callback = it
-                    )
-                )
+        result.onSuccess { resp ->
+            resp.onCallback {
+                playCallback(it)
+                return EmptyInputStream
+            }.onStream { ins ->
+                return ins
             }
         }.onFailure {
             when (it) {
-                is RequestError -> {
-                    onEvent(EventType.RequestError(params, config, it.cause))
+                is RequesterError.RequestError -> {
+                    event(ErrorEvent.Request(request, it.error))
                 }
 
-                is InitializationError -> {
-                    onEvent(
-                        EventType.RequestError(
-                            params,
-                            config,
-                            Exception(it.reason)
-                        )
-                    )
+                is RequesterError.StateError -> {
+                    event(ErrorEvent.Request(request, IllegalStateException(it.message)))
                 }
             }
+
+            return null
+        }
+
+        return null
+    }
+
+
+    private suspend fun requestAndProcess(
+        channel: Channel<ChannelPayload>,
+        params: SystemParams,
+        config: TtsConfiguration,
+        retries: Int = 0,
+        maxRetries: Int = context.cfg.maxRetryTimes(),
+    ) {
+        val request = RequestPayload(params, config)
+        suspend fun retry() {
+            return if (config.standbyConfig != null && context.cfg.toggleTry() > retries) {
+                event(NormalEvent.StandbyTts(request.copy(config = config.standbyConfig)))
+                requestAndProcess(channel, params, config.standbyConfig, 0, maxRetries)
+            } else {
+                val next = retries + 1
+                // 2^[next] * 100ms
+                val ms = Double.fromBits(2).pow(next.coerceAtMost(5)) * 100
+                delay(ms.toLong())
+                requestAndProcess(channel, params, config, next, maxRetries)
+            }
+        }
+
+        if (retries > maxRetries) {
+            event(NormalEvent.RequestCountEnded)
+            return
+        }
+
+        logger.debug { "start request: $retries, ${params}, ${config}" }
+        event(NormalEvent.Request(request, retries))
+
+        val stream =
+            requestInternal(request, playCallback = {
+                logger.debug { "send direct play callback..." }
+                channel.send(ChannelPayload.DirectPlayCallback(request, it))
+            })
+
+        if (stream == null) return retry() // request failed
+        else if (stream is EmptyInputStream) return // direct play
+
+        streamProcessor.processStream(
+            stream,
+            request,
+            maxSampleRate,
+            callback = { pcm -> channel.send(ChannelPayload.Bytes(pcm)) }
+        ).onFailure { e ->
+            event(ErrorEvent.ResultProcessor(request, e))
             return retry()
         }
     }
 
     private suspend fun internalSynthesize(
-        params: SystemParams, callback: SynthesisCallback, forceConfigId: Long?
-    ): Result<Unit, TtsError> = coroutineScope {
+        params: SystemParams, callback: SynthesisCallback, presetConfigId: Long?,
+    ): Result<Unit, SynthesisError> = coroutineScope {
         if (mAllTts.isEmpty()) {
-            return@coroutineScope Err(ConfigEmptyError)
+            return@coroutineScope Err(SynthesisError.ConfigEmpty)
         }
+        logger.debug { "onSynthesizeStart: sampleRate=${maxSampleRate}" }
         callback.onSynthesizeStart(maxSampleRate)
 
-        val channel = Channel<Any>(Channel.UNLIMITED)
+        val channel = Channel<ChannelPayload>(Channel.UNLIMITED)
         launch(Dispatchers.IO + CoroutineName("TtsManager")) {
-            val list = textProcess(channel, params, forceConfigId)
-            for (fragment in list) {
-                requestAndProcess(channel, params.copy(text = fragment.text), fragment.tts)
-            }
+            val list = textProcess(channel, params, presetConfigId)
+            if (list == null)
+                channel.send(ChannelPayload.NotFoundPresetConfig)
+            else
+                for (fragment in list) {
+                    requestAndProcess(channel, params.copy(text = fragment.text), fragment.tts)
+                }
+
             logger.debug { "channel.close()..." }
             channel.close()
         }
 
-        for (data in channel) {
-            when (data) {
-                is ByteArray -> {
-                    callback.onSynthesizeAvailable(data)
-                }
+        try {
+            for (payload in channel) {
+                when (payload) {
+                    is ChannelPayload.Bytes -> callback.onSynthesizeAvailable(payload.data)
 
-                is DirectPlayCallbackWithConfig -> try {
-                    onEvent(EventType.DirectPlay(data.fragment))
-                    data.callback.play()
-                } catch (e: Exception) {
-                    onEvent(EventType.DirectPlayError(data.fragment, e))
-                } finally {
-                    logger.debug { "direct play done" }
-                }
+                    is ChannelPayload.DirectPlayCallback -> try {
+                        event(NormalEvent.DirectPlay(payload.request))
+                        payload.callback.play()
+                    } catch (e: Exception) {
+                        event(ErrorEvent.DirectPlay(payload.request, e))
+                    } finally {
+                        logger.debug { "direct play done" }
+                    }
 
-                is TtsError -> {
-                    return@coroutineScope Err(data)
+                    is ChannelPayload.NotFoundPresetConfig -> {
+                        return@coroutineScope Err(SynthesisError.NotFoundPresetConfig)
+                    }
+
+                    else -> logger.error { "unknown data: $payload" }
                 }
             }
+        } finally {
+            logger.debug { "channel closed" }
         }
-        logger.debug { "channel closed" }
 
         Ok(Unit)
     }
@@ -241,8 +226,8 @@ abstract class AbstractTtsManager() : ITtsManager {
 
 
     override suspend fun synthesize(
-        params: SystemParams, forceConfigId: Long?, callback: SynthesisCallback
-    ): Result<Unit, TtsError> = mutex.withLock {
+        params: SystemParams, forceConfigId: Long?, callback: SynthesisCallback,
+    ): Result<Unit, SynthesisError> = mutex.withLock {
         logger.atTrace {
             message = "synthesize"
             payload = mapOf(
@@ -255,23 +240,31 @@ abstract class AbstractTtsManager() : ITtsManager {
         try {
             internalSynthesize(params, callback, forceConfigId)
         } finally {
+            logger.debug { "synthesize done" }
             bgmPlayer.stop()
         }
     }
 
-    override suspend fun  init(): Result<Unit, TtsError> = mutex.withLock {
+    override suspend fun init() = mutex.withLock {
         try {
             repo.init()
         } catch (e: Exception) {
-            return Err(RepoInitError(e))
+            event(ErrorEvent.Repository(e))
+            return@withLock
         }
 
         mAllTts = repo.getAllTts()
-        if (mAllTts.isEmpty()) return Err(ConfigEmptyError)
+        if (mAllTts.isEmpty()) {
+            event(ErrorEvent.ConfigEmpty)
+            return@withLock
+        }
 
         textProcessor.init(context.androidContext, mAllTts).onFailure {
-            return Err(it)
+            event(ErrorEvent.TextProcessor(it))
+            return@withLock
         }
+
+        streamProcessor.init(context.androidContext)
 
         val bgmList = mutableListOf<BgmSource>()
         try {
@@ -280,25 +273,31 @@ abstract class AbstractTtsManager() : ITtsManager {
                     bgmList.add(BgmSource(path = it, volume = bgm.volume))
                 }
             }
+            bgmPlayer.setPlayList(list = bgmList)
         } catch (e: Exception) {
-            return Err(GetBgmError(e))
+            event(ErrorEvent.BgmLoading(e))
+            return@withLock
         }
 
-        bgmPlayer.setPlayList(list = bgmList)
         isInitialized = true
-        return Ok(Unit)
     }
 
 
-    override suspend fun destroy() {
+    override suspend fun destroy() = mutex.withLock {
+        isInitialized = false
         repo.destroy()
         ttsRequester.destroy()
+        streamProcessor.destroy()
         bgmPlayer.destroy()
     }
 
+    sealed interface ChannelPayload {
+        data class Bytes(val data: ByteArray) : ChannelPayload
+        data class DirectPlayCallback(
+            val request: RequestPayload,
+            val callback: ITtsRequester.ISyncPlayCallback,
+        ) : ChannelPayload
 
-    class DirectPlayCallbackWithConfig(
-        val fragment: TextSegment,
-        val callback: ITtsRequester.ISyncPlayCallback,
-    )
+        data object NotFoundPresetConfig : ChannelPayload
+    }
 }

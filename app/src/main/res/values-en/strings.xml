@@ -347,7 +347,7 @@
     <string name="import_file_as">Import file as …</string>
     <string name="systts_no_speech_target_all">⚠️ Missing {Read Aloud} feature, using default! Please make sure to enable multiple language voice options.</string>
     <string name="stream_audio_mode">Stream audio</string>
-    <string name="stream_audio_mode_summary">Enabling streaming playback, i.e. downloading and playing at the same time, is not currently supported by the built-in TTS, and requires proactive adaptation of the plugin TTS.</string>
+    <string name="stream_audio_mode_summary">Enabling streaming playback</string>
     <string name="use_exo_decoder">Use ExoPlayer Decoder</string>
     <string name="use_exo_decoder_summary">ExoPlayer is a media player developed by Google, which has higher compatibility. Enabling it will directly use its internal decoder for audio decoding.</string>
     <string name="plugin_not_define_vars">This plugin does not define variable</string>
@@ -444,4 +444,10 @@
     <string name="config_empty_error">No available TTS configuration, please check if it is enabled.</string>
     <string name="silent_audio">Fast-paced playback</string>
     <string name="silent_audio_summary">Remove silent and pause parts from the audio</string>
+    <string name="loading_audio_stream">Loading stream: %1$s</string>
+    <string name="audio_decoding_error">解码错误：%1$s</string>
+    <string name="audio_source_error">源错误：%1$s</string>
+    <string name="stream_handle_error">流错误：%1$s</string>
+    <string name="use_standby_tts">使用备用TTS：%1$s</string>
+    <string name="reach_retry_limit">到达重试上限，跳过！</string>
 </resources>

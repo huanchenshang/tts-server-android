@@ -97,8 +97,7 @@ class TtsPluginEngineTest {
 
         val plugin = Plugin(code = code, userVars = mapOf("token" to "value-token"))
         val tte = TtsPluginUiEngineV2(context, plugin)
-        tte.eval()
-//        tte.onLoadData()
+ //        tte.onLoadData()
 //        val locales = tte.getLocales()
         val voices = tte.getVoices("zh-CN")
 
@@ -157,10 +156,7 @@ class TtsPluginEngineTest {
             
        } 
         """.trimIndent()
-        val ttsEngineService = object : PluginTtsService(context, "plugin.id") {
-            override fun getPlugin(id: String): Plugin {
-                return Plugin(code = code)
-            }
+        val ttsEngineService = object : PluginTtsService(context, Plugin(code = code)) {
         }
         val job = launch(Dispatchers.IO) {
             ttsEngineService.onInit()

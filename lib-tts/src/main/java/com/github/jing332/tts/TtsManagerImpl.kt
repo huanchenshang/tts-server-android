@@ -13,8 +13,8 @@ open class TtsManagerImpl(
     final override val context: ManagerContext
 ) : AbstractTtsManager() {
     override var textProcessor: ITextProcessor = TextProcessor(context)
-    override var ttsRequester: ITtsRequester = TtsRequester(context)
-    override var resultProcessor: IResultProcessor = ResultProcessor(context)
+    override var ttsRequester: ITtsRequester = DefaultTtsRequester(context)
+    override var streamProcessor: IResultProcessor = DefaultResultProcessor(context)
     override var repo: ITtsRepository = TtsRepository(context)
     override var bgmPlayer: IBgmPlayer = BgmPlayer(context)
 

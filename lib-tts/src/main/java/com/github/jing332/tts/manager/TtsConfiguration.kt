@@ -12,7 +12,7 @@ data class TtsConfiguration(
     val audioFormat: BaseAudioFormat = BaseAudioFormat(),
     val source: ITtsSource,
 
-    val standbyInfo: StandbyInfo? = null,
+    val standbyConfig: TtsConfiguration? = null
 ) {
     companion object {
         fun TtsConfigurationDTO.toVO(): TtsConfiguration {
@@ -21,7 +21,7 @@ data class TtsConfiguration(
                 audioParams = audioParams,
                 audioFormat = audioFormat,
                 source = source,
-                standbyInfo = null,
+                standbyConfig = null,
             )
         }
 
