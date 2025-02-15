@@ -4,9 +4,6 @@ import android.content.Context
 import android.widget.LinearLayout
 import com.github.jing332.common.utils.dp
 import com.github.jing332.database.entities.plugin.Plugin
-import com.github.jing332.script.source.ScriptSource
-import com.github.jing332.script.source.StringScriptSource
-import com.github.jing332.script.withRhinoContext
 import org.mozilla.javascript.ScriptableObject
 import java.util.Locale
 
@@ -40,7 +37,7 @@ class TtsPluginUiEngineV2(context: Context, plugin: Plugin) : TtsPluginEngineV2(
 
 
     fun getSampleRate(locale: String, voice: String): Int? {
-        runtime.console?.debug("getSampleRate($locale, $voice)")
+        runtime.console.debug("getSampleRate($locale, $voice)")
 
         return engine.invokeMethod(
             editUiJsObject,
@@ -54,7 +51,7 @@ class TtsPluginUiEngineV2(context: Context, plugin: Plugin) : TtsPluginEngineV2(
     }
 
     fun isNeedDecode(locale: String, voice: String): Boolean {
-        runtime?.console?.debug("isNeedDecode($locale, $voice)")
+        runtime.console.debug("isNeedDecode($locale, $voice)")
 
         return try {
             engine.invokeMethod(editUiJsObject, FUNC_IS_NEED_DECODE, locale, voice)?.run {
@@ -120,7 +117,7 @@ class TtsPluginUiEngineV2(context: Context, plugin: Plugin) : TtsPluginEngineV2(
     }
 
     fun onLoadUI(context: Context, container: LinearLayout) {
-        runtime?.console?.debug("onLoadUI()...")
+        runtime.console.debug("onLoadUI()...")
         try {
             engine.invokeMethod(
                 editUiJsObject,
@@ -133,7 +130,7 @@ class TtsPluginUiEngineV2(context: Context, plugin: Plugin) : TtsPluginEngineV2(
     }
 
     fun onVoiceChanged(locale: String, voice: String) {
-        runtime?.console?.debug("onVoiceChanged($locale, $voice)")
+        runtime.console.debug("onVoiceChanged($locale, $voice)")
 
         try {
             engine.invokeMethod(

@@ -4,7 +4,8 @@ import android.content.Context
 import com.github.jing332.database.entities.SpeechRule
 import com.github.jing332.database.entities.TagsDataMap
 import com.github.jing332.database.entities.systts.SpeechRuleInfo
-import com.github.jing332.script.runtime.console.ConsoleImpl
+
+import com.github.jing332.script.runtime.console.Console
 import com.github.jing332.script.simple.SimpleScriptEngine
 import com.github.jing332.script.source.toScriptSource
 import com.github.jing332.tts_server_android.R
@@ -37,9 +38,8 @@ class SpeechRuleEngine(
     }
 
     val engine = SimpleScriptEngine(context, rule.ruleId)
-    var console: ConsoleImpl
-        get() = (engine.runtime.console as? ConsoleImpl)
-            ?: throw IllegalStateException("runtime.console is null")
+    var console: Console
+        get() = engine.runtime.console
         set(value) {
             engine.runtime.console = value
         }

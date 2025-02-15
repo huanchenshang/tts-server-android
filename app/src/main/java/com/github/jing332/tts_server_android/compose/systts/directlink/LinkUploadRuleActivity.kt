@@ -51,7 +51,7 @@ class LinkUploadRuleActivity : AppCompatActivity() {
         var showDebugLogger by remember { mutableStateOf<DirectUploadFunction?>(null) }
         if (showDebugLogger != null)
             LoggerBottomSheet(
-                registry = vm.getConsole(),
+                registry = vm.console,
                 onDismissRequest = { showDebugLogger = null }) {
                 scope.launch(Dispatchers.IO) {
                     runCatching {

@@ -8,8 +8,8 @@ import androidx.lifecycle.viewModelScope
 import com.github.jing332.common.utils.sizeToReadable
 import com.github.jing332.database.entities.plugin.Plugin
 import com.github.jing332.database.entities.systts.source.PluginTtsSource
-import com.github.jing332.script.runtime.console.ConsoleImpl
-import com.github.jing332.script.runtime.console.GlobalConsole
+
+import com.github.jing332.script.runtime.console.Console
 import com.github.jing332.tts.speech.plugin.engine.TtsPluginUiEngineV2
 import com.github.jing332.tts_server_android.app
 import com.github.jing332.tts_server_android.conf.PluginConfig
@@ -38,7 +38,7 @@ class PluginEditorViewModel(app: Application) : AndroidViewModel(app) {
     val codeLiveData: LiveData<String>
         get() = _updateCodeLiveData
 
-    val console: ConsoleImpl = GlobalConsole.get()
+    val console: Console = Console()
 
     fun init(plugin: Plugin, defaultCode: String) {
         plugin.apply { if (code.isEmpty()) code = defaultCode }

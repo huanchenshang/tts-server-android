@@ -2,7 +2,7 @@ package com.github.jing332.tts_server_android.compose.systts.directlink
 
 import android.app.Application
 import androidx.lifecycle.AndroidViewModel
-import com.github.jing332.script.runtime.console.ConsoleImpl
+import com.github.jing332.script.runtime.console.Console
 import com.github.jing332.tts_server_android.model.rhino.direct_link_upload.DirectUploadEngine
 import com.github.jing332.tts_server_android.model.rhino.direct_link_upload.DirectUploadFunction
 
@@ -18,12 +18,13 @@ class LinkUploadRuleViewModel(val app: Application) : AndroidViewModel(app) {
         else initEngine(code)
     }
 
-    fun getConsole(): ConsoleImpl = engine.console
+    val console: Console
+        get() = engine.console
 
     fun invoke(function: DirectUploadFunction) {
-        getConsole().info("${function.name} ...")
+        console.info("${function.name} ...")
         val url = function.invoke("""{"test":"test"}""")
-        getConsole().info("url: $url")
+        console.info("url: $url")
     }
 
     fun save() {

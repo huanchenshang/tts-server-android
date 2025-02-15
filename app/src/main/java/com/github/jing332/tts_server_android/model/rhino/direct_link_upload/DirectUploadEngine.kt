@@ -1,6 +1,6 @@
 package com.github.jing332.tts_server_android.model.rhino.direct_link_upload
 
-import com.github.jing332.script.runtime.console.ConsoleImpl
+import com.github.jing332.script.runtime.console.Console
 import com.github.jing332.script.simple.SimpleScriptEngine
 import com.github.jing332.script.source.StringScriptSource
 import com.github.jing332.tts_server_android.conf.DirectUploadConfig
@@ -12,9 +12,8 @@ class DirectUploadEngine(
     var code: String = DirectUploadConfig.code.value,
 ) {
     val engine = SimpleScriptEngine(context, "direct_link_upload")
-    val console: ConsoleImpl
-        get() = engine.runtime?.console as ConsoleImpl?
-            ?: throw IllegalStateException("engine.runtime is null")
+    val console: Console
+        get() = engine.runtime.console
 
 
     companion object {

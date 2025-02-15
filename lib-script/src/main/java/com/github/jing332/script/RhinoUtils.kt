@@ -5,8 +5,7 @@ import org.mozilla.javascript.Context
 import org.mozilla.javascript.Function
 import org.mozilla.javascript.Scriptable
 import org.mozilla.javascript.Undefined
-import org.mozilla.javascript.annotations.JSGetter
-import kotlin.time.measureTimedValue
+import org.mozilla.javascript.typedarrays.NativeArrayBufferView
 
 fun <R> withRhinoContext(block: (Context) -> R): R {
     val cx = RhinoContextFactory.enterContext()
@@ -20,13 +19,13 @@ fun <R> withRhinoContext(block: (Context) -> R): R {
 fun <R> ensureArgumentsLength(
     args: Array<out Any?>?,
     count: Int,
-    block: (args: Array<out Any?>) -> R
+    block: (args: Array<out Any?>) -> R,
 ): R = ensureArgumentsLength(args, 1..count, block)
 
 fun <R> ensureArgumentsLength(
     args: Array<out Any?>?,
     range: IntRange,
-    block: (args: Array<out Any?>) -> R
+    block: (args: Array<out Any?>) -> R,
 ): R {
     checkNotNull(args)
 
@@ -43,6 +42,16 @@ fun Scriptable.invokeMethod(scope: Scriptable, name: String, args: Array<Any?>?)
         method.call(cx, scope, this, args)
     }.run { if (this is Undefined) null else this }
 }
+
+fun jsToString(any: Any): String {
+    return when (any) {
+        is NativeArrayBufferView -> any.buffer.buffer.contentToString()
+        is Array<*> -> any.joinToString(",") { jsToString(it ?: "") }
+        else -> any.toString()
+
+    }
+}
+
 
 object RhinoUtils {
 }

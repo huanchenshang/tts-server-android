@@ -1,62 +1,30 @@
 package com.github.jing332.script.runtime.console
 
-import com.github.jing332.script.annotation.ScriptInterface
+import com.github.jing332.common.LogEntry
+import com.github.jing332.common.LogLevel
 
-interface Console {
-    @ScriptInterface
-    fun i(data: Any?) = info(data)
+class Console : LogListenerManager, Writeable {
+    private val listeners = mutableListOf<LogListener>()
 
-    @ScriptInterface
-    fun d(data: Any?) = debug(data)
+    @Synchronized
+    override fun addLogListener(listener: LogListener) {
+        listeners.add(listener)
+    }
 
-    @ScriptInterface
-    fun w(data: Any?) = warn(data)
+    @Synchronized
+    override fun removeLogListener(listener: LogListener) {
+        listeners.remove(listener)
+    }
 
-    @ScriptInterface
-    fun e(data: Any?) = error(data)
+    override fun write(@LogLevel level: Int, str: String) {
+        listeners.forEach {
+            it.onNewLog(LogEntry(level, str))
+        }
+    }
 
-    @ScriptInterface
-    fun verbose(data: Any?, vararg formatArgs: Any?)
-
-    @ScriptInterface
-    fun verbose(data: Any?) = verbose(data, *emptyArray())
-
-    @ScriptInterface
-    fun log(data: Any?, vararg formatArgs: Any?)
-
-    @ScriptInterface
-    fun log(data: Any?) = log(data, *emptyArray())
-
-    @ScriptInterface
-    fun print(level: Int, data: Any?, vararg formatArgs: Any?)
-
-    @ScriptInterface
-    fun print(level: Int, data: Any?) = print(level, data, *emptyArray())
-
-    @ScriptInterface
-    fun debug(data: Any?, vararg formatArgs: Any?)
-
-    @ScriptInterface
-    fun debug(data: Any?) = debug(data, *emptyArray())
-
-    @ScriptInterface
-    fun info(data: Any?, vararg formatArgs: Any?)
-
-    @ScriptInterface
-    fun info(data: Any?) = info(data, *emptyArray())
-
-    @ScriptInterface
-    fun warn(data: Any?, vararg formatArgs: Any?)
-
-    @ScriptInterface
-    fun warn(data: Any?) = warn(data, *emptyArray())
-
-    @ScriptInterface
-    fun error(data: Any?, vararg formatArgs: Any?)
-
-    @ScriptInterface
-    fun error(data: Any?) = error(data, *emptyArray())
-
-    @ScriptInterface
-    fun println(level: Int, charSequence: CharSequence): String?
+    fun println(str: String?) = write(LogLevel.INFO, str ?: "null")
+    fun debug(str: String?) = write(LogLevel.DEBUG, str ?: "null")
+    fun info(str: String?) = write(LogLevel.INFO, str ?: "null")
+    fun warn(str: String?) = write(LogLevel.WARN, str ?: "null")
+    fun error(str: String?) = write(LogLevel.ERROR, str ?: "null")
 }

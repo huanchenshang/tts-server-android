@@ -1,6 +1,5 @@
 package com.github.jing332.tts_server_android.compose.codeeditor
 
-import android.util.Log
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -30,7 +29,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.github.jing332.common.toArgb
 import com.github.jing332.compose.widgets.AppBottomSheet
-import com.github.jing332.script.runtime.console.GlobalConsole
+import com.github.jing332.script.runtime.console.Console
 import com.github.jing332.script.runtime.console.LogListener
 import com.github.jing332.script.runtime.console.LogListenerManager
 import com.github.jing332.tts_server_android.compose.theme.AppTheme
@@ -86,17 +85,17 @@ fun LoggerBottomSheet(
 fun LoggerBottomSheetPreview() = AppTheme {
     var show by remember { mutableStateOf(true) }
     if (show) {
-        val logger = remember { GlobalConsole.get() }
+        val logger = remember { Console() }
         LoggerBottomSheet(
             registry = logger,
             darkTheme = false,
             onDismissRequest = { show = false },
             onLaunched = {
-                logger.verbose("Hello, I am verbose.")
-                logger.debug("Hello, I am debug.")
-                logger.info("Hello, I am info.")
-                logger.warn("Hello, I am warn.")
-                logger.error("Hello, I am error.")
+//                logger.verbose("Hello, I am verbose.")
+//                logger.debug("Hello, I am debug.")
+//                logger.info("Hello, I am info.")
+//                logger.warn("Hello, I am warn.")
+//                logger.error("Hello, I am error.")
             }
         )
     }

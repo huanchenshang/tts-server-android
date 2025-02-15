@@ -4,7 +4,7 @@ import android.content.Context
 import com.github.jing332.database.entities.plugin.Plugin
 import com.github.jing332.database.entities.systts.source.PluginTtsSource
 import com.github.jing332.script.rhino.RhinoScriptEngine
-import com.github.jing332.script.runtime.console.ConsoleImpl
+import com.github.jing332.script.runtime.console.Console
 import com.github.jing332.script.simple.CompatScriptRuntime
 import com.github.jing332.script.source.toScriptSource
 import com.github.jing332.tts.speech.EmptyInputStream
@@ -28,8 +28,8 @@ open class TtsPluginEngineV2(val context: Context, val plugin: Plugin) {
         const val FUNC_ON_STOP = "onStop"
     }
 
-    var console: ConsoleImpl
-        get() = engine.runtime.console as ConsoleImpl
+    var console: Console
+        get() = engine.runtime.console
         set(value) {
             engine.runtime.console = value
         }
@@ -140,7 +140,7 @@ open class TtsPluginEngineV2(val context: Context, val plugin: Plugin) {
         voice: String,
         rate: Float = 1f,
         volume: Float = 1f,
-        pitch: Float = 1f
+        pitch: Float = 1f,
     ): InputStream {
         val r = (rate * 50f).toInt()
         val v = (volume * 50f).toInt()

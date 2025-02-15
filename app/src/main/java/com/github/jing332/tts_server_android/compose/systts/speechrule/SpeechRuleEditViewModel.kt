@@ -8,8 +8,7 @@ import androidx.lifecycle.viewModelScope
 import com.github.jing332.database.dbm
 import com.github.jing332.database.entities.SpeechRule
 import com.github.jing332.database.entities.systts.TtsConfigurationDTO
-import com.github.jing332.script.runtime.console.ConsoleImpl
-import com.github.jing332.script.runtime.console.GlobalConsole
+import com.github.jing332.script.runtime.console.Console
 import com.github.jing332.tts_server_android.constant.SpeechTarget
 import com.github.jing332.tts_server_android.model.rhino.speech_rule.SpeechRuleEngine
 import kotlinx.coroutines.Dispatchers
@@ -22,7 +21,7 @@ class SpeechRuleEditViewModel(val app: Application) : AndroidViewModel(app) {
 
     private lateinit var mSpeechRule: SpeechRule
     private lateinit var mRuleEngine: SpeechRuleEngine
-    private val console = GlobalConsole.get()
+    private val console = Console()
 
     val speechRule: SpeechRule
         get() = mSpeechRule
@@ -42,7 +41,7 @@ class SpeechRuleEditViewModel(val app: Application) : AndroidViewModel(app) {
         updateRule(speechRule.copy(code = code))
     }
 
-    fun getConsole(): ConsoleImpl {
+    fun getConsole(): Console {
         return console
     }
 
