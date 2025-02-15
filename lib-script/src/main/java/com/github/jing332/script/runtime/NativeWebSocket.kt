@@ -18,7 +18,6 @@ import org.mozilla.javascript.Undefined
 import org.mozilla.javascript.annotations.JSConstructor
 import java.util.concurrent.TimeUnit
 
-// https://developer.mozilla.org/zh-CN/docs/Web/API/WebSocket
 class NativeWebSocket constructor(
     val url: String = "",
     val headers: Map<CharSequence, CharSequence> = emptyMap()

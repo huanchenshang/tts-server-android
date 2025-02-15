@@ -24,6 +24,7 @@ import com.github.michaelbull.result.Ok
 import com.github.michaelbull.result.Result
 import com.google.common.collect.ImmutableList
 import io.github.oshai.kotlinlogging.KotlinLogging
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.runBlocking
 import java.io.ByteArrayInputStream
 import java.io.InputStream
@@ -50,7 +51,7 @@ internal class DefaultResultProcessor(
     private suspend fun decode(
         ins: InputStream,
         tts: TtsConfiguration,
-        callback: IPcmAudioCallback
+        callback: IPcmAudioCallback,
     ) {
         if (tts.audioFormat.isNeedDecode) {
             mDecoder.callback = ExoAudioDecoder.Callback { byteBuffer ->
@@ -89,12 +90,16 @@ internal class DefaultResultProcessor(
         return p
     }
 
+
+    /**
+     * @throw [CancellationException]
+     */
     @OptIn(UnstableApi::class)
     override suspend fun processStream(
         ins: InputStream,
         request: RequestPayload,
         targetSampleRate: Int,
-        callback: IPcmAudioCallback
+        callback: IPcmAudioCallback,
     ): Result<Unit, StreamProcessorError> {
         val config = request.config
         try {
@@ -107,7 +112,13 @@ internal class DefaultResultProcessor(
                     val cost = measureTimeMillis {
                         bytes = it.readBytes()
                     }
-                    context.event?.dispatch(NormalEvent.ReadAllFromStream(request, bytes.size, cost))
+                    context.event?.dispatch(
+                        NormalEvent.ReadAllFromStream(
+                            request,
+                            bytes.size,
+                            cost
+                        )
+                    )
                     ByteArrayInputStream(bytes)
                 }
             } catch (e: Exception) { // readBytes error
@@ -183,7 +194,9 @@ internal class DefaultResultProcessor(
                     Err(StreamProcessorError.AudioDecoding(e))
             }
 
-        } catch (e: Throwable) {
+        } catch (e: CancellationException) {
+            throw e
+        } catch (e: Exception) {
             return Err(StreamProcessorError.HandleError(e))
         }
 

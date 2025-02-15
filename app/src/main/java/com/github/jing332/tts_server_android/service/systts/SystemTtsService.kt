@@ -70,11 +70,11 @@ class SystemTtsService : TextToSpeechService(), IEventDispatcher {
         const val TAG = "SystemTtsService"
         private val logger = KotlinLogging.logger(TAG)
 
-        const val ACTION_UPDATE_CONFIG = "on_config_changed"
-        const val ACTION_UPDATE_REPLACER = "on_replacer_changed"
+        const val ACTION_UPDATE_CONFIG = "tts.update_config"
+        const val ACTION_UPDATE_REPLACER = "tts.update_replacer"
 
-        const val ACTION_NOTIFY_CANCEL = "SYS_TTS_NOTIFY_CANCEL"
-        const val ACTION_NOTIFY_KILL_PROCESS = "SYS_TTS_NOTIFY_EXIT_0"
+        const val ACTION_NOTIFY_CANCEL = "tts.notification.cancel"
+        const val ACTION_NOTIFY_KILL_PROCESS = "tts.notification.exit"
         const val NOTIFICATION_CHAN_ID = "system_tts_service"
 
         const val DEFAULT_VOICE_NAME = "DEFAULT_默认"
@@ -149,6 +149,7 @@ class SystemTtsService : TextToSpeechService(), IEventDispatcher {
     }
 
     fun initManager() {
+        logger.info { "initialize or load configruation" }
         mScope.launch {
             mTtsManager.init()
         }
@@ -486,8 +487,8 @@ class SystemTtsService : TextToSpeechService(), IEventDispatcher {
     inner class LocalReceiver : BroadcastReceiver() {
         override fun onReceive(context: Context?, intent: Intent?) {
             when (intent?.action) {
-                ACTION_UPDATE_CONFIG -> mScope.launch { initManager() }
-                ACTION_UPDATE_REPLACER -> mScope.launch { loadReplacer() }
+                ACTION_UPDATE_CONFIG -> initManager()
+                ACTION_UPDATE_REPLACER -> loadReplacer()
             }
         }
     }
@@ -559,8 +560,8 @@ class SystemTtsService : TextToSpeechService(), IEventDispatcher {
 
             is NormalEvent.StandbyTts -> logI(
                 getString(
-                    R.string.use_standby_tts
-                ) + e.request.config.source.voice
+                    R.string.use_standby_tts, e.request.config.source.voice
+                )
             )
 
             NormalEvent.RequestCountEnded -> logW(getString(R.string.reach_retry_limit))

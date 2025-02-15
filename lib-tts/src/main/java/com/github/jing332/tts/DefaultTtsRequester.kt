@@ -1,7 +1,6 @@
 package com.github.jing332.tts
 
 import com.github.jing332.tts.error.RequesterError
-import com.github.jing332.tts.error.RequesterError.RequestError
 import com.github.jing332.tts.manager.ITtsRequester
 import com.github.jing332.tts.manager.SystemParams
 import com.github.jing332.tts.manager.TtsConfiguration
@@ -9,12 +8,13 @@ import com.github.jing332.tts.speech.EngineState
 import com.github.michaelbull.result.Err
 import com.github.michaelbull.result.Ok
 import com.github.michaelbull.result.Result
+import kotlinx.coroutines.CancellationException
 
 class DefaultTtsRequester(
     var context: ManagerContext,
 ) : ITtsRequester {
     override suspend fun request(
-        params: SystemParams, tts: TtsConfiguration
+        params: SystemParams, tts: TtsConfiguration,
     ): Result<ITtsRequester.Response, RequesterError> {
         val engine =
             CachedEngineManager.getEngine(context.androidContext, tts.source) ?: return Err(
@@ -37,6 +37,8 @@ class DefaultTtsRequester(
                 Ok(
                     ITtsRequester.Response(stream = engine.getStream(params, tts.source))
                 )
+            } catch (e: CancellationException) {
+                throw e
             } catch (e: Exception) {
                 Err(RequesterError.RequestError(e))
             }

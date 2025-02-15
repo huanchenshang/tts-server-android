@@ -1,5 +1,8 @@
 package com.github.jing332.tts.manager
 
+import android.R.id.message
+import androidx.compose.foundation.interaction.DragInteraction
+import androidx.media3.exoplayer.util.SntpClient.isInitialized
 import com.github.jing332.common.utils.StringUtils
 import com.github.jing332.tts.ConfigType
 import com.github.jing332.tts.ManagerContext
@@ -16,19 +19,26 @@ import com.github.michaelbull.result.Result
 import com.github.michaelbull.result.onFailure
 import com.github.michaelbull.result.onSuccess
 import io.github.oshai.kotlinlogging.KLogger
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineName
-import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.TimeoutCancellationException
 import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.channels.SendChannel
+import kotlinx.coroutines.channels.produce
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.delay
-import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
-import kotlinx.coroutines.withTimeoutOrNull
+import kotlinx.coroutines.withTimeout
 import java.io.InputStream
 import kotlin.math.pow
 
 abstract class AbstractTtsManager() : ITtsManager {
+    companion object {
+        const val PROCUDE_CAPACITY: Int = 256
+    }
+
     private val logger: KLogger
         get() = context.logger
 
@@ -61,7 +71,7 @@ abstract class AbstractTtsManager() : ITtsManager {
      * @return null means presetConfigId is not found from database
      */
     private suspend fun textProcess(
-        channel: Channel<ChannelPayload>,
+        channel: SendChannel<ChannelPayload>,
         params: SystemParams,
         presetConfigId: Long?,
     ): List<TextSegment>? {
@@ -86,12 +96,15 @@ abstract class AbstractTtsManager() : ITtsManager {
         request: RequestPayload,
         playCallback: suspend (ITtsRequester.ISyncPlayCallback) -> Unit,
     ): InputStream? {
-        val result = withTimeoutOrNull(context.cfg.requestTimeout()) {
-            ttsRequester.request(request.params, request.config)
-        }
-        if (result == null) { // timed out
+        val result = try {
+            withTimeout(context.cfg.requestTimeout()) {
+                ttsRequester.request(request.params, request.config)
+            }
+        } catch (e: TimeoutCancellationException) {
             event(ErrorEvent.RequestTimeout(request))
             return null
+        } catch (e: CancellationException) {
+            throw e
         }
 
         result.onSuccess { resp ->
@@ -120,7 +133,7 @@ abstract class AbstractTtsManager() : ITtsManager {
 
 
     private suspend fun requestAndProcess(
-        channel: Channel<ChannelPayload>,
+        channel: SendChannel<ChannelPayload>,
         params: SystemParams,
         config: TtsConfiguration,
         retries: Int = 0,
@@ -158,9 +171,9 @@ abstract class AbstractTtsManager() : ITtsManager {
         else if (stream is EmptyInputStream) return // direct play
 
         streamProcessor.processStream(
-            stream,
-            request,
-            maxSampleRate,
+            ins = stream,
+            request = request,
+            targetSampleRate = maxSampleRate,
             callback = { pcm -> channel.send(ChannelPayload.Bytes(pcm)) }
         ).onFailure { e ->
             event(ErrorEvent.ResultProcessor(request, e))
@@ -168,28 +181,26 @@ abstract class AbstractTtsManager() : ITtsManager {
         }
     }
 
-    private suspend fun internalSynthesize(
+    @OptIn(ExperimentalCoroutinesApi::class)
+    private suspend fun executeSynthesis(
         params: SystemParams, callback: SynthesisCallback, presetConfigId: Long?,
     ): Result<Unit, SynthesisError> = coroutineScope {
-        if (mAllTts.isEmpty()) {
-            return@coroutineScope Err(SynthesisError.ConfigEmpty)
-        }
+        if (mAllTts.isEmpty()) return@coroutineScope Err(SynthesisError.ConfigEmpty)
+
         logger.debug { "onSynthesizeStart: sampleRate=${maxSampleRate}" }
         callback.onSynthesizeStart(maxSampleRate)
 
-        val channel = Channel<ChannelPayload>(Channel.UNLIMITED)
-        launch(Dispatchers.IO + CoroutineName("TtsManager")) {
-            val list = textProcess(channel, params, presetConfigId)
-            if (list == null)
-                channel.send(ChannelPayload.NotFoundPresetConfig)
-            else
-                for (fragment in list) {
-                    requestAndProcess(channel, params.copy(text = fragment.text), fragment.tts)
-                }
-
-            logger.debug { "channel.close()..." }
-            channel.close()
-        }
+        val channel =
+            produce<ChannelPayload>(CoroutineName("Synthesis producer"), PROCUDE_CAPACITY) {
+                val sendChannel = this.channel
+                val list = textProcess(sendChannel, params, presetConfigId)
+                if (list == null)
+                    channel.send(ChannelPayload.NotFoundPresetConfig)
+                else
+                    for (fragment in list) {
+                        requestAndProcess(channel, params.copy(text = fragment.text), fragment.tts)
+                    }
+            }
 
         try {
             for (payload in channel) {
@@ -199,6 +210,8 @@ abstract class AbstractTtsManager() : ITtsManager {
                     is ChannelPayload.DirectPlayCallback -> try {
                         event(NormalEvent.DirectPlay(payload.request))
                         payload.callback.play()
+                    } catch (e: CancellationException) {
+                        throw e
                     } catch (e: Exception) {
                         event(ErrorEvent.DirectPlay(payload.request, e))
                     } finally {
@@ -238,7 +251,7 @@ abstract class AbstractTtsManager() : ITtsManager {
 
         bgmPlayer.play()
         try {
-            internalSynthesize(params, callback, forceConfigId)
+            executeSynthesis(params, callback, forceConfigId)
         } finally {
             logger.debug { "synthesize done" }
             bgmPlayer.stop()
