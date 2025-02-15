@@ -3,6 +3,7 @@
 package com.github.jing332.script.runtime
 
 import com.github.jing332.script.ensureArgumentsLength
+import com.github.jing332.script.toNativeArrayBuffer
 import org.mozilla.javascript.Context
 import org.mozilla.javascript.Scriptable
 import org.mozilla.javascript.ScriptableObject
@@ -84,11 +85,9 @@ class NativeUUID : ScriptableObject() {
         ): Any = ensureArgumentsLength(args, 1) {
             val str = it[0]!!.toString()
             val arr = NativeUint8Array(16)
-            Uuid.parse(str).toByteArray().forEachIndexed { idx, v ->
-                arr[idx] = v.toInt()
-            }
 
-            Context.javaToJS(arr, scope)
+            val buffer = Uuid.parse(str).toByteArray().toNativeArrayBuffer()
+            cx.newObject(scope, "Uint8Array", arrayOf(buffer, 0, buffer.size()))
         }
 
         private fun validate(

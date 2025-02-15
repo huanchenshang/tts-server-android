@@ -1,11 +1,17 @@
 package com.github.jing332.script
 
 import com.github.jing332.script.rhino.RhinoContextFactory
+import org.mozilla.javascript.Callable
 import org.mozilla.javascript.Context
 import org.mozilla.javascript.Function
+import org.mozilla.javascript.LambdaConstructor
 import org.mozilla.javascript.Scriptable
+import org.mozilla.javascript.ScriptableObject.DONTENUM
+import org.mozilla.javascript.ScriptableObject.READONLY
 import org.mozilla.javascript.Undefined
+import org.mozilla.javascript.typedarrays.NativeArrayBuffer
 import org.mozilla.javascript.typedarrays.NativeArrayBufferView
+import java.util.function.BiConsumer
 
 fun <R> withRhinoContext(block: (Context) -> R): R {
     val cx = RhinoContextFactory.enterContext()
@@ -50,6 +56,104 @@ fun jsToString(any: Any): String {
         else -> any.toString()
 
     }
+}
+
+fun ByteArray.toNativeArrayBuffer(): NativeArrayBuffer {
+    val buffer = NativeArrayBuffer(size.toDouble())
+    this.copyInto(destination = buffer.buffer)
+    return buffer
+}
+
+fun interface PropertyGetter<T> {
+    fun accept(thisObj: T): Any
+}
+
+fun interface PropertySetter<T> {
+    fun accept(thisObj: T, value: Any)
+}
+
+inline fun <reified T> LambdaConstructor.definePrototypeProperty(
+    cx: Context,
+    scope: Scriptable,
+    name: String,
+    getter: PropertyGetter<T>,
+    setter: PropertySetter<T>? = null,
+    attributes: Int = DONTENUM or READONLY,
+) {
+    val _setter = if (setter == null) null else object : BiConsumer<Scriptable, Any> {
+        override fun accept(t: Scriptable, u: Any) {
+            val rawObj = LambdaConstructor.convertThisObject<T>(t, T::class.java)
+            setter.accept(rawObj, u)
+        }
+    }
+    definePrototypeProperty(
+        cx, name,
+        object : java.util.function.Function<Scriptable, Any> {
+            override fun apply(t: Scriptable): Any {
+                val rawObj = LambdaConstructor.convertThisObject<T>(t, T::class.java)
+                return getter.accept(rawObj)
+            }
+        },
+        _setter,
+        attributes
+    )
+}
+
+
+inline fun <reified T> LambdaConstructor.definePrototypePropertys(
+    cx: Context,
+    scope: Scriptable,
+    list: List<Pair<String, PropertyGetter<T>>>,
+    attributes: Int = DONTENUM or READONLY,
+) {
+
+    for (v in list) {
+        val (name, getter) = v
+        definePrototypeProperty<T>(
+            cx, scope, name,
+            { getter.accept(it) },
+            null,
+            attributes
+        )
+    }
+//    } else if (list is Triple<*, *, *>) {
+//        val (name, getter, setter) = list as Triple<String, java.util.function.Function<T, Any>, java.util.function.BiConsumer<T, Any>>
+//        definePrototypeProperty<T>(
+//            cx, scope, name,
+//            getter, setter, attributes
+//        )
+//    }
+}
+
+
+fun interface JSMethod<T> {
+    fun accept(cx: Context, scope: Scriptable, thisObj: T, args: Array<out Any?>): Any
+}
+
+inline fun <reified T> LambdaConstructor.definePrototypeMethod(
+    scope: Scriptable,
+    name: String,
+    length: Int,
+    method: JSMethod<T>,
+    attributes: Int = DONTENUM or READONLY,
+    propertyAttributes: Int = DONTENUM or READONLY,
+) {
+    definePrototypeMethod(
+        scope, name, length,
+        object : Callable {
+            override fun call(
+                cx: Context,
+                scope: Scriptable,
+                thisObj: Scriptable,
+                args: Array<out Any?>,
+            ): Any? {
+                val rawObj = LambdaConstructor.convertThisObject<T>(thisObj, T::class.java)
+                return method.accept(cx, scope, rawObj, args)
+            }
+        },
+        attributes,
+        propertyAttributes,
+    )
 }
 
 

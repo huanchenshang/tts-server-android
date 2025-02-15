@@ -108,11 +108,6 @@ class NativeWebSocket constructor(
     }
 
 
-    override fun getInstanceIdValue(id: Int): Any {
-        println("getInstanceIdValue: $id")
-        return super.getInstanceIdValue(id)
-    }
-
     override fun execIdCall(
         f: IdFunctionObject,
         cx: Context?,

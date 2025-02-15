@@ -1,4 +1,4 @@
-package com.github.jing332.script.runtime.exception
+package com.github.jing332.script.exception
 
 class ScriptException(
     val sourceName: String = "",

@@ -2,10 +2,9 @@ package com.github.jing332.tts.speech.plugin.engine
 
 import android.util.Log
 import androidx.annotation.Keep
-import com.github.jing332.script.runtime.exception.ScriptException
+import com.github.jing332.script.exception.ScriptException
 import kotlinx.coroutines.sync.Mutex
 import org.mozilla.javascript.Context
-import org.mozilla.javascript.RhinoException
 import java.io.IOException
 import java.io.InputStream
 import java.io.PipedInputStream

@@ -2,10 +2,9 @@ package com.github.jing332.script
 
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
+import com.github.jing332.common.toLogLevelChar
 import com.github.jing332.script.rhino.RhinoScriptEngine
-import com.github.jing332.script.runtime.RhinoScriptRuntime
 import com.github.jing332.script.simple.SimpleScriptEngine
-import com.github.jing332.script.source.ReaderScriptSource
 import com.github.jing332.script.source.StringScriptSource
 import com.github.jing332.script.source.toScriptSource
 import org.junit.Test
@@ -17,13 +16,14 @@ import org.mozilla.javascript.Function
 import org.mozilla.javascript.ScriptRuntime
 import org.mozilla.javascript.Scriptable
 import org.mozilla.javascript.ScriptableObject
-import splitties.init.appCtx
-import kotlin.system.measureTimeMillis
 
 @RunWith(AndroidJUnit4::class)
 class ScriptTest {
     private fun eval(code: String): Any? {
         val engine = RhinoScriptEngine()
+        engine.runtime.console.addLogListener {
+            println(it.level.toLogLevelChar() + ": " + it.message)
+        }
         return try {
             engine.execute(StringScriptSource(code))
         } catch (e: EvaluatorException) {
@@ -33,36 +33,27 @@ class ScriptTest {
         }
     }
 
+    private fun evalFromAsset(name: String): Any? {
+        return InstrumentationRegistry.getInstrumentation().targetContext.assets.open("test/${name}.js")
+            .use {
+                val code = it.readBytes().decodeToString()
+                eval(code)
+            }
+    }
+
+    @Test
+    fun testConsole() {
+        evalFromAsset("console")
+    }
+
+    @Test
+    fun testUuid() {
+        evalFromAsset("uuid")
+    }
+
     @Test
     fun websocket() {
-        val code = """
-           var ws = new Websocket("wss://echo.websocket.org")
-           println(ws.readyState)
-           let latch = new java.util.concurrent.CountDownLatch(1);
-           
-           ws.on("open", function() {
-               println("open")
-               ws.send("hello, I am a client!")            
-           })
-           
-           ws.on("text", function(data) {
-               println("Text: " + data)
-               ws.close(1000, "")
-           })
-           
-           ws.on("closed", function() {
-               println("closed")
-               latch.countDown()
-           })
-           
-           ws.on("failure", function(reason) {
-               println("failure: " + reason)
-               latch.countDown()
-           })
-           
-           latch.await()
-        """.trimIndent()
-        eval(code)
+        evalFromAsset("websocket")
     }
 
     @Test
@@ -107,7 +98,7 @@ class ScriptTest {
                 cx: Context?,
                 scope: Scriptable?,
                 thisObj: Scriptable?,
-                args: Array<out Any>?
+                args: Array<out Any>?,
             ): Any = ensureArgumentsLength(args, 1) {
                 val time = ScriptRuntime.toInt32(it[0]).toLong()
                 Thread.sleep(time)
@@ -125,27 +116,8 @@ class ScriptTest {
     }
 
     @Test
-    fun httpDelay() {
-        val engine = RhinoScriptEngine()
-
-        val code = """
-            console.log("log...")
-            console.debug("debug...")
-            console.info("info...")   
-            console.warn("warn...")
-            console.error("error...")
-            
-            let resp = http.get("https://reqres.in/api/users?delay=8") //delay 8s
-            let str = resp.body().string()
-            console.log("ret: " + str)
-        """.trimIndent()
-
-        val currentThread = Thread.currentThread()
-        Thread {
-            Thread.sleep(1000)
-            currentThread.interrupt()
-        }.start()
-        engine.execute(StringScriptSource(code))
+    fun http() {
+        evalFromAsset("http")
     }
 
     @Test
@@ -170,34 +142,9 @@ class ScriptTest {
         )
     }
 
-    @Test
-    fun putAndGet() {
-        val e = RhinoScriptEngine()
-        e.globalScope.put("a", e.globalScope, "111")
-        e.execute(
-            """
-            let OBJ = {
-                name: "1234",            
-            }
-            console.log(a)
-        """.trimIndent().toScriptSource()
-        )
-        println((e.get("OBJ") as ScriptableObject).get("name"))
-    }
 
     @Test
     fun testRequire() {
-        val code = """
-//            require("https://cdn.bootcdn.net/ajax/libs/crypto-js/4.2.0/crypto-js.min.js")
-            require("crypto")
-        """.trimIndent().toScriptSource()
-        val e = RhinoScriptEngine()
-//        val reader = appCtx.assets.open("js/crypto.js").reader()
-//        e.execute(ReaderScriptSource(reader))
-        measureTimeMillis {
-            e.execute(code)
-        }.run {
-            println("time: $this")
-        }
+        evalFromAsset("require_module")
     }
 }
