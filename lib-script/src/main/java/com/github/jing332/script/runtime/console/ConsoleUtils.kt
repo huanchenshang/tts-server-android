@@ -54,18 +54,20 @@ internal class ConsoleUtils {
                     thisObj: Scriptable,
                     args: Array<out Any?>,
                 ): Any {
-                    write(args, level)
+                    write(cx, scope, args, level)
                     return Undefined.instance
                 }
             }, ScriptableObject.READONLY)
         }
 
         fun Console.write(
+            cx: Context,
+            scope: Scriptable,
             args: Array<out Any?>,
             level: NativeConsole.Level,
             stack: Array<out ScriptStackElement?>? = null,
         ) {
-            val str = log(*args)
+            val str = NativeConsole.format(cx, scope, args)
             write(
                 toLogLevel(level),
                 if (level == NativeConsole.Level.TRACE) str + "\n" + stack.contentToString() else str

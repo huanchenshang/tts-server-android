@@ -29,7 +29,7 @@ open class RhinoScriptRuntime(
                 args: Array<out Any?>,
                 stack: Array<out ScriptStackElement?>?,
             ) {
-                console.write(args, level, stack)
+                console.write(cx, scope, args, level, stack)
             }
         })
         val logger = NativeObject()
