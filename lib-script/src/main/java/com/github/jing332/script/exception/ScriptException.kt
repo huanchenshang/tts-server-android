@@ -1,10 +1,34 @@
 package com.github.jing332.script.exception
 
+import org.mozilla.javascript.Context
+
+fun <R> runScriptCatching(block: () -> R): R {
+    return try {
+        block()
+    } catch (e: Exception) {
+        throw ScriptException.from(e)
+    }
+}
+
 open class ScriptException(
-    var sourceName: String = "",
-    var lineNumber: Int = 0,
-    var columnNumber: Int = 0,
+    val sourceName: String = "",
+    val lineNumber: Int = 0,
+    val columnNumber: Int = 0,
 
     override val message: String? = "",
-    override val cause: Throwable? = null
-) : RuntimeException() {}
+    override val cause: Throwable? = null,
+) : RuntimeException() {
+    companion object {
+        fun from(throwable: Throwable): ScriptException {
+            val err = Context.reportRuntimeError(throwable.message ?: throwable.toString())
+
+            return ScriptException(
+                err.sourceName(),
+                err.lineNumber(),
+                err.columnNumber(),
+                err.message,
+                throwable
+            )
+        }
+    }
+}

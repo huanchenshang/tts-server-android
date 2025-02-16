@@ -1,6 +1,7 @@
 package com.github.jing332.script.runtime.http
 
 import cn.hutool.core.text.CharSequenceUtil.bytes
+import com.drake.net.utils.scope
 import com.github.jing332.script.PropertyGetter
 import com.github.jing332.script.definePrototypeMethod
 import com.github.jing332.script.definePrototypeProperty
@@ -15,17 +16,19 @@ import org.mozilla.javascript.Undefined
 import org.mozilla.javascript.json.JsonParser
 import org.mozilla.javascript.typedarrays.NativeUint8Array
 
-class NativeResponse @JvmOverloads constructor(val rawResponse: Response? = null) :
+class NativeResponse private constructor(val rawResponse: Response? = null) :
     ScriptableObject() {
     override fun getClassName(): String = CLASS_NAME
-
-
 
     companion object {
         const val CLASS_NAME = "Response"
 
         @JvmStatic
         val serialVersionUID: Long = 3110411773054879588L
+
+        fun of(cx: Context, scope: Scriptable, resp: Response): Scriptable {
+            return cx.newObject(scope, "Response", arrayOf(resp))
+        }
 
         @JvmStatic
         fun init(cx: Context, scope: Scriptable, sealed: Boolean) {

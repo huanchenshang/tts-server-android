@@ -16,28 +16,20 @@ import org.mozilla.javascript.commonjs.module.provider.SoftCachingModuleScriptPr
 import org.mozilla.javascript.typedarrays.NativeUint8Array
 import splitties.init.appCtx
 
+/**
+ * Custom global scope for Rhino JavaScript engine.
+ */
 class RhinoGlobal(cx: Context) : ImporterTopLevel(cx) {
     init {
         initRequireBuilder(cx, this)
 
+        // Property
         LazilyLoadedCtor(this, "http", NativeHttp::class.java.name, false, true)
         LazilyLoadedCtor(this, "UUID", NativeUUID::class.java.name, false, true)
 
+        // Class
         LazilyLoadedCtor(this, "Response", NativeResponse::class.java.name, false, true)
         LazilyLoadedCtor(this, "Websocket", NativeWebSocket::class.java.name, false, true)
-        defineProperty("println", object : BaseFunction() {
-            override fun call(
-                cx: Context?,
-                scope: Scriptable?,
-                thisObj: Scriptable?,
-                args: Array<out Any>?,
-            ): Any {
-                println(jsToString(args ?: ""))
-
-
-                return Undefined.instance
-            }
-        }, ScriptableObject.READONLY)
     }
 
     private fun initRequireBuilder(context: Context, scope: Scriptable) {

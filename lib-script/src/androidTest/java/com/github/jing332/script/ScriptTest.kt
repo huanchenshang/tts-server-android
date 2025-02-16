@@ -4,7 +4,9 @@ import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
 import com.github.jing332.common.toLogLevelChar
 import com.github.jing332.script.rhino.RhinoScriptEngine
+import com.github.jing332.script.simple.CompatScriptRuntime
 import com.github.jing332.script.simple.SimpleScriptEngine
+import com.github.jing332.script.simple.ext.JsExtensions
 import com.github.jing332.script.source.StringScriptSource
 import com.github.jing332.script.source.toScriptSource
 import org.junit.Test
@@ -20,7 +22,8 @@ import org.mozilla.javascript.ScriptableObject
 @RunWith(AndroidJUnit4::class)
 class ScriptTest {
     private fun eval(code: String): Any? {
-        val engine = RhinoScriptEngine()
+        val context = InstrumentationRegistry.getInstrumentation().targetContext
+        val engine = RhinoScriptEngine(CompatScriptRuntime(JsExtensions(context, "test")))
         engine.runtime.console.addLogListener {
             println(it.level.toLogLevelChar() + ": " + it.message)
         }
@@ -118,6 +121,16 @@ class ScriptTest {
     @Test
     fun http() {
         evalFromAsset("http")
+    }
+
+    @Test
+    fun httpPost() {
+        evalFromAsset("http_post")
+    }
+
+    @Test
+    fun httpPostMultipart() {
+        evalFromAsset("http_post_multipart")
     }
 
     @Test

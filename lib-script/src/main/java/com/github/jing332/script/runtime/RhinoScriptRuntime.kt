@@ -15,7 +15,6 @@ open class RhinoScriptRuntime(
     val global: RhinoGlobal = withRhinoContext { cx -> RhinoGlobal(cx) },
 
     var console: Console = Console(),
-    val http: Http = Http(),
 ) {
     /**
      * Call from [com.github.jing332.script.rhino.RhinoScriptEngine.setRuntime]
@@ -40,6 +39,8 @@ open class RhinoScriptRuntime(
         console.putLogger(logger, "w", NativeConsole.Level.WARN)
         console.putLogger(logger, "e", NativeConsole.Level.ERROR)
         global.defineProperty("logger", logger, ScriptableObject.READONLY)
+        console.putLogger(global, "println", NativeConsole.Level.INFO)
+        global.defineGetter("globalThis",::global)
     }
 
     protected fun ScriptableObject.defineGetter(key: String, getter: () -> Any) {

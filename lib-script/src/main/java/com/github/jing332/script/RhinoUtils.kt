@@ -1,5 +1,6 @@
 package com.github.jing332.script
 
+import com.github.jing332.script.exception.ScriptException
 import com.github.jing332.script.rhino.RhinoContextFactory
 import org.mozilla.javascript.Callable
 import org.mozilla.javascript.Context
@@ -63,6 +64,7 @@ fun ByteArray.toNativeArrayBuffer(): NativeArrayBuffer {
     this.copyInto(destination = buffer.buffer)
     return buffer
 }
+
 
 fun interface PropertyGetter<T> {
     fun accept(thisObj: T): Any
