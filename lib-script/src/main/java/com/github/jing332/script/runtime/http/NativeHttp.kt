@@ -33,6 +33,7 @@ class NativeHttp : ScriptableObject() {
         }
 
 
+        @Suppress("UNCHECKED_CAST")
         @JvmStatic
         private fun get(
             cx: Context,

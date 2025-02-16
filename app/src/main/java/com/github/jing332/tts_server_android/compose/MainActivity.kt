@@ -124,6 +124,18 @@ class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
+//        val json = """
+//           [ { "group": { "id": 1, "name": "默认分组" }, "list": [ { "id": 1681521093149, "displayName": "bgm", "speechRule": { "target": 3 }, "tts": { "#type": "bgm", "musicList": [ "/storage/emulated/0/Music/听琴如修禅-巫娜古琴100首" ], "volume": 87, "audioFormat": { } } }, { "id": 1734523614731, "displayName": "王隔壁_剧有范MK-III[男|青年]", "tts": { "#type": "plugin", "pluginId": "www.gstudios.com", "locale": "zh-CN", "voice": "758", "rate": 52, "audioFormat": { "sampleRate": 48000 } }, "order": 2 }, { "id": 1738145879439, "displayName": "MultiTTS", "tts": { "#type": "local", "engine": "org.nobody.multitts", "locale": "zh-CN", "voiceName": "bdetts_f32pangbai", "isDirectPlayMode": false, "audioFormat": { } }, "order": 1 } ] }, { "group": { "id": 1681999286014, "name": "呱呱", "order": 1, "audioParams": { "speed": 1.3 } }, "list": [ { "id": 1681529196730, "groupId": 1681999286014, "displayName": "百合 [现言|古言]", "speechRule": { "target": 4, "tag": "narration", "tagRuleId": "ttsrv.multi_voice", "tagName": "旁白" }, "tts": { "#type": "plugin", "pluginId": "www.gstudios.com", "locale": "zh-CN", "voice": "4", "rate": 1, "audioFormat": { "sampleRate": 48000 }, "audioPlayer": { "rate": 1.0, "pitch": 1.0, "volume": 1.0 } } }, { "id": 1681999236498, "groupId": 1681999286014, "displayName": "芷嫣 [现言|古言]", "speechRule": { "target": 4, "tag": "dialogue", "tagRuleId": "ttsrv.multi_voice", "tagName": "对话" }, "tts": { "#type": "plugin", "pluginId": "www.gstudios.com", "locale": "zh-CN", "voice": "53", "audioFormat": { "sampleRate": 48000 }, "audioPlayer": { "rate": 1.0, "pitch": 1.0, "volume": 1.0 }, "audioParams": { "volume": 2.11 } }, "order": 1 }, { "id": 1684907918205, "groupId": 1681999286014, "displayName": "芷嫣MK-II [现言|古言]", "tts": { "#type": "plugin", "pluginId": "www.gstudios.com", "locale": "zh-CN", "voice": "139", "rate": 49, "audioFormat": { "sampleRate": 48000 }, "audioPlayer": { "rate": 1.0, "pitch": 1.0, "volume": 1.0 } }, "order": 2 } ] }, { "group": { "id": 1704010979156, "name": "vits", "order": 2 }, "list": [ { "id": 1704010998111, "groupId": 1704010979156, "displayName": "八重神子_ZH", "tts": { "#type": "plugin", "pluginId": "v2.genshinvoice.top", "locale": "zh-CN", "voice": "八重神子_ZH", "audioFormat": { "sampleRate": 44100 } } } ] }, { "group": { "id": 1681820023716, "name": "本地", "order": 3 }, "list": [ { "id": 1681820029153, "groupId": 1681820023716, "displayName": "搜狗TTS (org.nobody.sgtts)", "speechRule": { "target": 4, "tag": "dialogue", "tagRuleId": "ttsrv.multi_voice", "tagName": "对话", "tagData": { "defaultLanguage": "true" } }, "tts": { "#type": "local", "engine": "org.nobody.sgtts", "locale": "zh-CN", "voiceName": "qingfeng", "rate": 85, "audioFormat": { } }, "order": 1 }, { "id": 1681820053515, "groupId": 1681820023716, "displayName": "搜狗TTS (org.nobody.sgtts)", "speechRule": { "target": 4, "tag": "dialogue", "tagRuleId": "ttsrv.multi_voice", "tagName": "对话" }, "tts": { "#type": "local", "engine": "org.nobody.sgtts", "locale": "zh-CN", "voiceName": "yaxinpro", "pitch": 72, "rate": 69, "audioFormat": { } } }, { "id": 1692514349137, "groupId": 1681820023716, "displayName": "度小宇", "tts": { "#type": "plugin", "pluginId": "tsn.baidu.com", "locale": "zh", "voice": "1", "audioFormat": { } }, "order": 2 } ] }, { "group": { "id": 12333, "name": "示例-旁白对话BGM", "order": 4 }, "list": [ { "id": 1690331046541, "groupId": 12333, "displayName": "⚠️请在右上角打开多语音！晓晓（zh-CN-XiaoxiaoNeural）", "speechRule": { "target": 4, "tag": "dialogue", "tagRuleId": "ttsrv.multi_voice" }, "tts": { "#type": "internal" } }, { "id": 1690331074092, "groupId": 12333, "displayName": "云健（zh-CN-YunjianNeural）", "speechRule": { "target": 4, "tag": "narration", "tagRuleId": "ttsrv.multi_voice" }, "tts": { "#type": "internal", "voiceName": "zh-CN-YunjianNeural" }, "order": 1 } ] }, { "group": { "id": 1689744455358, "name": "微软专业", "order": 5, "isExpanded": true }, "list": [ { "id": 1689744463741, "groupId": 1689744455358, "displayName": "云希 (zh-CN-YunxiNeural)", "isEnabled": true, "speechRule": { "tag": "narration", "tagRuleId": "ttsrv.multi_voice", "tagName": "旁白" }, "tts": { "#type": "plugin", "pluginId": "com.microsoft.translator", "locale": "zh-CN", "voice": "zh-CN-YunxiNeural", "data": { "style": "newscast", "languageSkill": "zh-CN", "role": "Boy", "styleDegree": "0.96" }, "volume": 100, "rate": 52, "audioFormat": { "sampleRate": 24000 } } } ] }, { "group": { "id": 1681554761681, "name": "微软", "order": 6 }, "list": [ { "id": 1681554671030, "groupId": 1681554761681, "displayName": "晓甄 (zh-CN-XiaozhenNeural)", "tts": { "#type": "plugin", "pluginId": "com.microsoft.translator", "locale": "zh-CN", "voice": "zh-CN-YunxiNeural", "data": { "style": "narration-relaxed", "styleDegree": "1.55", "role": "Narrator" }, "volume": 43, "rate": 62, "audioFormat": { "sampleRate": 24000 }, "audioParams": { "speed": 1.0, "volume": 1.0, "pitch": 1.0 } }, "order": 1 }, { "id": 1682419313176, "groupId": 1681554761681, "displayName": "Xiaochen Multilingual (zh-CN-XiaochenMultilingualNeural)", "tts": { "#type": "plugin", "pluginId": "com.microsoft.translator", "locale": "zh-CN", "voice": "zh-CN-XiaochenMultilingualNeural", "data": { "style": "", "styleDegree": "1.00", "role": "Boy", "languageSkill": "" }, "volume": 100, "rate": 61, "audioFormat": { "sampleRate": 24000 } } } ] } ]
+//        """.trimIndent()
+//
+//        AppConst.jsonBuilder.decodeFromString<List<GroupWithV1TTS>>(json).forEach {
+//            dbm.systemTtsDao.insertGroup(it.group)
+//            it.list.forEach {
+//                dbm.systemTtsDao.insertTts(it)
+//            }
+//        }
+
+
         ShortCuts.buildShortCuts(this)
         setContent {
             AppTheme {
@@ -306,7 +318,7 @@ fun NavDrawerContent(
         selected: Boolean = false,
         icon: @Composable () -> Unit,
         label: @Composable () -> Unit,
-        onClick: () -> Unit
+        onClick: () -> Unit,
     ) {
         NavigationDrawerItem(
             modifier = Modifier.padding(vertical = 2.dp),
@@ -326,7 +338,7 @@ fun NavDrawerContent(
         onClick: () -> Unit = {
             scope.launch { drawerState.close() }
             navController.navigateSingleTop(targetScreen.id, popUpToMain = true)
-        }
+        },
     ) {
         val isSelected = navController.currentDestination?.route == targetScreen.id
         DrawerItem(
@@ -450,7 +462,7 @@ fun NavDrawerContent(
  */
 fun NavHostController.navigateSingleTop(
     route: String,
-    popUpToMain: Boolean = false
+    popUpToMain: Boolean = false,
 ) {
     val navController = this
     val navOptions = NavOptions.Builder()

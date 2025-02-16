@@ -23,6 +23,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.drake.net.utils.withMain
 import com.github.jing332.common.audio.AudioPlayer
+import com.github.jing332.common.utils.messageChain
 import com.github.jing332.common.utils.sizeToReadable
 import com.github.jing332.common.utils.toast
 import com.github.jing332.compose.widgets.AppDialog
@@ -102,7 +103,7 @@ fun AuditionDialog(
             } catch (e: IOException) {
                 error = e.cause.toString()
             } catch (e: Exception) {
-                error = e.message ?: e.toString()
+                error = e.messageChain
                 logger.warn { e.stackTraceToString() }
             }
         }
