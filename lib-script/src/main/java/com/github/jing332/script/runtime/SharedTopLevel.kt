@@ -9,6 +9,7 @@ import org.mozilla.javascript.LazilyLoadedCtor
 import org.mozilla.javascript.Scriptable
 import org.mozilla.javascript.commonjs.module.RequireBuilder
 import org.mozilla.javascript.commonjs.module.provider.SoftCachingModuleScriptProvider
+import org.mozilla.javascript.typedarrays.NativeBuffer
 import splitties.init.appCtx
 
 /**
@@ -18,12 +19,14 @@ class SharedTopLevel(cx: Context) : ImporterTopLevel(cx) {
     init {
         initRequireBuilder(cx, this)
 
-        // Property
+        NativeBuffer.init2(cx, this, false)
+         // Property
         LazilyLoadedCtor(this, "fs", NativeFileSystem::class.java.name, false, true)
         LazilyLoadedCtor(this, "http", NativeHttp::class.java.name, false, true)
         LazilyLoadedCtor(this, "UUID", NativeUUID::class.java.name, false, true)
 
         // Class
+//        LazilyLoadedCtor(this, "Buffer", NativeBuffer::class.java.name, false, true)
         LazilyLoadedCtor(this, "Response", NativeResponse::class.java.name, false, true)
         LazilyLoadedCtor(this, "Websocket", NativeWebSocket::class.java.name, false, true)
     }

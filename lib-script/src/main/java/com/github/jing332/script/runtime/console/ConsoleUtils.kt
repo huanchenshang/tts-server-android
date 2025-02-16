@@ -20,31 +20,6 @@ internal class ConsoleUtils {
             NativeConsole.Level.ERROR -> LogLevel.ERROR
         }
 
-        fun log(vararg args: Any?): String {
-            if (args.isEmpty()) {
-                return ""
-            }
-
-            val arg0 = args[0]
-            val formatString =
-                if (arg0 is String && arg0.contains('%')) arg0
-                else null
-
-            if (formatString != null) {
-                if (args.size == 1) {
-                    return formatString
-                } else {
-                    val formattedArgs = args.drop(1).toTypedArray()
-                    try {
-                        return String.format(formatString, *formattedArgs)
-                    } catch (_: Exception) {
-                    }
-                }
-            }
-
-
-            return args.joinToString(" ") { jsToString(it ?: "") }
-        }
 
         fun Console.putLogger(obj: ScriptableObject, name: String, level: NativeConsole.Level) {
             obj.defineProperty(name, object : BaseFunction() {

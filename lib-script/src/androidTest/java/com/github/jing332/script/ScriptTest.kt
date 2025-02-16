@@ -21,13 +21,13 @@ import org.mozilla.javascript.ScriptableObject
 
 @RunWith(AndroidJUnit4::class)
 class ScriptTest {
-    private fun eval(code: String): Any? {
+    private fun eval(code: String, sourceName: String = ""): Any? {
         val context = InstrumentationRegistry.getInstrumentation().targetContext
         val engine = RhinoScriptEngine(CompatScriptRuntime(JsExtensions(context, "test")))
         engine.runtime.console.addLogListener {
             println(it.level.toLogLevelChar() + ": " + it.message)
         }
-        return engine.execute(StringScriptSource(code))
+        return engine.execute(StringScriptSource(script = code, sourceName = sourceName))
 
     }
 
@@ -35,7 +35,7 @@ class ScriptTest {
         return InstrumentationRegistry.getInstrumentation().targetContext.assets.open("test/${name}.js")
             .use {
                 val code = it.readBytes().decodeToString()
-                eval(code)
+                eval(code, name)
             }
     }
 
@@ -57,6 +57,11 @@ class ScriptTest {
     @Test
     fun testFile() {
         evalFromAsset("file")
+    }
+
+    @Test
+    fun testBuffer() {
+        evalFromAsset("buffer")
     }
 
     @Test
