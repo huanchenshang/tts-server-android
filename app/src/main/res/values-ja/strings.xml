@@ -448,4 +448,6 @@
     <string name="stream_handle_error">流错误：%1$s</string>
     <string name="use_standby_tts">使用备用TTS：%1$s</string>
     <string name="reach_retry_limit">到达重试上限，跳过！</string>
+    <string name="migration_data">迁移数据</string>
+    <string name="systts_list_migration_desc">列表数据需要迁移到新的表结构。\n数据无价，谨防丢失，请先手动导出旧数据。</string>
 </resources>

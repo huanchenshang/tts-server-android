@@ -30,6 +30,8 @@ fun SystemTtsScreen(sharedVM: SharedViewModel) {
     val pagerState = rememberPagerState { 2 }
     val scope = rememberCoroutineScope()
 
+    MigrationTips()
+
     Scaffold(
         bottomBar = {
             NavigationBar {

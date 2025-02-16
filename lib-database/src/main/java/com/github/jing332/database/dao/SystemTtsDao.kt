@@ -11,6 +11,7 @@ import com.github.jing332.database.constants.SpeechTarget
 import com.github.jing332.database.entities.AbstractListGroup.Companion.DEFAULT_GROUP_ID
 import com.github.jing332.database.entities.systts.GroupWithSystemTts
 import com.github.jing332.database.entities.systts.SystemTtsGroup
+import com.github.jing332.database.entities.systts.v1.GroupWithV1TTS
 import com.github.jing332.database.entities.systts.v1.SystemTts
 import kotlinx.coroutines.flow.Flow
 
@@ -58,11 +59,11 @@ interface SystemTtsDao {
 
     @Transaction
     @Query("SELECT * FROM SystemTtsGroup ORDER BY `order` ASC")
-    fun getAllGroupWithTts(): List<GroupWithSystemTts>
+    fun getAllGroupWithTts(): List<GroupWithV1TTS>
 
     @Transaction
     @Query("SELECT * FROM SystemTtsGroup ORDER BY `order` ASC")
-    fun getFlowAllGroupWithTts(): Flow<List<GroupWithSystemTts>>
+    fun getFlowAllGroupWithTts(): Flow<List<GroupWithV1TTS>>
 
     @Query("SELECT * FROM SystemTtsGroup WHERE groupId = :id")
     fun getGroup(id: Long = DEFAULT_GROUP_ID): SystemTtsGroup?
@@ -94,8 +95,8 @@ interface SystemTtsDao {
     @Query("DELETE from sysTts WHERE groupId = :groupId")
     fun deleteTtsByGroup(groupId: Long)
 
-    @Insert(onConflict = OnConflictStrategy.REPLACE)
-    fun insertGroup(vararg group: SystemTtsGroup)
+    @Insert(onConflict = OnConflictStrategy.IGNORE)
+    fun insertGroup(group: SystemTtsGroup)
 
     @Update(onConflict = OnConflictStrategy.REPLACE)
     fun updateGroup(group: SystemTtsGroup)
@@ -115,9 +116,6 @@ interface SystemTtsDao {
         deleteGroup(group)
     }
 
-    fun insertGroupWithTts(vararg args: GroupWithSystemTts) {
-       TODO()
-    }
 
     /**
      * 按照分组和分组内进行排序获取
@@ -136,7 +134,4 @@ interface SystemTtsDao {
         return list
     }
 
-    fun updateAllOrder() {
-       TODO()
-    }
 }
