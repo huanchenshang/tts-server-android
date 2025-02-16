@@ -27,13 +27,8 @@ class ScriptTest {
         engine.runtime.console.addLogListener {
             println(it.level.toLogLevelChar() + ": " + it.message)
         }
-        return try {
-            engine.execute(StringScriptSource(code))
-        } catch (e: EvaluatorException) {
-            throw Exception("${e.sourceName()}, ${e.lineNumber()}, ${e.columnNumber()}").apply {
-                initCause(e)
-            }
-        }
+        return engine.execute(StringScriptSource(code))
+
     }
 
     private fun evalFromAsset(name: String): Any? {
@@ -57,6 +52,11 @@ class ScriptTest {
     @Test
     fun websocket() {
         evalFromAsset("websocket")
+    }
+
+    @Test
+    fun testFile() {
+        evalFromAsset("file")
     }
 
     @Test
@@ -136,12 +136,18 @@ class ScriptTest {
     @Test
     fun scope() {
         val e = RhinoScriptEngine()
+        e.runtime.console.addLogListener {
+            println(it.level.toLogLevelChar() + ": " + it.message)
+        }
 
         // 测试两次执行环境是否独立
         // 即每次调用初始化新的scope
-        // topLevelScope(global) 作为 scope.prototype 以复用
-        e.execute(StringScriptSource("""let a=111"""))
-        e.execute(StringScriptSource("""console.log(a)"""))
+        // global 作为 scope.prototype 以复用
+        e.execute(StringScriptSource("""a=111; console.log(globalThis.a)"""))
+        val ret = e.execute(StringScriptSource("""globalThis.a == undefined"""))
+        assert(ret == true)
+
+//        assert(e.execute(StringScriptSource("globalThis.a != undefined")) == true)
     }
 
     @Test

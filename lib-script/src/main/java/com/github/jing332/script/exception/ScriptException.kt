@@ -26,7 +26,7 @@ open class ScriptException(
                 err.sourceName(),
                 err.lineNumber(),
                 err.columnNumber(),
-                err.message,
+                err.toString(),
                 throwable
             )
         }

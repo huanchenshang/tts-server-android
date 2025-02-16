@@ -11,11 +11,26 @@ import org.mozilla.javascript.Scriptable
 import org.mozilla.javascript.ScriptableObject
 
 open class RhinoScriptRuntime(
-    // Top level scope
-    val global: RhinoGlobal = withRhinoContext { cx -> RhinoGlobal(cx) },
-
+    var environment: Environment = Environment("", ""),
     var console: Console = Console(),
 ) {
+    companion object {
+        val sharedScope: ScriptableObject by lazy {
+            withRhinoContext { cx ->
+                SharedTopLevel(cx)
+            }
+        }
+    }
+
+    val global: ScriptableObject by lazy {
+        withRhinoContext { cx ->
+            (cx.newObject(sharedScope) as ScriptableObject).apply {
+                prototype = sharedScope
+                parentScope = null
+            }
+        }
+    }
+
     /**
      * Call from [com.github.jing332.script.rhino.RhinoScriptEngine.setRuntime]
      */
@@ -40,7 +55,8 @@ open class RhinoScriptRuntime(
         console.putLogger(logger, "e", NativeConsole.Level.ERROR)
         global.defineProperty("logger", logger, ScriptableObject.READONLY)
         console.putLogger(global, "println", NativeConsole.Level.INFO)
-        global.defineGetter("globalThis",::global)
+
+        global.defineGetter("environment", ::environment)
     }
 
     protected fun ScriptableObject.defineGetter(key: String, getter: () -> Any) {

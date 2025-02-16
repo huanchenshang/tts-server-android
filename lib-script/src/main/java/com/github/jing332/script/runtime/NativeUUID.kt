@@ -45,7 +45,6 @@ class NativeUUID : ScriptableObject() {
                 DONTENUM or READONLY
             )
 
-
             if (sealed) uuid.sealObject()
 
             ScriptableObject.defineProperty(scope, "UUID", uuid, DONTENUM);
@@ -84,10 +83,9 @@ class NativeUUID : ScriptableObject() {
             args: Array<Any>,
         ): Any = ensureArgumentsLength(args, 1) {
             val str = it[0]!!.toString()
-            val arr = NativeUint8Array(16)
 
             val buffer = Uuid.parse(str).toByteArray().toNativeArrayBuffer()
-            cx.newObject(scope, "Uint8Array", arrayOf(buffer, 0, buffer.size()))
+            cx.newObject(scope, "Uint8Array", arrayOf(buffer, 0, buffer.length))
         }
 
         private fun validate(

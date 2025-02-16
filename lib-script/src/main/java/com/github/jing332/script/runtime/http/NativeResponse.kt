@@ -105,7 +105,7 @@ class NativeResponse private constructor(val rawResponse: Response? = null) :
             val bytes = checkResponse().body?.bytes() ?: ByteArray(0)
             val buffer = bytes.toNativeArrayBuffer()
 
-            return cx.newObject(scope, "Uint8Array", arrayOf(buffer, 0, buffer.size()))
+            return cx.newObject(scope, "Uint8Array", arrayOf(buffer, 0, buffer.length))
         }
     }
 }

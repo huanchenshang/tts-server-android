@@ -35,7 +35,7 @@ object RhinoContextFactory : ContextFactory() {
         cx: Context?,
         scope: Scriptable?,
         thisObj: Scriptable?,
-        args: Array<out Any>?
+        args: Array<out Any>?,
     ): Any {
         return when (val ret = super.doTopCall(callable, cx, scope, thisObj, args)) {
             is Wrapper -> ret.unwrap()

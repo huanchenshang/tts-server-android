@@ -1,7 +1,6 @@
 package com.github.jing332.script.rhino
 
 import com.github.jing332.script.JavaScriptEngine
-import com.github.jing332.script.runtime.RhinoGlobal
 import com.github.jing332.script.runtime.RhinoScriptRuntime
 import com.github.jing332.script.source.ReaderScriptSource
 import com.github.jing332.script.source.ScriptSource
@@ -12,7 +11,7 @@ import org.mozilla.javascript.ScriptableObject
 
 open class RhinoScriptEngine(val runtime: RhinoScriptRuntime = RhinoScriptRuntime()) :
     JavaScriptEngine() {
-    val globalScope: RhinoGlobal
+    val globalScope: ScriptableObject
         get() = runtime.global
 
     var scope: ScriptableObject? = null
