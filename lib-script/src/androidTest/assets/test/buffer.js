@@ -1,5 +1,5 @@
 let str = "Hello, World !"
-let buf = Buffer.from(str, 'utf-8') // support type: utf-8, base64, hex, ascii. etc
+let buf = Buffer.from(str, 'utf-8') // Support type: utf-8, base64, hex, ascii.
 let arr = new Uint8Array(buf)
 console.log("arr", arr) // {"0":72,"1":101,"2":108,"3":108,"4":111,"5":44,"6":32,"7":87,"8":111,"9":114,"10":108,"11":100,"12":32,"13":33}
 console.log('buf', buf) // {"0":72,"1":101,"2":108,"3":108,"4":111,"5":44,"6":32,"7":87,"8":111,"9":114,"10":108,"11":100,"12":32,"13":33}

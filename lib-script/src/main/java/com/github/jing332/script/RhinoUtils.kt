@@ -1,18 +1,19 @@
 package com.github.jing332.script
 
-import com.github.jing332.script.exception.ScriptException
 import com.github.jing332.script.rhino.RhinoContextFactory
 import org.mozilla.javascript.Callable
 import org.mozilla.javascript.Context
 import org.mozilla.javascript.Function
 import org.mozilla.javascript.LambdaConstructor
 import org.mozilla.javascript.Scriptable
+import org.mozilla.javascript.ScriptableObject
 import org.mozilla.javascript.ScriptableObject.DONTENUM
 import org.mozilla.javascript.ScriptableObject.READONLY
 import org.mozilla.javascript.Undefined
 import org.mozilla.javascript.typedarrays.NativeArrayBuffer
 import org.mozilla.javascript.typedarrays.NativeArrayBufferView
 import java.util.function.BiConsumer
+import kotlin.jvm.Throws
 
 fun <R> withRhinoContext(block: (Context) -> R): R {
     val cx = RhinoContextFactory.enterContext()
@@ -23,12 +24,14 @@ fun <R> withRhinoContext(block: (Context) -> R): R {
     }
 }
 
+@Throws(IllegalArgumentException::class)
 fun <R> ensureArgumentsLength(
     args: Array<out Any?>?,
     count: Int,
     block: (args: Array<out Any?>) -> R,
-): R = ensureArgumentsLength(args, 1..count, block)
+): R = ensureArgumentsLength(args, count..count, block)
 
+@Throws(IllegalArgumentException::class)
 fun <R> ensureArgumentsLength(
     args: Array<out Any?>?,
     range: IntRange,
@@ -158,6 +161,22 @@ inline fun <reified T> LambdaConstructor.definePrototypeMethod(
     )
 }
 
+fun ScriptableObject.defineFunction(
+    name: String,
+    callable: Callable,
+    length: Int = 0,
+    attributes: Int = ScriptableObject.DONTENUM,
+    propertyAttributes: Int = ScriptableObject.DONTENUM or ScriptableObject.READONLY,
+) {
+    defineProperty(
+        this,
+        name,
+        length,
+        callable,
+        attributes,
+        propertyAttributes
+    )
+}
 
 object RhinoUtils {
 }

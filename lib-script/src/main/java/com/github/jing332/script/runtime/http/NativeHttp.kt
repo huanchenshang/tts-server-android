@@ -19,6 +19,8 @@ import java.util.concurrent.TimeUnit
 
 class NativeHttp : ScriptableObject() {
     companion object {
+        const val NAME = "http"
+
         @JvmStatic
         fun init(cx: Context, scope: Scriptable, sealed: Boolean) {
             val obj = NativeHttp()
@@ -28,7 +30,7 @@ class NativeHttp : ScriptableObject() {
             obj.defineProperty(scope, "get", 2, ::get, DONTENUM, DONTENUM or READONLY)
             obj.defineProperty(scope, "post", 3, ::post, DONTENUM, DONTENUM or READONLY)
 
-            ScriptableObject.defineProperty(scope, "http", obj, DONTENUM or READONLY)
+            ScriptableObject.defineProperty(scope, NAME, obj, DONTENUM or READONLY)
             if (sealed) obj.sealObject()
         }
 

@@ -40,6 +40,7 @@ dependencies {
     api(libs.bundles.media3)
     api(libs.kotlin.result)
     api(libs.kotlinx.serialization.json)
+    api(libs.apache.commons.text)
 
     implementation(libs.coreKtx)
     implementation(libs.appcompat)

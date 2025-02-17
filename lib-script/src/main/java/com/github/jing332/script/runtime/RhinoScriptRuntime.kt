@@ -17,7 +17,7 @@ open class RhinoScriptRuntime(
     companion object {
         val sharedScope: ScriptableObject by lazy {
             withRhinoContext { cx ->
-                SharedTopLevel(cx)
+                RhinoTopLevel(cx)
             }
         }
     }

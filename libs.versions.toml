@@ -13,7 +13,7 @@ kotlin = "2.1.10"
 ksp = "2.1.10-1.0.29"
 about = "10.9.2"
 
-coroutinesAndroid = "1.9.0"
+coroutines = "1.9.0"
 serializationJson = "1.7.3"
 material = "1.12.0"
 
@@ -31,6 +31,7 @@ okio = "3.6.0"
 okhttp = "4.12.0"
 net = "3.7.0"
 ktor-server = "3.0.3"
+apache-commons-text = "1.13.0"
 
 recyclerview = "1.3.2"
 codeEditor = "0.23.5"
@@ -63,7 +64,8 @@ roomRuntime = { module = "androidx.room:room-runtime", version.ref = "room" }
 roomCompiler = { module = "androidx.room:room-compiler", version.ref = "room" }
 roomKtx = { module = "androidx.room:room-ktx", version.ref = "room" }
 roomTesting = { module = "androidx.room:room-testing", version.ref = "room" }
-kotlinx-coroutines-android = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-android", version.ref = "coroutinesAndroid" }
+kotlinx-coroutines-core = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-core", version.ref = "coroutines" }
+kotlinx-coroutines-android = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-android", version.ref = "coroutines" }
 kotlinx-serialization-json = { module = "org.jetbrains.kotlinx:kotlinx-serialization-json", version.ref = "serializationJson" }
 accompanist-systemuicontroller = { module = "com.google.accompanist:accompanist-systemuicontroller", version.ref = "accompanist" }
 accompanist-nativation-animation = { module = "com.google.accompanist:accompanist-navigation-animation", version.ref = "accompanist" }
@@ -116,6 +118,7 @@ ktor-server-content-negotiation = { module = "io.ktor:ktor-server-content-negoti
 ktor-server-serialization-json = { module = "io.ktor:ktor-serialization-kotlinx-json", version.ref = "ktor-server" }
 ktor-server-cors = { module = "io.ktor:ktor-server-cors", version.ref = "ktor-server" }
 ktor-server-status-pages = { module = "io.ktor:ktor-server-status-pages", version.ref = "ktor-server" }
+apache-commons-text = { group='org.apache.commons', name="commons-text", version.ref="apache-commons-text"}
 
 code-editor = { module = "io.github.Rosemoe.sora-editor:editor", version.ref = "codeEditor" }
 code-editor-textmate = { module = "io.github.Rosemoe.sora-editor:language-textmate", version.ref = "codeEditor" }

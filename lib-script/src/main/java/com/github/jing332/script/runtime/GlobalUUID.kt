@@ -8,23 +8,22 @@ import org.mozilla.javascript.Context
 import org.mozilla.javascript.Scriptable
 import org.mozilla.javascript.ScriptableObject
 import org.mozilla.javascript.typedarrays.NativeTypedArrayView
-import org.mozilla.javascript.typedarrays.NativeUint8Array
 import kotlin.uuid.ExperimentalUuidApi
 import kotlin.uuid.Uuid
 
-class NativeUUID : ScriptableObject() {
+class GlobalUUID : Global() {
     companion object {
         @JvmStatic
         fun init(cx: Context, scope: Scriptable, sealed: Boolean) {
-            val uuid = NativeUUID()
+            val uuid = GlobalUUID()
             uuid.prototype = getObjectPrototype(scope)
             uuid.parentScope = scope
-            uuid.defineProperty(scope, "v4", 3, NativeUUID::v4, DONTENUM, DONTENUM or READONLY)
+            uuid.defineProperty(scope, "v4", 3, GlobalUUID::v4, DONTENUM, DONTENUM or READONLY)
             uuid.defineProperty(
                 scope,
                 "stringify",
                 3,
-                NativeUUID::stringify,
+                GlobalUUID::stringify,
                 DONTENUM,
                 DONTENUM or READONLY
             )
@@ -32,7 +31,7 @@ class NativeUUID : ScriptableObject() {
                 scope,
                 "parse",
                 1,
-                NativeUUID::parse,
+                GlobalUUID::parse,
                 DONTENUM,
                 DONTENUM or READONLY
             )
@@ -40,7 +39,7 @@ class NativeUUID : ScriptableObject() {
                 scope,
                 "validate",
                 1,
-                NativeUUID::validate,
+                GlobalUUID::validate,
                 DONTENUM,
                 DONTENUM or READONLY
             )
@@ -105,6 +104,6 @@ class NativeUUID : ScriptableObject() {
 
     }
 
-    override fun getClassName(): String = "UUID"
+    override fun getClassName(): String = "Global"
 
 }

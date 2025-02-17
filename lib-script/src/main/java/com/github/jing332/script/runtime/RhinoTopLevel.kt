@@ -15,18 +15,18 @@ import splitties.init.appCtx
 /**
  * Custom global scope for Rhino JavaScript engine.
  */
-class SharedTopLevel(cx: Context) : ImporterTopLevel(cx) {
+class RhinoTopLevel(cx: Context) : ImporterTopLevel(cx) {
     init {
         initRequireBuilder(cx, this)
 
         NativeBuffer.init2(cx, this, false)
          // Property
-        LazilyLoadedCtor(this, "fs", NativeFileSystem::class.java.name, false, true)
+        LazilyLoadedCtor(this, GlobalWebview.NAME, GlobalWebview::class.java.name, false, true)
+        LazilyLoadedCtor(this, GlobalFileSystem.NAME, GlobalFileSystem::class.java.name, false, true)
         LazilyLoadedCtor(this, "http", NativeHttp::class.java.name, false, true)
-        LazilyLoadedCtor(this, "UUID", NativeUUID::class.java.name, false, true)
+        LazilyLoadedCtor(this, "UUID", GlobalUUID::class.java.name, false, true)
 
         // Class
-//        LazilyLoadedCtor(this, "Buffer", NativeBuffer::class.java.name, false, true)
         LazilyLoadedCtor(this, "Response", NativeResponse::class.java.name, false, true)
         LazilyLoadedCtor(this, "Websocket", NativeWebSocket::class.java.name, false, true)
     }

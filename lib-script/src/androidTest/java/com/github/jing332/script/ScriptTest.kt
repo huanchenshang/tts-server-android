@@ -65,6 +65,11 @@ class ScriptTest {
     }
 
     @Test
+    fun testWebview(){
+        evalFromAsset("webview")
+    }
+
+    @Test
     fun importer() {
         val code = """
             let String = Packages.java.lang.String

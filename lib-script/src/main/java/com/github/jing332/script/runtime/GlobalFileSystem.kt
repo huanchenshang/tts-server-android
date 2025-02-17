@@ -14,15 +14,14 @@ import org.mozilla.javascript.typedarrays.NativeUint8Array
 import java.io.File
 import java.nio.charset.Charset
 
-class NativeFileSystem : ScriptableObject() {
-    override fun getClassName() = "FileSystem"
-
+class GlobalFileSystem : Global() {
     companion object {
         private val logger = KotlinLogging.logger("NativeFileSystem")
+        const val NAME = "fs"
 
         @JvmStatic
         fun init(cx: Context, scope: Scriptable, sealed: Boolean) {
-            val obj = NativeFileSystem()
+            val obj = GlobalFileSystem()
             obj.parentScope = scope
             obj.prototype = getObjectPrototype(scope)
 
@@ -74,7 +73,7 @@ class NativeFileSystem : ScriptableObject() {
 
             if (sealed) obj.sealObject()
 
-            ScriptableObject.defineProperty(scope, "fs", obj, ScriptableObject.DONTENUM)
+            ScriptableObject.defineProperty(scope, NAME, obj, ScriptableObject.DONTENUM)
         }
 
 

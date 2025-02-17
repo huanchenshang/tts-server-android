@@ -10,6 +10,7 @@ android {
 
     defaultConfig {
         minSdk = 21
+        testOptions.targetSdk = 34
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         consumerProguardFiles("consumer-rules.pro")
@@ -40,6 +41,7 @@ dependencies {
     //noinspection GradleDependency
     api(libs.mozilla.rhino)
     implementation(project(":lib-common"))
+    implementation(libs.kotlinx.coroutines.core)
     implementation(libs.okhttp)
     implementation(libs.net)
     implementation(libs.logging)
