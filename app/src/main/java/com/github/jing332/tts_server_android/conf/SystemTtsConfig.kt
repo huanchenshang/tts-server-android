@@ -137,7 +137,7 @@ object SystemTtsConfig {
     val isStreamPlayModeEnabled = mutableDataSaverStateOf(
         dataSaverInterface = dataSaverPref,
         key = "isStreamPlayModeEnabled",
-        initialValue = false
+        initialValue = true
     )
 
     val isExoDecoderEnabled = mutableDataSaverStateOf(

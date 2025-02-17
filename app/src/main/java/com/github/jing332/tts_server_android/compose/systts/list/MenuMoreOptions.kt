@@ -8,7 +8,6 @@ import androidx.compose.material.icons.filled.Input
 import androidx.compose.material.icons.filled.ManageSearch
 import androidx.compose.material.icons.filled.MenuBook
 import androidx.compose.material.icons.filled.Output
-import androidx.compose.material.icons.filled.SmartDisplay
 import androidx.compose.material.icons.filled.Speed
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
@@ -23,14 +22,14 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import com.github.jing332.common.utils.startActivity
+import com.github.jing332.compose.widgets.CheckedMenuItem
 import com.github.jing332.tts_server_android.R
 import com.github.jing332.tts_server_android.compose.asAppCompatActivity
 import com.github.jing332.tts_server_android.compose.systts.plugin.PluginManagerActivity
 import com.github.jing332.tts_server_android.compose.systts.replace.ReplaceManagerActivity
 import com.github.jing332.tts_server_android.compose.systts.speechrule.SpeechRuleManagerActivity
-import com.github.jing332.compose.widgets.CheckedMenuItem
 import com.github.jing332.tts_server_android.conf.SystemTtsConfig
-import com.github.jing332.common.utils.startActivity
 
 @Composable
 internal fun MenuMoreOptions(
@@ -45,12 +44,6 @@ internal fun MenuMoreOptions(
     var showImportSheet by remember { mutableStateOf(false) }
     if (showImportSheet)
         ListImportBottomSheet(onDismissRequest = { showImportSheet = false })
-
-    var showInternalPlayerDialog by remember { mutableStateOf(false) }
-    if (showInternalPlayerDialog)
-        InternalPlayerDialog {
-            showInternalPlayerDialog = false
-        }
 
     var showAudioParamsDialog by remember { mutableStateOf(false) }
     if (showAudioParamsDialog)
@@ -89,17 +82,6 @@ internal fun MenuMoreOptions(
             },
         )
         HorizontalDivider()
-
-        var isInternalPlayer by remember { SystemTtsConfig.isInternalPlayerEnabled }
-        CheckedMenuItem(
-            text = { Text(stringResource(id = R.string.systts_use_internal_audio_player)) },
-            checked = isInternalPlayer,
-            onClick = { showInternalPlayerDialog = true },
-            onClickCheckBox = { isInternalPlayer = it },
-            leadingIcon = {
-                Icon(Icons.Default.SmartDisplay, null)
-            }
-        )
 
         DropdownMenuItem(
             text = { Text(stringResource(id = R.string.audio_params)) },

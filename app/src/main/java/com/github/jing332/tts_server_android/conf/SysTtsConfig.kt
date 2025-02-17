@@ -120,10 +120,4 @@ object SysTtsConfig {
         set(value) {
             SystemTtsConfig.isStreamPlayModeEnabled.value = value
         }
-
-    var isExoDecoderEnabled: Boolean
-        get() = SystemTtsConfig.isExoDecoderEnabled.value
-        set(value) {
-            SystemTtsConfig.isExoDecoderEnabled.value = value
-        }
 }
