@@ -5,15 +5,12 @@ import android.app.Application
 import android.content.Context
 import android.content.Intent
 import android.os.Process
-import com.github.jing332.database.entities.systts.SystemTtsMigration
 import com.github.jing332.database.entities.systts.SystemTtsV2
 import com.github.jing332.tts_server_android.constant.AppConst
 import com.github.jing332.tts_server_android.model.hanlp.HanlpManager
-import io.github.oshai.kotlinlogging.KotlinLogging
 import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
-import java.util.*
 import kotlin.properties.Delegates
 
 
@@ -40,7 +37,7 @@ class App : Application() {
         CrashHandler(this)
 
         SystemTtsV2.Converters.json = AppConst.jsonBuilder
-//        SystemTtsMigration.migrate()
+
 
         GlobalScope.launch {
             HanlpManager.initDir(

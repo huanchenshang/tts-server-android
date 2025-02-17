@@ -4,8 +4,8 @@ import androidx.compose.runtime.mutableStateListOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.github.jing332.common.LogEntry
+import com.github.jing332.common.LogLevel
 import com.github.jing332.common.toLogLevel
-import com.github.jing332.common.utils.toHtmlItalic
 import com.github.jing332.tts_server_android.SysttsLogger
 import com.github.jing332.tts_server_android.constant.AppConst
 import io.github.oshai.kotlinlogging.KotlinLogging
@@ -29,7 +29,7 @@ class TtsLogViewModel : ViewModel() {
         runCatching {
             FileWriter(file, false).use { it.write(CharArray(0)) }
         }.onFailure {
-            logger.error(it) { "clear()" }
+            logs.add(LogEntry(level = LogLevel.ERROR, message = it.stackTraceToString()))
         }
     }
 
@@ -40,7 +40,7 @@ class TtsLogViewModel : ViewModel() {
             val level = it[1]
             val msg = it[2]
             LogEntry(
-                level  = level.toLogLevel(), time = time, message = msg
+                level = level.toLogLevel(), time = time, message = msg
             )
         }
     }
@@ -71,12 +71,16 @@ class TtsLogViewModel : ViewModel() {
 
     @Suppress("DEPRECATION")
     fun pull() {
-        file.reader().use { reader ->
-            reader.useLines {
-                it.forEach { line ->
-                    add(line)
+        runCatching {
+            file.reader().use { reader ->
+                reader.useLines {
+                    it.forEach { line ->
+                        add(line)
+                    }
                 }
             }
+        }.onFailure {
+            logs.add(LogEntry(level = LogLevel.ERROR, message = it.stackTraceToString()))
         }
 
     }

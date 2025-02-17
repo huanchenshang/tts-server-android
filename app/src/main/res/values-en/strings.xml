@@ -224,7 +224,7 @@
     <string name="md_checkbox_unchecked">Unchecked</string>
     <string name="md_checkbox_indeterminate">Indeterminate</string>
     <string name="systts_local_test_msg">Direct-Play is off \nSize: %1$d Kib \nSample rate: %2$d</string>
-    <string name="systts_set_standby">Set standby TTS</string>
+
     <string name="systts_local_params_int_must">Must be true or 1, false or 0</string>
     <string name="internal_player">Built-in player settings</string>
     <string name="built_in_player_not_enabled">⚠️[Built-in player] is not enabled</string>

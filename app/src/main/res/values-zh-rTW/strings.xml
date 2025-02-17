@@ -214,7 +214,6 @@
     <string name="md_checkbox_unchecked">全部未選</string>
     <string name="md_checkbox_indeterminate">部分選擇</string>
     <string name="systts_local_test_msg">直接播放已關閉\n大小：%1$d KiB \n取樣速率：%2$d HZ</string>
-    <string name="systts_set_standby">設定備用TTS</string>
     <string name="systts_local_params_int_must">必須為true或1，false或0</string>
     <string name="internal_player">內置播放器設定</string>
     <string name="built_in_player_not_enabled">⚠ ️內置播放器未啟用，請前往右上角選單手動啟用。</string>

@@ -227,7 +227,7 @@
     <string name="systts_local_test_msg">پخش مستقیم بسته است
 اندازه: %1$d کیلوبایت
 نرخ نمونه برداری: %2$d هرتز</string>
-    <string name="systts_set_standby">موتور پشتیبان را تنظیم کنید</string>
+
     <string name="systts_local_params_int_must">باید درست یا 1، نادرست یا 0 باشد</string>
     <string name="internal_player">پخش کننده داخلی</string>
     <string name="built_in_player_not_enabled">⚠️پخش داخلی فعال نیست، لطفا به منوی گوشه سمت راست بالا بروید تا به صورت دستی فعال شود.</string>

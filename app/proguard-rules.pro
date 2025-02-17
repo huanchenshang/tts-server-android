@@ -1,22 +1,19 @@
 -keepattributes SourceFile,LineNumberTable
+-keepattributes Exceptions,InnerClasses,Signature
+-keepattributes SourceFile,LineNumberTable
+-keepattributes *Annotation*
+-keepparameternames
 
-# Issue #229
+# Logger
 -keepclassmembers class ch.qos.logback.classic.pattern.* { <init>(); }
-
-## The following rules should only be used if you plan to keep
-## the logging calls in your released app.
--keepclassmembers  class ch.qos.logback.** { *; }
--keepclassmembers  class org.slf4j.impl.** { *; }
--keepattributes  *Annotation*
+-keepclassmembers class ch.qos.logback.** { *; }
+-keepclassmembers class org.slf4j.impl.** { *; }
+-dontwarn ch.qos.logback.core.net.*
 
 -keep class androidx.compose.ui.platform.AndroidCompositionLocals_androidKt { *; }
 
-# 插件相关
--keep class com.github.jing332.tts_server_android.model.rhino.core.** { *; }
 -keep class cn.hutool.crypto.** { *; }
 -keep class com.hankcs.hanlp.** { *; }
-
-#-keep class cn.hutool.core.** { *; }
 
 -keepnames class * extends java.lang.Exception
 
@@ -32,58 +29,18 @@
     public static ** inflate(...);
 }
 
-#-------------- 去掉所有打印 -------------
-
 -assumenosideeffects class android.util.Log {
-public static *** d(...);
-
-# public static *** e(...);
-
-public static *** i(...);
-
-public static *** v(...);
-
-public static *** println(...);
-
-public static *** w(...);
-
-public static *** wtf(...);
-
+#    public static *** e(...);
+    public static *** d(...);
+    public static *** i(...);
+    public static *** v(...);
+#    public static *** w(...);
+    public static *** wtf(...);
+    public static *** println(...);
 }
-
--assumenosideeffects class android.util.Log {
-public static *** d(...);
-
-public static *** v(...);
-
-}
-
--assumenosideeffects class android.util.Log {
-# public static *** e(...);
-
-public static *** v(...);
-
-}
-
--assumenosideeffects class android.util.Log {
-public static *** i(...);
-
-public static *** v(...);
-
-}
-
--assumenosideeffects class android.util.Log {
-public static *** w(...);
-
-public static *** v(...);
-
-}
-
 -assumenosideeffects class java.io.PrintStream {
-public *** println(...);
-
-public *** print(...);
-
+    public *** println(...);
+    public *** print(...);
 }
 
 # Keep `Companion` object fields of serializable classes.
