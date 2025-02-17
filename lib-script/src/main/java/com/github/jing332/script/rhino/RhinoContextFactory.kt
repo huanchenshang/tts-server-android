@@ -18,7 +18,7 @@ object RhinoContextFactory : ContextFactory() {
             languageVersion = Context.VERSION_ES6
             setClassShutter(RhinoClassShutter)
             wrapFactory = RhinoWrapFactory
-            locale = Locale.ENGLISH
+            locale = Locale.getDefault()
         }
     }
 
