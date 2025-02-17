@@ -28,7 +28,6 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
-import androidx.lifecycle.viewmodel.compose.viewModel
 import com.github.jing332.compose.ComposeExtensions.clickableRipple
 import com.github.jing332.compose.widgets.AppDialog
 import com.github.jing332.database.entities.plugin.Plugin
@@ -39,7 +38,6 @@ import com.github.jing332.tts_server_android.App
 import com.github.jing332.tts_server_android.AppLocale
 import com.github.jing332.tts_server_android.R
 import com.github.jing332.tts_server_android.compose.systts.list.ui.PluginTtsUI
-import com.github.jing332.tts_server_android.compose.systts.list.ui.PluginTtsViewModel
 import com.github.jing332.tts_server_android.compose.theme.AppTheme
 import com.github.jing332.tts_server_android.constant.AppConst
 import com.github.jing332.tts_server_android.toCode
@@ -206,9 +204,6 @@ class PluginPreviewActivity : AppCompatActivity() {
                 )
             }) { paddingValues ->
             val ui = remember { PluginTtsUI() }
-            val pluginVM: PluginTtsViewModel = viewModel()
-            pluginVM.onGetPlugin = { plugin }
-
             ui.EditContentScreen(
                 modifier = Modifier
                     .fillMaxSize()
@@ -217,7 +212,7 @@ class PluginPreviewActivity : AppCompatActivity() {
                 systts = systts,
                 onSysttsChange = onSysttsChange,
                 showBasicInfo = false,
-                vm = pluginVM
+                plugin = plugin,
             )
         }
     }

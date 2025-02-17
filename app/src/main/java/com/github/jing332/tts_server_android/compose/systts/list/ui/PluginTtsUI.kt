@@ -29,7 +29,6 @@ import com.github.jing332.compose.widgets.AppSpinner
 import com.github.jing332.compose.widgets.LabelSlider
 import com.github.jing332.compose.widgets.LoadingContent
 import com.github.jing332.compose.widgets.LoadingDialog
-import com.github.jing332.database.dbm
 import com.github.jing332.database.entities.plugin.Plugin
 import com.github.jing332.database.entities.systts.BaseAudioFormat
 import com.github.jing332.database.entities.systts.SystemTtsV2
@@ -140,8 +139,10 @@ class PluginTtsUI : IConfigUI() {
         systts: SystemTtsV2,
         onSysttsChange: (SystemTtsV2) -> Unit,
         showBasicInfo: Boolean = true,
+        plugin: Plugin? = null,
         vm: PluginTtsViewModel = viewModel(),
     ) {
+
         var displayName by remember { mutableStateOf("") }
 
         @Suppress("NAME_SHADOWING")
@@ -287,7 +288,7 @@ class PluginTtsUI : IConfigUI() {
                         val scope = rememberCoroutineScope()
                         suspend fun load(linearLayout: LinearLayout) {
                             runCatching {
-                                vm.load(context, tts, linearLayout)
+                                vm.load(context, plugin, tts, linearLayout)
                             }.onFailure {
                                 it.printStackTrace()
                                 context.displayErrorDialog(it)

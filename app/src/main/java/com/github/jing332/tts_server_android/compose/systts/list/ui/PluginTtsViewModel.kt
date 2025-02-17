@@ -25,30 +25,34 @@ class PluginTtsViewModel(app: Application) : AndroidViewModel(app) {
 
     lateinit var engine: TtsPluginUiEngineV2
 
-    var onGetPlugin: (String) -> Plugin = { id: String ->
-        dbm.pluginDao.getByPluginId(id)
-            ?: throw IllegalStateException("Plugin $id not found from database")
-    }
 
-    private fun initEngine(source: PluginTtsSource) {
+    private fun initEngine(plugin: Plugin, source: PluginTtsSource) {
         if (this::engine.isInitialized) return
 
-        val plugin = onGetPlugin(source.pluginId)
         engine = TtsPluginEngineManager.getEngine(app, plugin)
         engine.source = source
     }
+
+    private fun getPluginFromDB(id: String) =
+        dbm.pluginDao.getByPluginId(pluginId = id)
+            ?: throw IllegalStateException("Plugin $id not found from database")
 
     var isLoading by mutableStateOf(true)
 
     val locales = mutableStateListOf<Pair<String, String>>()
     val voices = mutableStateListOf<Pair<String, String>>()
 
-    suspend fun load(context: Context, source: PluginTtsSource, linearLayout: LinearLayout) =
+    suspend fun load(
+        context: Context,
+        plugin: Plugin?,
+        source: PluginTtsSource,
+        linearLayout: LinearLayout,
+    ) =
         withIO {
             isLoading = true
             try {
-                initEngine(source)
-                 engine.onLoadData()
+                initEngine(plugin ?: getPluginFromDB(source.pluginId), source)
+                engine.onLoadData()
 
                 withMain {
                     engine.onLoadUI(context, linearLayout)

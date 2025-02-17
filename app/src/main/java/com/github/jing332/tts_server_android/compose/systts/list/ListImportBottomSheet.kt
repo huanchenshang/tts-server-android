@@ -9,8 +9,9 @@ import com.github.jing332.common.utils.StringUtils
 import com.github.jing332.database.dbm
 import com.github.jing332.database.entities.systts.GroupWithSystemTts
 import com.github.jing332.database.entities.systts.SystemTtsGroup
+import com.github.jing332.database.entities.systts.SystemTtsMigration
 import com.github.jing332.database.entities.systts.SystemTtsV2
-import com.github.jing332.tts_server_android.bean.LegadoHttpTts
+import com.github.jing332.database.entities.systts.v1.GroupWithV1TTS
 import com.github.jing332.tts_server_android.compose.systts.ConfigImportBottomSheet
 import com.github.jing332.tts_server_android.compose.systts.ConfigModel
 import com.github.jing332.tts_server_android.compose.systts.SelectImportConfigDialog
@@ -61,7 +62,7 @@ fun ListImportBottomSheet(onDismissRequest: () -> Unit) {
 
 private fun getImportList(
     json: String,
-    fromLegado: Boolean
+    fromLegado: Boolean,
 ): List<GroupWithSystemTts>? {
     val groupName = StringUtils.formattedDate()
     val groupId = System.currentTimeMillis()
@@ -93,7 +94,18 @@ private fun getImportList(
         return null
     } else {
         return if (json.contains("\"group\"")) { // 新版数据结构
-            AppConst.jsonBuilder.decodeFromString<List<GroupWithSystemTts>>(json)
+            if (json.contains("\"config\"") && json.contains("\"source\"")) {
+                AppConst.jsonBuilder.decodeFromString<List<GroupWithSystemTts>>(json)
+            } else {
+                val old = AppConst.jsonBuilder.decodeFromString<List<GroupWithV1TTS>>(json)
+                old.map {
+                    GroupWithSystemTts(
+                        it.group,
+                        it.list.map { tts -> SystemTtsMigration.v1Tov2(tts) }.filterNotNull()
+                    )
+                }
+            }
+
         } else {
 //            val list = AppConst.jsonBuilder.decodeFromString<List<CompatSystemTts>>(json)
             listOf(
