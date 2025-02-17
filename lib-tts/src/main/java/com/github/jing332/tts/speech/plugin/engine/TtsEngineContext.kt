@@ -14,6 +14,4 @@ data class TtsEngineContext(
     val userVars: Map<String, String> = mutableMapOf(),
     override val context: Context,
     override val engineId: String
-) :
-    JsExtensions(context, engineId) {
-}
+) : JsExtensions(context, engineId)

@@ -1,12 +1,13 @@
 package com.github.jing332.database.entities.systts.source
 
+import androidx.annotation.Keep
 import com.github.jing332.database.entities.plugin.Plugin
 import kotlinx.parcelize.IgnoredOnParcel
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.Transient
 
-
+@Keep
 @Serializable
 @SerialName("plugin")
 data class PluginTtsSource(
@@ -20,7 +21,7 @@ data class PluginTtsSource(
 
     @Transient
     @IgnoredOnParcel
-    val plugin: Plugin? = null
+    val plugin: Plugin? = null,
 ) : ITtsSource() {
 
 

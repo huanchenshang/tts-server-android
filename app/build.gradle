@@ -68,7 +68,7 @@ android {
 
     signingConfigs {
         release {
-            //签名文件 从local.properties取值
+            // read sign from local.properties
             Properties pro = new Properties()
             InputStream input = project.rootProject.file("local.properties").newDataInputStream()
             pro.load(input)
@@ -111,6 +111,16 @@ android {
         }
     }
 
+    android.applicationVariants.configureEach { variant ->
+        variant.outputs.configureEach { output ->
+            //noinspection GrDeprecatedAPIUsage
+            def abiName = output.getFilter(com.android.build.OutputFile.ABI)
+            if (abiName == null)
+                output.outputFileName = "TTS-Server-v${variant.versionName}.apk"
+            else
+                output.outputFileName = "TTS-Server-v${variant.versionName}_${abiName}.apk"
+        }
+    }
 
     compileOptions {
         coreLibraryDesugaringEnabled true
