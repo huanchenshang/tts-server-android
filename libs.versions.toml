@@ -17,6 +17,7 @@ coroutinesAndroid = "1.9.0"
 serializationJson = "1.7.3"
 material = "1.12.0"
 
+immersionbar = "3.2.2"
 accompanist = "0.33.0-alpha"
 composeBom = "2025.01.01"
 lifecyle = "2.8.7"
@@ -44,6 +45,7 @@ caffeine = "3.1.8"
 desugar = "2.1.4"
 splitties = "3.0.0"
 
+hanlp = "portable-1.8.6"
 rhino = "1.8.0"
 kotlinParcelize = "2.0.20-Beta1"
 logging = "7.0.0"
@@ -68,6 +70,8 @@ accompanist-nativation-animation = { module = "com.google.accompanist:accompanis
 accompanist-webview = { module = "com.google.accompanist:accompanist-webview", version.ref = "accompanist" }
 accompanist-permissions = { module = "com.google.accompanist:accompanist-permissions", version.ref = "accompanist" }
 
+immersionbar = { group = "com.geyifeng.immersionbar", name = "immersionbar", version.ref = "immersionbar" }
+immersionbar-ktx = { group = "com.geyifeng.immersionbar",name = "immersionbar-ktx",  version.ref = "immersionbar" }
 material = { module = "com.google.android.material:material", version.ref = "material" }
 recyclerview = { module = "androidx.recyclerview:recyclerview", version.ref = "recyclerview" }
 
@@ -132,7 +136,7 @@ slf4j-api = { module = "org.slf4j:slf4j-api", version.ref = "slf4j" }
 slf4j-simple = { module = "org.slf4j:slf4j-simple", version.ref = "slf4j" }
 logback-classic = { module = "ch.qos.logback:logback-classic", version.ref = "logback" }
 logback-android = { module = "com.github.tony19:logback-android", version.ref = "logback-android" }
-
+hanlp = { group = "com.hankcs", name = "hanlp", version.ref = "hanlp" }
 mozilla-rhino = { module = "org.mozilla:rhino", version.ref = "rhino" }
 
 # logic-build

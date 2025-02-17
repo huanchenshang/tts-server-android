@@ -1,16 +1,12 @@
 -keepattributes SourceFile,LineNumberTable
 -keepattributes Exceptions,InnerClasses,Signature
--keepattributes SourceFile,LineNumberTable
--keepattributes *Annotation*
--keepparameternames
 
 # Logger
 -keepclassmembers class ch.qos.logback.classic.pattern.* { <init>(); }
--keepclassmembers class ch.qos.logback.** { *; }
--keepclassmembers class org.slf4j.impl.** { *; }
+-keep class ch.qos.logback.** { *; }
+-keep class org.slf4j.impl.** { *; }
+-keepattributes *Annotation*
 -dontwarn ch.qos.logback.core.net.*
-
--keep class androidx.compose.ui.platform.AndroidCompositionLocals_androidKt { *; }
 
 -keep class cn.hutool.crypto.** { *; }
 -keep class com.hankcs.hanlp.** { *; }
@@ -38,10 +34,10 @@
     public static *** wtf(...);
     public static *** println(...);
 }
--assumenosideeffects class java.io.PrintStream {
-    public *** println(...);
-    public *** print(...);
-}
+#-assumenosideeffects class java.io.PrintStream {
+#    public *** println(...);
+#    public *** print(...);
+#}
 
 # Keep `Companion` object fields of serializable classes.
 # This avoids serializer lookup through `getDeclaredClasses` as done for named companion objects.

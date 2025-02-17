@@ -189,11 +189,10 @@ dependencies {
     implementation(libs.bundles.media3)
 
     implementation 'me.rosuh:AndroidFilePicker:1.0.1'
-    implementation("com.hankcs:hanlp:portable-1.8.4")
 
-    // https://github.com/gyf-dev/ImmersionBar
-    implementation 'com.geyifeng.immersionbar:immersionbar:3.2.2'
-    implementation 'com.geyifeng.immersionbar:immersionbar-ktx:3.2.2'
+    implementation(libs.hanlp)
+    implementation(libs.immersionbar)
+    implementation(libs.immersionbar.ktx)
 
 
     implementation(libs.bundles.about)
