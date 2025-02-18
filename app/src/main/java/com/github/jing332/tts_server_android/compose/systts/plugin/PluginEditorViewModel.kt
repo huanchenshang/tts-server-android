@@ -55,12 +55,9 @@ class PluginEditorViewModel(app: Application) : AndroidViewModel(app) {
     }
 
     fun updatePlugin(plugin: Plugin) {
-        // Create new engine and set console, source
-        mEngine = TtsPluginUiEngineV2(app, plugin).also { new ->
-            new.console = console
-
-            mEngine?.let { old -> new.source = old.source }
-        }
+        mEngine = mEngine?.also { it.plugin = plugin }
+            ?: TtsPluginUiEngineV2(app, plugin).also { it.console = console }
+        mEngine?.eval()
     }
 
     fun updateCode(code: String) {

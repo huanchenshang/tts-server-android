@@ -19,7 +19,7 @@ import java.io.InputStream
 import java.io.PipedInputStream
 import java.io.PipedOutputStream
 
-open class TtsPluginEngineV2(val context: Context, val plugin: Plugin) {
+open class TtsPluginEngineV2(val context: Context, var plugin: Plugin) {
     companion object {
         const val OBJ_PLUGIN_JS = "PluginJS"
 
@@ -56,15 +56,11 @@ open class TtsPluginEngineV2(val context: Context, val plugin: Plugin) {
 
     protected var engine: RhinoScriptEngine = RhinoScriptEngine(runtime)
 
-    open fun execute(script: String): Any? =
+    open protected fun execute(script: String): Any? =
         engine.execute(script.toScriptSource(sourceName = plugin.pluginId))
 
-    init {
-        eval()
-    }
-
     @Suppress("UNCHECKED_CAST")
-    private fun eval() {
+    fun eval() {
         execute(plugin.code)
 
         pluginJsObj.apply {
