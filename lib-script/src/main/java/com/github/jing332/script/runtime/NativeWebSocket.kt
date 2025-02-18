@@ -1,5 +1,6 @@
 package com.github.jing332.script.runtime
 
+import com.github.jing332.script.toNativeArrayBuffer
 import io.github.oshai.kotlinlogging.KotlinLogging
 import okhttp3.OkHttpClient
 import okhttp3.Request
@@ -16,11 +17,14 @@ import org.mozilla.javascript.Scriptable
 import org.mozilla.javascript.ScriptableObject
 import org.mozilla.javascript.Undefined
 import org.mozilla.javascript.annotations.JSConstructor
+import org.mozilla.javascript.typedarrays.NativeArrayBuffer
+import org.mozilla.javascript.typedarrays.NativeBuffer
+import org.mozilla.javascript.typedarrays.NativeUint8Array
 import java.util.concurrent.TimeUnit
 
 class NativeWebSocket constructor(
     val url: String = "",
-    val headers: Map<CharSequence, CharSequence> = emptyMap()
+    val headers: Map<CharSequence, CharSequence> = emptyMap(),
 ) : IdScriptableObject() {
     constructor() : this("")
 
@@ -48,7 +52,12 @@ class NativeWebSocket constructor(
     }
 
     private val client by lazy {
-        OkHttpClient.Builder().writeTimeout(5, TimeUnit.SECONDS).build()
+        OkHttpClient.Builder()
+            .writeTimeout(5, TimeUnit.SECONDS)
+            .readTimeout(5, TimeUnit.SECONDS)
+            .connectTimeout(5, TimeUnit.SECONDS)
+            .callTimeout(5, TimeUnit.SECONDS)
+            .build()
     }
 
     private var readyState: Int = WS_CLOSED
@@ -107,20 +116,24 @@ class NativeWebSocket constructor(
         }
     }
 
+    private fun sendBytes(bytes: ByteArray): Boolean {
+        logger.trace { "send binary message: ${bytes.size} bytes" }
+        return ws?.send(bytes.toByteString()) == true
+    }
 
     override fun execIdCall(
         f: IdFunctionObject,
-        cx: Context?,
-        scope: Scriptable?,
+        cx: Context,
+        scope: Scriptable,
         thisObj: Scriptable?,
-        args: Array<out Any>?
+        args: Array<out Any>?,
     ): Any {
         if (!f.hasTag(WEBSOCKET_TAG)) {
             return super.execIdCall(f, cx, scope, thisObj, args)
         }
         when (f.methodId()) {
             Id_constructor -> {
-                return js_constructor(args)
+                return js_constructor(cx, scope, args)
             }
 
             Id_send -> {
@@ -128,13 +141,19 @@ class NativeWebSocket constructor(
                     is CharSequence -> {
                         val text = arg0.toString()
                         logger.trace { "send text message: $text" }
-                        return ws?.send(text) ?: false
+                        return ws?.send(text) == true
                     }
 
                     is ByteArray -> {
-                        val bytes = arg0.toByteString()
-                        logger.trace { "send binary message: ${bytes.size} bytes" }
-                        return ws?.send(bytes) ?: false
+                        return sendBytes(arg0)
+                    }
+
+                    is NativeUint8Array -> {
+                        return sendBytes(arg0.buffer.buffer)
+                    }
+
+                    is NativeArrayBuffer -> {
+                        return sendBytes(arg0.buffer)
                     }
                 }
             }
@@ -158,7 +177,9 @@ class NativeWebSocket constructor(
     @Suppress("UNCHECKED_CAST")
     @JSConstructor
     private fun js_constructor(
-        args: Array<out Any>?
+        cx: Context,
+        scope: Scriptable,
+        args: Array<out Any>?,
     ): Any {
         val url = args!![0].toString()
         val headers = args[1] as? Map<CharSequence, CharSequence> ?: emptyMap()
@@ -179,9 +200,13 @@ class NativeWebSocket constructor(
 
         logger.trace { "connecting to $url" }
         ws = client.newWebSocket(req, object : WebSocketListener() {
+            var currentCx: Context? = null
             override fun onOpen(webSocket: WebSocket, response: Response) {
+                currentCx = Context.enter()
+
                 readyState = WS_OPEN
-                event.emit("open", response)
+                val res = NativeResponse.of(!!currentCx, scope, response)
+                event.emit("open", res)
             }
 
             override fun onMessage(webSocket: WebSocket, text: String) {
@@ -190,24 +215,37 @@ class NativeWebSocket constructor(
             }
 
             override fun onMessage(webSocket: WebSocket, bytes: ByteString) {
-                event.emit("message", bytes)
-                event.emit("binary", bytes)
+                val buffer =
+                    NativeBuffer.of(
+                        currentCx!!,
+                        scope,
+                        bytes.toByteArray().toNativeArrayBuffer(currentCx!!, scope)
+                    )
+
+                event.emit("message", buffer)
+                event.emit("binary", buffer)
             }
 
             override fun onClosing(webSocket: WebSocket, code: Int, reason: String) {
                 readyState = WS_CLOSING
                 ws?.close(code, reason) // call onClosed
-//                event.emit("closing", code, reason)
             }
 
             override fun onClosed(webSocket: WebSocket, code: Int, reason: String) {
                 readyState = WS_CLOSED
                 event.emit("close", code, reason)
+
+                currentCx?.close()
+                currentCx = null
             }
 
             override fun onFailure(webSocket: WebSocket, t: Throwable, response: Response?) {
                 readyState = WS_CLOSED
-                event.emit("error", t.message ?: "", response)
+                val res = NativeResponse.of(currentCx!!, scope, response)
+                event.emit("error", t.message ?: "", res)
+
+                currentCx?.close()
+                currentCx = null
             }
         })
 
