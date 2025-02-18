@@ -4,11 +4,16 @@ import android.content.Context
 import android.widget.LinearLayout
 import com.github.jing332.common.utils.dp
 import com.github.jing332.database.entities.plugin.Plugin
+import com.github.jing332.script.toMap
+import io.github.oshai.kotlinlogging.KotlinLogging
+import org.mozilla.javascript.NativeMap
 import org.mozilla.javascript.ScriptableObject
 import java.util.Locale
 
 class TtsPluginUiEngineV2(context: Context, plugin: Plugin) : TtsPluginEngineV2(context, plugin) {
     companion object {
+        private val logger = KotlinLogging.logger("TtsPluginUiEngineV2")
+
         const val FUNC_SAMPLE_RATE = "getAudioSampleRate"
         const val FUNC_IS_NEED_DECODE = "isNeedDecode"
 
@@ -85,23 +90,19 @@ class TtsPluginUiEngineV2(context: Context, plugin: Plugin) : TtsPluginEngineV2(
 
     fun getVoices(locale: String): Map<String, String> {
         return engine.invokeMethod(editUiJsObject, FUNC_VOICES, locale).run {
-            println("getVoices prototype: $this")
             when (this) {
                 is Map<*, *> -> {
                     this.map { (key, value) ->
                         key.toString() to value.toString()
                     }.toMap()
                 }
-                /* is NativeMap -> {
-                     val entries = NativeMap::class.java.getDeclaredField("entries").apply {
-                         isAccessible = true
-                     }.get(this) as Hashtable
-                     entries.forEach {
-                         println(it)
-                     }
 
-                     emptyMap()
-                 }*/
+                is NativeMap -> {
+                    this.toMap<CharSequence, CharSequence>().map { (key, value) ->
+                        key.toString() to value.toString()
+                    }.toMap()
+                }
+
                 else -> emptyMap()
             }
         }

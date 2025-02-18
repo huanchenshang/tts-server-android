@@ -41,6 +41,7 @@ import com.github.jing332.tts_server_android.compose.systts.list.ui.widgets.Basi
 import com.github.jing332.tts_server_android.compose.systts.list.ui.widgets.SaveActionHandler
 import com.github.jing332.tts_server_android.compose.systts.list.ui.widgets.TtsTopAppBar
 import com.github.jing332.tts_server_android.ui.view.AppDialogs.displayErrorDialog
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
 class PluginTtsUI : IConfigUI() {
@@ -142,13 +143,13 @@ class PluginTtsUI : IConfigUI() {
         plugin: Plugin? = null,
         vm: PluginTtsViewModel = viewModel(),
     ) {
-
         var displayName by remember { mutableStateOf("") }
 
         @Suppress("NAME_SHADOWING")
         val systts by rememberUpdatedState(newValue = systts)
         val tts by rememberUpdatedState(newValue = (systts.config as TtsConfigurationDTO).source as PluginTtsSource)
         val context = LocalContext.current
+        val scope = rememberCoroutineScope()
 
         SaveActionHandler {
             val sampleRate = try {
@@ -194,8 +195,12 @@ class PluginTtsUI : IConfigUI() {
             LoadingDialog(onDismissRequest = { showLoadingDialog = false })
 
         var showAuditionDialog by remember { mutableStateOf(false) }
+        @Suppress("UNCHECKED_CAST")
         if (showAuditionDialog)
-            AuditionDialog(systts = systts) {
+            AuditionDialog(
+                systts = systts,
+                engine = if (plugin == null) null else vm.service()
+            ) {
                 showAuditionDialog = false
             }
 
@@ -236,8 +241,9 @@ class PluginTtsUI : IConfigUI() {
                                 if (locale.toString().isBlank()) return@AppSpinner
                                 onSysttsChange(systts.copySource(tts.copy(locale = locale.toString())))
                                 runCatching {
-                                    Log.d("PluginTtsUI", "updateVoices: locale=${locale}")
-                                    vm.updateVoices(locale.toString())
+                                    scope.launch(Dispatchers.IO) {
+                                        vm.updateVoices(locale.toString())
+                                    }
                                 }
                             },
                         )

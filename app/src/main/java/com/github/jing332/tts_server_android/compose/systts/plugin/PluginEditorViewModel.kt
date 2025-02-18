@@ -134,5 +134,9 @@ class PluginEditorViewModel(app: Application) : AndroidViewModel(app) {
         console.error(t.message)
     }
 
+    override fun onCleared() {
+        super.onCleared()
+        mEngine?.onStop()
+    }
 
 }

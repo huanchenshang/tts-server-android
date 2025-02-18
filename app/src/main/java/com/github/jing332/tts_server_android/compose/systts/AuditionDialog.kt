@@ -30,10 +30,13 @@ import com.github.jing332.compose.widgets.AppDialog
 import com.github.jing332.compose.widgets.LoadingContent
 import com.github.jing332.database.entities.systts.SystemTtsV2
 import com.github.jing332.database.entities.systts.TtsConfigurationDTO
+import com.github.jing332.database.entities.systts.source.ITtsSource
 import com.github.jing332.tts.CachedEngineManager
 import com.github.jing332.tts.manager.SystemParams
+import com.github.jing332.tts.manager.TtsConfiguration
 import com.github.jing332.tts.manager.TtsConfiguration.Companion.toVO
 import com.github.jing332.tts.speech.EngineState
+import com.github.jing332.tts.speech.ITtsService
 import com.github.jing332.tts_server_android.R
 import com.github.jing332.tts_server_android.conf.AppConfig
 import io.github.oshai.kotlinlogging.KotlinLogging
@@ -50,7 +53,10 @@ private val logger = KotlinLogging.logger("AuditionDialog")
 fun AuditionDialog(
     systts: SystemTtsV2,
     text: String = AppConfig.testSampleText.value,
-    onDismissRequest: () -> Unit
+
+    config: TtsConfiguration = (systts.config as TtsConfigurationDTO).toVO(),
+    engine: ITtsService<ITtsSource>? = null,
+    onDismissRequest: () -> Unit,
 ) {
     val context = LocalContext.current
     var error by remember { mutableStateOf("") }
@@ -72,10 +78,10 @@ fun AuditionDialog(
         }
 
         launch(Dispatchers.IO) {
-            val config = (systts.config as TtsConfigurationDTO).toVO()
+
             try {
-                val e = CachedEngineManager.getEngine(appCtx, config.source)
-                    ?: throw IllegalStateException("engine is null")
+                val e = engine ?: CachedEngineManager.getEngine(appCtx, config.source)
+                ?: throw IllegalStateException("engine is null")
 
                 if (e.state is EngineState.Uninitialized) e.onInit()
                 if (e.isSyncPlay(config.source)) {

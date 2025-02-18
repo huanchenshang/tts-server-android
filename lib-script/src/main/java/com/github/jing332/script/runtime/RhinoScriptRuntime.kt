@@ -27,7 +27,7 @@ open class RhinoScriptRuntime(
     val globalScope: ScriptableObject by lazy {
         withRhinoContext { cx ->
             (cx.newObject(sharedTopLevelScope) as ScriptableObject).apply {
-                prototype = sharedTopLevelScope
+                prototype =  sharedTopLevelScope
                 parentScope = null
             }
         }

@@ -12,7 +12,10 @@ import com.drake.net.utils.withIO
 import com.drake.net.utils.withMain
 import com.github.jing332.database.dbm
 import com.github.jing332.database.entities.plugin.Plugin
+import com.github.jing332.database.entities.systts.source.ITtsSource
 import com.github.jing332.database.entities.systts.source.PluginTtsSource
+import com.github.jing332.tts.speech.ITtsService
+import com.github.jing332.tts.speech.plugin.PluginTtsService
 import com.github.jing332.tts.speech.plugin.TtsPluginEngineManager
 import com.github.jing332.tts.speech.plugin.engine.TtsPluginUiEngineV2
 import com.github.jing332.tts_server_android.app
@@ -25,11 +28,19 @@ class PluginTtsViewModel(app: Application) : AndroidViewModel(app) {
 
     lateinit var engine: TtsPluginUiEngineV2
 
+    @Suppress("UNCHECKED_CAST")
+    fun service(): ITtsService<ITtsSource> {
+        return PluginTtsService(app, engine.plugin).also { it.engine = engine } as ITtsService<ITtsSource>
+    }
 
-    private fun initEngine(plugin: Plugin, source: PluginTtsSource) {
+    private fun initEngine(plugin: Plugin?, source: PluginTtsSource) {
         if (this::engine.isInitialized) return
 
-        engine = TtsPluginEngineManager.getEngine(app, plugin)
+        // compat preview plugin ui
+        engine = if (plugin == null)
+            TtsPluginEngineManager.getEngine(app, getPluginFromDB(source.pluginId))
+        else TtsPluginUiEngineV2(app, plugin).apply { eval() }
+
         engine.source = source
     }
 
@@ -51,7 +62,7 @@ class PluginTtsViewModel(app: Application) : AndroidViewModel(app) {
         withIO {
             isLoading = true
             try {
-                initEngine(plugin ?: getPluginFromDB(source.pluginId), source)
+                initEngine(plugin, source)
                 engine.onLoadData()
 
                 withMain {
@@ -67,16 +78,22 @@ class PluginTtsViewModel(app: Application) : AndroidViewModel(app) {
             }
         }
 
-    private fun updateLocales() {
-        locales.clear()
-        locales.addAll(engine.getLocales().toList())
+    private suspend fun updateLocales() {
+        val list = engine.getLocales().toList()
         logger.debug { "updateLocales: ${locales.joinToString { it.first + " - " + it.second }}" }
+        withMain {
+            locales.clear()
+            locales.addAll(list)
+        }
     }
 
-    fun updateVoices(locale: String) {
-        voices.clear()
-        voices.addAll(engine.getVoices(locale).toList())
+    suspend fun updateVoices(locale: String) {
+        val list = engine.getVoices(locale).toList()
         logger.debug { "updateVoices(${locale}): ${voices.joinToString { it.first + " - " + it.second }}" }
+        withMain {
+            voices.clear()
+            voices.addAll(list)
+        }
     }
 
     fun updateCustomUI(locale: String, voice: String) {

@@ -2,10 +2,7 @@ package com.github.jing332.tts_server_android
 
 import android.content.Context
 import android.os.Build
-import ch.qos.logback.classic.Logger
 import ch.qos.logback.classic.LoggerContext
-import ch.qos.logback.classic.util.LogbackMDCAdapter
-import ch.qos.logback.core.spi.LogbackLock
 import com.github.jing332.common.utils.ClipboardUtils
 import com.github.jing332.common.utils.longToast
 import com.github.jing332.common.utils.runOnUI
@@ -13,9 +10,6 @@ import com.github.jing332.tts_server_android.constant.AppConst
 import io.github.oshai.kotlinlogging.KotlinLogging
 import org.slf4j.LoggerFactory
 import java.time.LocalDateTime
-import java.util.logging.LogManager
-import kotlin.math.log
-import kotlin.system.exitProcess
 
 
 class CrashHandler(val context: Context) : Thread.UncaughtExceptionHandler {
@@ -33,6 +27,7 @@ class CrashHandler(val context: Context) : Thread.UncaughtExceptionHandler {
         handleException(e)
         val ctx = LoggerFactory.getILoggerFactory() as LoggerContext
         ctx.stop()
+
         mDefaultHandler?.uncaughtException(t, e)
     }
 

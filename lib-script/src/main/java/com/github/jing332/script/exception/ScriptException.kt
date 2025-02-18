@@ -5,7 +5,7 @@ import org.mozilla.javascript.Context
 fun <R> runScriptCatching(block: () -> R): R {
     return try {
         block()
-    } catch (e: Exception) {
+    } catch (e: Throwable) {
         throw ScriptException.from(e)
     }
 }

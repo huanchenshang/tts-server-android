@@ -3,6 +3,7 @@ package com.github.jing332.script.runtime
 import com.github.jing332.script.PropertyGetter
 import com.github.jing332.script.definePrototypeMethod
 import com.github.jing332.script.definePrototypePropertys
+import com.github.jing332.script.exception.runScriptCatching
 import com.github.jing332.script.toNativeArrayBuffer
 import okhttp3.Response
 import org.mozilla.javascript.Context
@@ -86,22 +87,22 @@ class NativeResponse private constructor(val rawResponse: Response? = null) :
                 throw Exception("Response failed: code=${rawResponse?.code}, message=${rawResponse?.message}")
         }
 
-        private fun NativeResponse.js_json(): Any {
+        private fun NativeResponse.js_json(): Any  =runScriptCatching {
             val resp = checkResponse()
-            val str = resp.body?.string() ?: return ""
-            return JsonParser(Context.getCurrentContext(), this).parseValue(str)
+            val str = resp.body?.string() ?: return@runScriptCatching ""
+              JsonParser(Context.getCurrentContext(), this).parseValue(str)
         }
 
-        private fun NativeResponse.js_text(): Any {
+        private fun NativeResponse.js_text(): Any = runScriptCatching {
             val resp = checkResponse()
-            return resp.body?.string() ?: ""
+              resp.body?.string() ?: ""
         }
 
-        private fun NativeResponse.js_bytes(cx: Context, scope: Scriptable): Any {
+        private fun NativeResponse.js_bytes(cx: Context, scope: Scriptable): Any = runScriptCatching {
             val bytes = checkResponse().body?.bytes() ?: ByteArray(0)
             val buffer = bytes.toNativeArrayBuffer()
 
-            return cx.newObject(scope, "Uint8Array", arrayOf(buffer, 0, buffer.length))
+            cx.newObject(scope, "Uint8Array", arrayOf(buffer, 0, buffer.length))
         }
     }
 }

@@ -1,6 +1,7 @@
 package com.github.jing332.script.runtime
 
 import com.github.jing332.script.toNativeArrayBuffer
+import com.github.jing332.script.withRhinoContext
 import io.github.oshai.kotlinlogging.KotlinLogging
 import okhttp3.OkHttpClient
 import okhttp3.Request
@@ -201,12 +202,9 @@ class NativeWebSocket constructor(
 
         logger.trace { "connecting to $url" }
         ws = client.newWebSocket(req, object : WebSocketListener() {
-            var currentCx: Context? = null
-            override fun onOpen(webSocket: WebSocket, response: Response) {
-                currentCx = Context.enter()
-
+             override fun onOpen(webSocket: WebSocket, response: Response) {
                 readyState = WS_OPEN
-                val res = NativeResponse.of(currentCx!!, scope, response)
+                val res = withRhinoContext {  NativeResponse.of(it, scope, response) }
                 event.emit("open", res)
             }
 
@@ -217,11 +215,11 @@ class NativeWebSocket constructor(
 
             override fun onMessage(webSocket: WebSocket, bytes: ByteString) {
                 val buffer =
-                    NativeBuffer.of(
-                        currentCx!!,
+                    withRhinoContext { NativeBuffer.of(
+                        it,
                         scope,
-                        bytes.toByteArray().toNativeArrayBuffer(currentCx!!, scope)
-                    )
+                        bytes.toByteArray().toNativeArrayBuffer(it, scope)
+                    ) }
 
                 event.emit("message", buffer)
                 event.emit("binary", buffer)
@@ -235,18 +233,12 @@ class NativeWebSocket constructor(
             override fun onClosed(webSocket: WebSocket, code: Int, reason: String) {
                 readyState = WS_CLOSED
                 event.emit("close", code, reason)
-
-                currentCx?.close()
-                currentCx = null
             }
 
             override fun onFailure(webSocket: WebSocket, t: Throwable, response: Response?) {
                 readyState = WS_CLOSED
-                val res = NativeResponse.of(currentCx!!, scope, response)
+                val res = withRhinoContext { NativeResponse.of(it, scope, response) }
                 event.emit("error", t.message ?: "", res)
-
-                currentCx?.close()
-                currentCx = null
             }
         })
 

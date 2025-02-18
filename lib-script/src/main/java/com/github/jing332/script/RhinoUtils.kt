@@ -5,6 +5,7 @@ import org.mozilla.javascript.Callable
 import org.mozilla.javascript.Context
 import org.mozilla.javascript.Function
 import org.mozilla.javascript.LambdaConstructor
+import org.mozilla.javascript.NativeMap
 import org.mozilla.javascript.Scriptable
 import org.mozilla.javascript.ScriptableObject
 import org.mozilla.javascript.ScriptableObject.DONTENUM
@@ -186,6 +187,17 @@ fun ScriptableObject.defineFunction(
         attributes,
         propertyAttributes
     )
+}
+
+@Suppress("UNCHECKED_CAST")
+fun <K, V> NativeMap.toMap(): Map<K, V> {
+    val map = mutableMapOf<K, V>()
+    for (k in ids) {
+        val v = get(k)
+        map[k as K] = v as V
+    }
+
+    return map
 }
 
 object RhinoUtils {

@@ -28,13 +28,10 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
-import com.github.jing332.compose.ComposeExtensions.clickableRipple
-import com.github.jing332.compose.widgets.AppDialog
 import com.github.jing332.database.entities.plugin.Plugin
 import com.github.jing332.database.entities.systts.SystemTtsV2
 import com.github.jing332.database.entities.systts.TtsConfigurationDTO
 import com.github.jing332.database.entities.systts.source.PluginTtsSource
-import com.github.jing332.tts_server_android.App
 import com.github.jing332.tts_server_android.AppLocale
 import com.github.jing332.tts_server_android.R
 import com.github.jing332.tts_server_android.compose.systts.list.ui.PluginTtsUI
@@ -119,7 +116,7 @@ class PluginPreviewActivity : AppCompatActivity() {
         plugin: Plugin,
         systts: SystemTtsV2,
         onSysttsChange: (SystemTtsV2) -> Unit,
-        onSave: () -> Unit
+        onSave: () -> Unit,
     ) {
         Scaffold(
             modifier = Modifier.fillMaxSize(),
@@ -140,66 +137,6 @@ class PluginPreviewActivity : AppCompatActivity() {
                             Icon(Icons.Default.Save, stringResource(id = R.string.save))
                         }
 
-                        var showSaveLogTips by remember { mutableStateOf(false) }
-                        if (showSaveLogTips)
-                            AppDialog(
-                                onDismissRequest = { showSaveLogTips = false },
-                                title = { Text(stringResource(R.string.write_plugin_log_to_file)) },
-                                content = {
-                                    Text(
-                                        modifier = Modifier.clickableRipple {
-//                                            runCatching {
-//                                                val uri =
-//                                                    FileProvider.getUriForFile(
-//                                                        /* context = */ context,
-//                                                        /* authority = */ AppConst.fileProviderAuthor,
-//                                                        /* file = */ File(onIniFilePath())
-//                                                    )
-//                                                val intent = Intent(Intent.ACTION_VIEW, uri).apply {
-//                                                    addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
-//                                                    addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-//                                                    setDataAndType(uri, "text/*")
-//                                                }
-//
-//                                                context.startActivity(
-//                                                    Intent.createChooser(
-//                                                        intent,"")
-//                                                    )
-//                                            }.onFailure {
-//                                                context.longToast(it.toString())
-//                                            }
-                                        },
-                                        text =
-                                        App.context.getExternalFilesDir("logs")?.absolutePath
-                                            ?: "/data/data/$packageName/files/logs"
-                                    )
-                                }
-                            )
-
-//                        var showOptions by remember { mutableStateOf(false) }
-//                        IconButton(onClick = { showOptions = false }) {
-//                            Icon(Icons.Default.MoreVert, stringResource(id = R.string.more_options))
-//
-//                            DropdownMenu(
-//                                expanded = showOptions,
-//                                onDismissRequest = { showOptions = false }) {
-//                                var isSaveRhinoLog by remember { PluginConfig.isSaveRhinoLog }
-//                                CheckedMenuItem(
-//                                    text = { Text(stringResource(R.string.write_plugin_log_to_file)) },
-//                                    checked = isSaveRhinoLog,
-//                                    onClick = {
-//                                        isSaveRhinoLog = !isSaveRhinoLog
-//                                        if (isSaveRhinoLog)
-//                                            showSaveLogTips = true
-//                                    },
-//                                    leadingIcon = {
-//                                        Icon(Icons.Default.DeveloperMode, null)
-//                                    }
-//                                )
-//
-//
-//                            }
-//                        }
                     }
                 )
             }) { paddingValues ->
