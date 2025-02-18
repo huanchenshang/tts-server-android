@@ -2,12 +2,18 @@ package com.github.jing332.script.runtime.console
 
 import com.github.jing332.common.LogEntry
 import com.github.jing332.common.LogLevel
+import io.github.oshai.kotlinlogging.KotlinLogging
 
 class Console : LogListenerManager, Writeable {
+    companion object {
+        val logger = KotlinLogging.logger("JS-Console")
+    }
+
     private val listeners = mutableListOf<LogListener>()
 
     @Synchronized
     override fun addLogListener(listener: LogListener) {
+
         listeners.add(listener)
     }
 
@@ -17,6 +23,7 @@ class Console : LogListenerManager, Writeable {
     }
 
     override fun write(@LogLevel level: Int, str: String) {
+        logger.info { str }
         listeners.forEach {
             it.onNewLog(LogEntry(level, str))
         }

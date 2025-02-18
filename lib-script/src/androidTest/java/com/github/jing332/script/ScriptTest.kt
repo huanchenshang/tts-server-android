@@ -11,19 +11,17 @@ import com.github.jing332.script.source.StringScriptSource
 import com.github.jing332.script.source.toScriptSource
 import org.junit.Test
 import org.junit.runner.RunWith
-import org.mozilla.javascript.BaseFunction
-import org.mozilla.javascript.Context
-import org.mozilla.javascript.EvaluatorException
-import org.mozilla.javascript.Function
-import org.mozilla.javascript.ScriptRuntime
-import org.mozilla.javascript.Scriptable
-import org.mozilla.javascript.ScriptableObject
 
 @RunWith(AndroidJUnit4::class)
 class ScriptTest {
+    private val context
+        get() = InstrumentationRegistry.getInstrumentation().targetContext
+
+    private fun engine() = RhinoScriptEngine(CompatScriptRuntime(JsExtensions(context, "test")))
+
     private fun eval(code: String, sourceName: String = ""): Any? {
         val context = InstrumentationRegistry.getInstrumentation().targetContext
-        val engine = RhinoScriptEngine(CompatScriptRuntime(JsExtensions(context, "test")))
+        val engine = engine()
         engine.runtime.console.addLogListener {
             println(it.level.toLogLevelChar() + ": " + it.message)
         }
@@ -65,7 +63,7 @@ class ScriptTest {
     }
 
     @Test
-    fun testWebview(){
+    fun testWebview() {
         evalFromAsset("webview")
     }
 
@@ -82,51 +80,6 @@ class ScriptTest {
         eval(code)
     }
 
-    @Test
-    fun interrupt() {
-        val code = """
-            function onLoad(){
-                println("onLoad")
-                try {
-                    sleep(5000)     
-                } catch (e) {
-                    println("interrupted")
-                }
-                
-                println("finished")               
-            }
-        """.trimIndent()
-
-        val e = RhinoScriptEngine()
-        try {
-            e.execute(StringScriptSource(code))
-        } catch (e: EvaluatorException) {
-            throw RuntimeException("${e.message} ${e.lineNumber()}:${e.columnNumber()}").apply {
-                initCause(e)
-            }
-        }
-
-        e.globalScope.defineProperty("sleep", object : BaseFunction() {
-            override fun call(
-                cx: Context?,
-                scope: Scriptable?,
-                thisObj: Scriptable?,
-                args: Array<out Any>?,
-            ): Any = ensureArgumentsLength(args, 1) {
-                val time = ScriptRuntime.toInt32(it[0]).toLong()
-                Thread.sleep(time)
-                super.call(cx, scope, thisObj, args)
-            }
-        }, ScriptableObject.READONLY)
-
-        val onLoadFunc = e.globalScope.get("onLoad") as Function
-        val currentThread = Thread.currentThread()
-        Thread {
-            Thread.sleep(1000)
-            currentThread.interrupt()
-        }.start()
-//        val ret = onLoadFunc.call(e.rhino, e.topLevelScope, e.topLevelScope, arrayOf())
-    }
 
     @Test
     fun http() {
@@ -145,7 +98,7 @@ class ScriptTest {
 
     @Test
     fun scope() {
-        val e = RhinoScriptEngine()
+        val e = engine()
         e.runtime.console.addLogListener {
             println(it.level.toLogLevelChar() + ": " + it.message)
         }

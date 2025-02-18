@@ -1,7 +1,6 @@
 package com.github.jing332.script.runtime.console
 
 import com.github.jing332.common.LogLevel
-import com.github.jing332.script.jsToString
 import org.mozilla.javascript.BaseFunction
 import org.mozilla.javascript.Context
 import org.mozilla.javascript.NativeConsole
@@ -21,7 +20,16 @@ internal class ConsoleUtils {
         }
 
 
-        fun Console.putLogger(obj: ScriptableObject, name: String, level: NativeConsole.Level) {
+        fun putLogger(
+            obj: ScriptableObject, name: String, level: NativeConsole.Level,
+            write: (
+                cx: Context,
+                scope: Scriptable,
+                args: Array<out Any?>,
+                level: NativeConsole.Level,
+                stack: Array<out ScriptStackElement?>?,
+            ) -> Unit,
+        ) {
             obj.defineProperty(name, object : BaseFunction() {
                 override fun call(
                     cx: Context,
@@ -29,13 +37,13 @@ internal class ConsoleUtils {
                     thisObj: Scriptable,
                     args: Array<out Any?>,
                 ): Any {
-                    write(cx, scope, args, level)
+                    write(cx, scope, args, level, null)
                     return Undefined.instance
                 }
             }, ScriptableObject.READONLY)
         }
 
-        fun Console.write(
+        fun Console.writeFormat(
             cx: Context,
             scope: Scriptable,
             args: Array<out Any?>,

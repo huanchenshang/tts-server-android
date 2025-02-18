@@ -14,6 +14,15 @@ import java.nio.charset.StandardCharsets
 import java.util.Base64
 import java.util.Locale
 
+class NativeBufferLoader{
+    companion object{
+        @JvmStatic
+        fun init(cx: Context, scope: Scriptable, sealed: Boolean) {
+            NativeBuffer.init2(cx, scope, sealed)
+        }
+    }
+}
+
 class NativeBuffer @JvmOverloads constructor(
     ab: NativeArrayBuffer,
     offset: Int = 0,

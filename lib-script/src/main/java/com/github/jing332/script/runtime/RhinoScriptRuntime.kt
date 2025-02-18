@@ -2,13 +2,15 @@ package com.github.jing332.script.runtime
 
 import com.github.jing332.script.runtime.console.Console
 import com.github.jing332.script.runtime.console.ConsoleUtils.Companion.putLogger
-import com.github.jing332.script.runtime.console.ConsoleUtils.Companion.write
+import com.github.jing332.script.runtime.console.ConsoleUtils.Companion.writeFormat
 import com.github.jing332.script.withRhinoContext
+import org.mozilla.javascript.BaseFunction
+import org.mozilla.javascript.Context
 import org.mozilla.javascript.NativeConsole
-import org.mozilla.javascript.NativeObject
 import org.mozilla.javascript.ScriptStackElement
 import org.mozilla.javascript.Scriptable
 import org.mozilla.javascript.ScriptableObject
+import org.mozilla.javascript.Undefined
 
 open class RhinoScriptRuntime(
     var environment: Environment,
@@ -31,6 +33,35 @@ open class RhinoScriptRuntime(
         }
     }
 
+    private fun putLogger(
+        obj: ScriptableObject, name: String, level: NativeConsole.Level,
+
+    ) {
+        obj.defineProperty(name, object : BaseFunction() {
+            override fun call(
+                cx: Context,
+                scope: Scriptable,
+                thisObj: Scriptable,
+                args: Array<out Any?>,
+            ): Any {
+                console.writeFormat(cx, scope, args, level, null)
+                return Undefined.instance
+            }
+        }, ScriptableObject.READONLY)
+    }
+
+    private fun initLogger(){
+        val logger = withRhinoContext { it.newObject(this.globalScope) } as ScriptableObject
+        putLogger(logger, "log", NativeConsole.Level.INFO)
+        putLogger(logger, "t", NativeConsole.Level.TRACE)
+        putLogger(logger, "d", NativeConsole.Level.DEBUG)
+        putLogger(logger, "i", NativeConsole.Level.INFO)
+        putLogger(logger, "w", NativeConsole.Level.WARN)
+        putLogger(logger, "e", NativeConsole.Level.ERROR)
+        putLogger(globalScope, "println", NativeConsole.Level.INFO)
+        globalScope.defineProperty("logger", logger, ScriptableObject.READONLY)
+    }
+
     /**
      * Call from [com.github.jing332.script.engine.RhinoScriptEngine.setRuntime]
      */
@@ -43,18 +74,10 @@ open class RhinoScriptRuntime(
                 args: Array<out Any?>,
                 stack: Array<out ScriptStackElement?>?,
             ) {
-                console.write(cx, scope, args, level, stack)
+                console.writeFormat(cx, scope, args, level, stack)
             }
         })
-        val logger = NativeObject()
-        console.putLogger(logger, "log", NativeConsole.Level.INFO)
-        console.putLogger(logger, "t", NativeConsole.Level.TRACE)
-        console.putLogger(logger, "d", NativeConsole.Level.DEBUG)
-        console.putLogger(logger, "i", NativeConsole.Level.INFO)
-        console.putLogger(logger, "w", NativeConsole.Level.WARN)
-        console.putLogger(logger, "e", NativeConsole.Level.ERROR)
-        console.putLogger(globalScope, "println", NativeConsole.Level.INFO)
-        globalScope.defineProperty("logger", logger, ScriptableObject.READONLY)
+        initLogger()
 
         globalScope.defineGetter("environment", ::environment)
     }

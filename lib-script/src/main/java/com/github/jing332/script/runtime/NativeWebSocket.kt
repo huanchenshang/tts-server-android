@@ -30,6 +30,7 @@ class NativeWebSocket constructor(
 
     companion object {
         val logger = KotlinLogging.logger("NativeWebSocket")
+        const val CLASS_NAME = "Websocket"
 
         const val Id_constructor = 1
         const val Id_send = 2
@@ -64,7 +65,7 @@ class NativeWebSocket constructor(
     private var ws: WebSocket? = null
     private lateinit var event: NativeEventTarget
 
-    override fun getClassName(): String = "Websocket"
+    override fun getClassName(): String = CLASS_NAME
 
     override fun fillConstructorProperties(ctor: IdFunctionObject?) {
         ctor?.apply {
