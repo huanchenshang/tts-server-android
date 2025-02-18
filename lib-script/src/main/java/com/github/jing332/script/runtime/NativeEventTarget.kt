@@ -6,6 +6,7 @@ import io.github.oshai.kotlinlogging.KotlinLogging
 import org.mozilla.javascript.BaseFunction
 import org.mozilla.javascript.Context
 import org.mozilla.javascript.Function
+import org.mozilla.javascript.ScriptRuntime
 import org.mozilla.javascript.Scriptable
 import org.mozilla.javascript.ScriptableObject
 import org.mozilla.javascript.Undefined
@@ -31,7 +32,7 @@ class NativeEventTarget(val scope: ScriptableObject) {
                 cx: Context?,
                 scope: Scriptable?,
                 thisObj: Scriptable?,
-                args: Array<out Any>?
+                args: Array<out Any>?,
             ): Any {
                 val eventName = args!![0].toString()
                 val function = args[1] as Function
@@ -46,7 +47,7 @@ class NativeEventTarget(val scope: ScriptableObject) {
                 cx: Context?,
                 scope: Scriptable?,
                 thisObj: Scriptable?,
-                args: Array<out Any>?
+                args: Array<out Any>?,
             ): Any {
                 val eventName = args!![0].toString()
                 val function = args[1] as Function
@@ -61,8 +62,16 @@ class NativeEventTarget(val scope: ScriptableObject) {
         val function =
             functions[eventName] ?: scope.get("on${eventName.firstCharUpperCase()}") as? Function
 
-        withRhinoContext {
-            function?.call(it, scope, scope, args)
+        withRhinoContext { cx ->
+            try {
+                function?.call(cx, scope, scope, args)
+            } catch (e: Exception) {
+                logger.error(e) { "emit error " }
+
+                runCatching {
+                    functions["error"]?.apply { call(cx, scope, scope, arrayOf(e)) }
+                }
+            }
         }
     }
 

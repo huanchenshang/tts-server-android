@@ -1,12 +1,10 @@
-package com.github.jing332.script.runtime.http
+package com.github.jing332.script.runtime
 
 import com.drake.net.Net
 import com.github.jing332.script.ensureArgumentsLength
 import com.github.jing332.script.exception.runScriptCatching
 import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.MultipartBody
-import okhttp3.OkHttpClient
-import okhttp3.Protocol
 import okhttp3.RequestBody.Companion.asRequestBody
 import okhttp3.RequestBody.Companion.toRequestBody
 import okhttp3.Response
@@ -14,23 +12,21 @@ import org.mozilla.javascript.Context
 import org.mozilla.javascript.Scriptable
 import org.mozilla.javascript.ScriptableObject
 import java.io.File
-import java.util.Collections
-import java.util.concurrent.TimeUnit
 
-class NativeHttp : ScriptableObject() {
+class GlobalHttp : ScriptableObject() {
     companion object {
         const val NAME = "http"
 
         @JvmStatic
         fun init(cx: Context, scope: Scriptable, sealed: Boolean) {
-            val obj = NativeHttp()
+            val obj = GlobalHttp()
             obj.prototype = getObjectPrototype(scope)
             obj.parentScope = scope
 
             obj.defineProperty(scope, "get", 2, ::get, DONTENUM, DONTENUM or READONLY)
             obj.defineProperty(scope, "post", 3, ::post, DONTENUM, DONTENUM or READONLY)
 
-            ScriptableObject.defineProperty(scope, NAME, obj, DONTENUM or READONLY)
+            defineProperty(scope, NAME, obj, DONTENUM or READONLY)
             if (sealed) obj.sealObject()
         }
 

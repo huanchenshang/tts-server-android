@@ -1,10 +1,7 @@
-package com.github.jing332.script.runtime.http
+package com.github.jing332.script.runtime
 
-import cn.hutool.core.text.CharSequenceUtil.bytes
-import com.drake.net.utils.scope
 import com.github.jing332.script.PropertyGetter
 import com.github.jing332.script.definePrototypeMethod
-import com.github.jing332.script.definePrototypeProperty
 import com.github.jing332.script.definePrototypePropertys
 import com.github.jing332.script.toNativeArrayBuffer
 import okhttp3.Response
@@ -14,7 +11,6 @@ import org.mozilla.javascript.Scriptable
 import org.mozilla.javascript.ScriptableObject
 import org.mozilla.javascript.Undefined
 import org.mozilla.javascript.json.JsonParser
-import org.mozilla.javascript.typedarrays.NativeUint8Array
 
 class NativeResponse private constructor(val rawResponse: Response? = null) :
     ScriptableObject() {
@@ -26,8 +22,8 @@ class NativeResponse private constructor(val rawResponse: Response? = null) :
         @JvmStatic
         val serialVersionUID: Long = 3110411773054879588L
 
-        fun of(cx: Context, scope: Scriptable, resp: Response): Scriptable {
-            return cx.newObject(scope, "Response", arrayOf(resp))
+        fun of(cx: Context, scope: Scriptable, resp: Response?): Scriptable {
+            return cx.newObject(scope, CLASS_NAME, arrayOf(resp))
         }
 
         @JvmStatic
@@ -67,7 +63,7 @@ class NativeResponse private constructor(val rawResponse: Response? = null) :
                 scope, "bytes", 0, { cx, scope, thisObj, args -> thisObj.js_bytes(cx, scope) }
             )
 
-            ScriptableObject.defineProperty(scope, CLASS_NAME, constructor, DONTENUM)
+            defineProperty(scope, CLASS_NAME, constructor, DONTENUM)
             if (sealed) constructor.sealObject()
         }
 

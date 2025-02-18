@@ -205,7 +205,7 @@ class NativeWebSocket constructor(
                 currentCx = Context.enter()
 
                 readyState = WS_OPEN
-                val res = NativeResponse.of(!!currentCx, scope, response)
+                val res = NativeResponse.of(currentCx!!, scope, response)
                 event.emit("open", res)
             }
 

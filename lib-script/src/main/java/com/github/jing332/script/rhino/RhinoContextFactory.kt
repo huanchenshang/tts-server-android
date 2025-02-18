@@ -8,6 +8,7 @@ import org.mozilla.javascript.Wrapper
 import java.util.Locale
 
 object RhinoContextFactory : ContextFactory() {
+
     init {
         initGlobal(this)
     }

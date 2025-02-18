@@ -13,6 +13,7 @@ import kotlin.uuid.Uuid
 
 class GlobalUUID : Global() {
     companion object {
+        const val NAME = "UUID"
         @JvmStatic
         fun init(cx: Context, scope: Scriptable, sealed: Boolean) {
             val uuid = GlobalUUID()
@@ -46,7 +47,7 @@ class GlobalUUID : Global() {
 
             if (sealed) uuid.sealObject()
 
-            ScriptableObject.defineProperty(scope, "UUID", uuid, DONTENUM);
+            ScriptableObject.defineProperty(scope, NAME, uuid, DONTENUM);
         }
 
         private fun v4(

@@ -65,7 +65,7 @@ class NativeBuffer @JvmOverloads constructor(
             constructor.definePrototypeMethod(
                 scope, "toString", 2,
                 { cx: Context, scope: Scriptable, thisObj: Scriptable, args: Array<Any?> ->
-                    runScriptCatching { realThis(scope).jsToString(cx, args) }
+                    runScriptCatching { realThis(thisObj).jsToString(cx, args) }
                 },
                 DONTENUM,
                 DONTENUM or READONLY
