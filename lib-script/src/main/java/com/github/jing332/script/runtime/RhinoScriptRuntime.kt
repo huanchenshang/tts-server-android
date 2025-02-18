@@ -11,31 +11,31 @@ import org.mozilla.javascript.Scriptable
 import org.mozilla.javascript.ScriptableObject
 
 open class RhinoScriptRuntime(
-    var environment: Environment = Environment("", ""),
+    var environment: Environment,
     var console: Console = Console(),
 ) {
     companion object {
-        val sharedScope: ScriptableObject by lazy {
+        val sharedTopLevelScope: ScriptableObject by lazy {
             withRhinoContext { cx ->
                 RhinoTopLevel(cx)
             }
         }
     }
 
-    val global: ScriptableObject by lazy {
+    val globalScope: ScriptableObject by lazy {
         withRhinoContext { cx ->
-            (cx.newObject(sharedScope) as ScriptableObject).apply {
-                prototype = sharedScope
+            (cx.newObject(sharedTopLevelScope) as ScriptableObject).apply {
+                prototype = sharedTopLevelScope
                 parentScope = null
             }
         }
     }
 
     /**
-     * Call from [com.github.jing332.script.rhino.RhinoScriptEngine.setRuntime]
+     * Call from [com.github.jing332.script.engine.RhinoScriptEngine.setRuntime]
      */
     open fun init() {
-        NativeConsole.init(global, false, object : NativeConsole.ConsolePrinter {
+        NativeConsole.init(globalScope, false, object : NativeConsole.ConsolePrinter {
             override fun print(
                 cx: org.mozilla.javascript.Context,
                 scope: Scriptable,
@@ -53,10 +53,10 @@ open class RhinoScriptRuntime(
         console.putLogger(logger, "i", NativeConsole.Level.INFO)
         console.putLogger(logger, "w", NativeConsole.Level.WARN)
         console.putLogger(logger, "e", NativeConsole.Level.ERROR)
-        global.defineProperty("logger", logger, ScriptableObject.READONLY)
-        console.putLogger(global, "println", NativeConsole.Level.INFO)
+        console.putLogger(globalScope, "println", NativeConsole.Level.INFO)
+        globalScope.defineProperty("logger", logger, ScriptableObject.READONLY)
 
-        global.defineGetter("environment", ::environment)
+        globalScope.defineGetter("environment", ::environment)
     }
 
     protected fun ScriptableObject.defineGetter(key: String, getter: () -> Any) {

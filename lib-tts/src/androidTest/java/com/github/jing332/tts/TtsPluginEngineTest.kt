@@ -5,8 +5,6 @@ import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
 import com.github.jing332.database.entities.plugin.Plugin
 import com.github.jing332.database.entities.systts.source.PluginTtsSource
-import com.github.jing332.script.rhino.RhinoScriptEngine
-import com.github.jing332.script.source.toScriptSource
 import com.github.jing332.tts.manager.SystemParams
 import com.github.jing332.tts.speech.plugin.PluginTtsService
 import com.github.jing332.tts.speech.plugin.engine.TtsPluginUiEngineV2

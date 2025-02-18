@@ -1,4 +1,4 @@
-package com.github.jing332.script.rhino
+package com.github.jing332.script.engine
 
 import android.content.Context
 import org.mozilla.javascript.commonjs.module.provider.ModuleSource

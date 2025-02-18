@@ -14,6 +14,6 @@ class CompatScriptRuntime(val ttsrv: JsExtensions) :
     ) {
     override fun init() {
         super.init()
-        global.defineGetter("ttsrv", ::ttsrv)
+        globalScope.defineGetter("ttsrv", ::ttsrv)
     }
 }

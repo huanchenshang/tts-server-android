@@ -2,9 +2,6 @@ package com.github.jing332.script
 
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
-import com.github.jing332.script.rhino.RhinoScriptEngine
-import com.github.jing332.script.runtime.RhinoScriptRuntime
-import com.github.jing332.script.source.toScriptSource
 import org.junit.Test
 import org.junit.runner.RunWith
 

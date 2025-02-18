@@ -1,6 +1,6 @@
 package com.github.jing332.script.runtime
 
-import com.github.jing332.script.rhino.ModuleSourceProvider
+import com.github.jing332.script.engine.ModuleSourceProvider
 import org.mozilla.javascript.Context
 import org.mozilla.javascript.ImporterTopLevel
 import org.mozilla.javascript.LazilyLoadedCtor

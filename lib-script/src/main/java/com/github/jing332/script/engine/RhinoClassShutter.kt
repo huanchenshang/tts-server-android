@@ -22,7 +22,7 @@
  * or visit www.oracle.com if you need additional information or have any
  * questions.
  */
-package com.github.jing332.script.rhino
+package com.github.jing332.script.engine
 
 import org.mozilla.javascript.ClassShutter
 

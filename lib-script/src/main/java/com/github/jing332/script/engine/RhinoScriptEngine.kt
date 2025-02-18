@@ -1,4 +1,4 @@
-package com.github.jing332.script.rhino
+package com.github.jing332.script.engine
 
 import com.github.jing332.script.JavaScriptEngine
 import com.github.jing332.script.runtime.RhinoScriptRuntime
@@ -9,10 +9,10 @@ import com.github.jing332.script.withRhinoContext
 import org.mozilla.javascript.Function
 import org.mozilla.javascript.ScriptableObject
 
-open class RhinoScriptEngine(val runtime: RhinoScriptRuntime = RhinoScriptRuntime()) :
+open class RhinoScriptEngine(val runtime: RhinoScriptRuntime) :
     JavaScriptEngine() {
     val globalScope: ScriptableObject
-        get() = runtime.global
+        get() = runtime.globalScope
 
     var scope: ScriptableObject? = null
         private set

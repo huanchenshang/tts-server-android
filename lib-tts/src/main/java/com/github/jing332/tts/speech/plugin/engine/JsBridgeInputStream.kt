@@ -5,6 +5,8 @@ import androidx.annotation.Keep
 import com.github.jing332.script.exception.ScriptException
 import kotlinx.coroutines.sync.Mutex
 import org.mozilla.javascript.Context
+import org.mozilla.javascript.typedarrays.NativeArrayBuffer
+import org.mozilla.javascript.typedarrays.NativeUint8Array
 import java.io.IOException
 import java.io.InputStream
 import java.io.PipedInputStream
@@ -90,7 +92,7 @@ class JsBridgeInputStream : InputStream() {
      */
     @Keep
     interface Callback {
-        fun write(data: ByteArray)
+        fun write(data: Any)
         fun close()
         fun error(data: Any?)
     }
@@ -98,7 +100,7 @@ class JsBridgeInputStream : InputStream() {
     suspend fun getCallback(mutex: Mutex): Callback {
         mutex.lock()
         return object : Callback {
-            override fun write(data: ByteArray) {
+            private fun writeBytes(data: ByteArray) {
                 Log.v(TAG, "${this}.write(${data.size})")
                 if (isClosed || hasError) return
 
@@ -112,6 +114,16 @@ class JsBridgeInputStream : InputStream() {
                     } catch (ignored: IOException) {
                     }
                 }
+            }
+
+            override fun write(data: Any) {
+                when (data){
+                    is ByteArray -> writeBytes(data)
+                    is String -> writeBytes(data.toByteArray())
+                    is NativeUint8Array -> write(data.buffer.buffer)
+                    is NativeArrayBuffer -> write(data.buffer)
+                }
+
             }
 
             override fun close() {

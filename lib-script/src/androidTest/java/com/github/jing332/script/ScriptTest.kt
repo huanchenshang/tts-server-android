@@ -3,7 +3,7 @@ package com.github.jing332.script
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
 import com.github.jing332.common.toLogLevelChar
-import com.github.jing332.script.rhino.RhinoScriptEngine
+import com.github.jing332.script.engine.RhinoScriptEngine
 import com.github.jing332.script.simple.CompatScriptRuntime
 import com.github.jing332.script.simple.SimpleScriptEngine
 import com.github.jing332.script.simple.ext.JsExtensions

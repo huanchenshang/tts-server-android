@@ -1,4 +1,4 @@
-package com.github.jing332.script.rhino
+package com.github.jing332.script.engine
 
 import org.mozilla.javascript.Callable
 import org.mozilla.javascript.Context

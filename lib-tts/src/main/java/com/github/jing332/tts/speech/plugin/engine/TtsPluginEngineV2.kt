@@ -3,7 +3,7 @@ package com.github.jing332.tts.speech.plugin.engine
 import android.content.Context
 import com.github.jing332.database.entities.plugin.Plugin
 import com.github.jing332.database.entities.systts.source.PluginTtsSource
-import com.github.jing332.script.rhino.RhinoScriptEngine
+import com.github.jing332.script.engine.RhinoScriptEngine
 import com.github.jing332.script.runtime.console.Console
 import com.github.jing332.script.runtime.NativeResponse
 import com.github.jing332.script.simple.CompatScriptRuntime
