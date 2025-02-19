@@ -1,10 +1,13 @@
 package com.github.jing332.tts
 
+import android.R.attr.handle
 import android.content.Context
+import android.system.Os.pipe
 import androidx.annotation.OptIn
 import androidx.media3.common.C
 import androidx.media3.common.audio.AudioProcessingPipeline
 import androidx.media3.common.audio.AudioProcessor
+import androidx.media3.common.audio.SonicAudioProcessor
 import androidx.media3.common.util.UnstableApi
 import androidx.media3.exoplayer.ExoPlaybackException
 import androidx.media3.exoplayer.audio.SilenceSkippingAudioProcessor
@@ -22,14 +25,17 @@ import com.github.jing332.tts.manager.event.NormalEvent
 import com.github.michaelbull.result.Err
 import com.github.michaelbull.result.Ok
 import com.github.michaelbull.result.Result
+import com.github.michaelbull.result.onFailure
 import com.google.common.collect.ImmutableList
 import io.github.oshai.kotlinlogging.KotlinLogging
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.runBlocking
+import okio.`-DeprecatedOkio`.buffer
 import java.io.ByteArrayInputStream
 import java.io.InputStream
 import java.nio.ByteBuffer
 import kotlin.jvm.Throws
+import kotlin.math.max
 import kotlin.system.measureTimeMillis
 
 internal class DefaultResultProcessor(
@@ -90,6 +96,8 @@ internal class DefaultResultProcessor(
         return p
     }
 
+    private val sonicAudioProcessor by lazy { com.github.jing332.common.audio.exo.SonicAudioProcessor() }
+    private val skipAudioProcessor by lazy { silenceSkippingAudioProcessor() }
 
     /**
      * @throw [CancellationException]
@@ -102,81 +110,54 @@ internal class DefaultResultProcessor(
         callback: IPcmAudioCallback,
     ): Result<Unit, StreamProcessorError> {
         val config = request.config
+        logger.debug {
+            "req=${request.text}, sampleRate=${config.audioFormat.sampleRate}, targetSampleRate=${targetSampleRate}"
+        }
+
+        val sonicEnabled =
+            config.audioParams.speed != 1f || config.audioParams.pitch != 1f
+                    || config.audioParams.volume != 1f && config.audioFormat.sampleRate != targetSampleRate
         try {
-            val stream = if (context.cfg.streamPlayEnabled()) {
-                context.event?.dispatch(NormalEvent.HandleStream(request))
-                ins
-            } else try {
-                ins.use {
-                    val bytes: ByteArray
-                    val cost = measureTimeMillis {
-                        bytes = it.readBytes()
-                    }
-                    context.event?.dispatch(
-                        NormalEvent.ReadAllFromStream(
-                            request,
-                            bytes.size,
-                            cost
-                        )
+            val stream = getAudioStream(ins, request).onFailure { return Err(it) }.value
+
+            val pipelines = listOf(
+                if (context.cfg.silenceSkipEnabled()) skipAudioProcessor else null,
+                if (sonicEnabled) sonicAudioProcessor else null
+            ).filterNotNull()
+            val processor = AudioProcessingPipeline(ImmutableList.copyOf(pipelines))
+
+            if (pipelines.isNotEmpty()) {
+                processor.configure(
+                    AudioProcessor.AudioFormat(
+                        config.audioFormat.sampleRate,
+                        1,
+                        C.ENCODING_PCM_16BIT
                     )
-                    ByteArrayInputStream(bytes)
-                }
-            } catch (e: Exception) { // readBytes error
-                logger.error(e) { "readBytes error" }
-                return Err(StreamProcessorError.AudioSource(e.cause ?: e))
+                )
+                if (sonicEnabled)
+                    sonicAudioProcessor.apply {
+                        speed = if (config.audioParams.speed <= 0f) 1f else config.audioParams.speed
+                        volume =
+                            if (config.audioParams.volume <= 0f) 1f else config.audioParams.volume
+                        pitch = if (config.audioParams.pitch <= 0f) 1f else config.audioParams.pitch
+                        rate = config.audioFormat.sampleRate.toFloat() / targetSampleRate.toFloat()
+                    }
+
+                processor.flush()
             }
 
-            val processor = AudioProcessingPipeline(
-                ImmutableList.of(
-                    silenceSkippingAudioProcessor()
-                )
-            )
-
-            processor.configure(
-                AudioProcessor.AudioFormat(
-                    config.audioFormat.sampleRate,
-                    1,
-                    C.ENCODING_PCM_16BIT
-                )
-            )
-
-            processor.flush()
-
-            val sonic =
-                if (config.audioParams.isDefaultValue && config.audioFormat.sampleRate == targetSampleRate) null
-                else com.github.jing332.common.audio.Sonic(config.audioFormat.sampleRate, 1).apply {
-                    speed = if (config.audioParams.speed >= 0) 1f else config.audioParams.speed
-                    volume = if (config.audioParams.volume >= 0) 1f else config.audioParams.volume
-                    pitch = if (config.audioParams.pitch >= 0) 1f else config.audioParams.pitch
-
-                    rate = config.audioFormat.sampleRate.toFloat() / targetSampleRate.toFloat()
-                }
-
-            suspend fun sonic(pcm: ByteArray) {
-                sonic?.apply {
-                    writeBytesToStream(pcm, pcm.size)
-                    callback.onPcmData(sonic.readBytesFromStream(sonic.samplesAvailable()))
-                }
-            }
 
             suspend fun handle(pcm: ByteArray?) {
-                suspend fun read() {
-                    val outBuffer = processor.output
-                    val bytes = ByteArray(outBuffer.remaining())
-                    outBuffer.get(bytes)
-                    sonic(bytes)
-                }
-
-                if (!context.cfg.silenceSkipEnabled()) {
-                    if (pcm != null) sonic(pcm)
-                } else if (pcm == null) {
+                if (pcm == null) {
                     processor.queueEndOfStream()
-                    read()
+                    readProcessedData(processor, callback)
                 } else {
+                    if (pipelines.isEmpty()) callback.onPcmData(pcm)
+
                     val inBuffer = ByteBuffer.wrap(pcm)
                     while (inBuffer.hasRemaining()) {
                         processor.queueInput(inBuffer)
-                        read()
+                        readProcessedData(processor, callback)
                     }
                 }
             }
@@ -201,6 +182,37 @@ internal class DefaultResultProcessor(
         }
 
         return Ok(Unit)
+    }
+
+    private suspend fun getAudioStream(
+        ins: InputStream,
+        request: RequestPayload,
+    ): Result<InputStream, StreamProcessorError> = if (context.cfg.streamPlayEnabled()) {
+        context.event?.dispatch(NormalEvent.HandleStream(request))
+        Ok(ins)
+    } else {
+        try {
+            ins.use {
+                val bytes: ByteArray
+                val cost = measureTimeMillis { bytes = it.readBytes() }
+                context.event?.dispatch(NormalEvent.ReadAllFromStream(request, bytes.size, cost))
+
+                Ok(ByteArrayInputStream(bytes))
+            }
+        } catch (e: Exception) {
+            logger.error(e) { "readBytes error" }
+            Err(StreamProcessorError.AudioSource(e.cause ?: e))
+        }
+    }
+
+    private suspend fun readProcessedData(
+        processor: AudioProcessingPipeline,
+        callback: IPcmAudioCallback,
+    ) {
+        val outBuffer = processor.output
+        val bytes = ByteArray(outBuffer.remaining())
+        outBuffer.get(bytes)
+        callback.onPcmData(bytes)
     }
 
     override suspend fun destroy() {

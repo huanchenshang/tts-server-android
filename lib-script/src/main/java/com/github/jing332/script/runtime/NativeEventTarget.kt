@@ -58,7 +58,7 @@ class NativeEventTarget(val scope: ScriptableObject) {
     }
 
     fun emit(eventName: String, vararg args: Any?) {
-        logger.debug { "emit: $eventName, ${args.contentToString()}" }
+//        logger.debug { "emit: $eventName, ${args.contentToString()}" }
         val function =
             functions[eventName] ?: scope.get("on${eventName.firstCharUpperCase()}") as? Function
 
