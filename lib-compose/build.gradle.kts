@@ -48,9 +48,9 @@ android {
 dependencies {
     api(project(":lib-common"))
 
+    api(libs.bundles.coil)
     implementation(libs.bundles.markwon)
     implementation(libs.bundles.accompanist)
-    implementation(libs.bundles.coil)
 
     val composeBom = platform(libs.compose.bom)
 //    def composeBom = platform("dev.chrisbanes.compose:compose-bom:2024.01.00-alpha01")

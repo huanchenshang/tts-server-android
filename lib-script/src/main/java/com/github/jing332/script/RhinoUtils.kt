@@ -190,7 +190,7 @@ fun ScriptableObject.defineFunction(
 }
 
 @Suppress("UNCHECKED_CAST")
-fun <K, V> NativeMap.toMap(): Map<K, V> {
+fun <K, V> ScriptableObject.toMap(): Map<K, V> {
     val map = mutableMapOf<K, V>()
     for (k in ids) {
         val v = get(k)

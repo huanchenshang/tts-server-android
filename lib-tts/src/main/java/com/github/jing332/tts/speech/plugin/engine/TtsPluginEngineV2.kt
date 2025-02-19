@@ -67,6 +67,8 @@ open class TtsPluginEngineV2(val context: Context, var plugin: Plugin) {
             plugin.name = get("name").toString()
             plugin.pluginId = get("id").toString()
             plugin.author = get("author").toString()
+            plugin.iconUrl = get("iconUrl")?.toString() ?: ""
+
 
             try {
                 plugin.defVars = get("vars") as Map<String, Map<String, String>>

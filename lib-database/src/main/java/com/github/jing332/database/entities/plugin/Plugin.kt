@@ -27,6 +27,10 @@ data class Plugin(
     var name: String = "",
     var pluginId: String = "",
     var author: String = "",
+
+    @ColumnInfo(defaultValue = "")
+    var iconUrl: String = "",
+
     var code: String = "",
 
     // authKey: { label: "验证KEY", hint: "填入用于验证身份的KEY"}

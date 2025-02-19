@@ -97,14 +97,13 @@ class TtsPluginUiEngineV2(context: Context, plugin: Plugin) : TtsPluginEngineV2(
                     }.map { Voice(it.first, it.second) }
                 }
 
-                is NativeMap -> {
+                is ScriptableObject -> {
                     toMap<CharSequence, Any>().map { (key, value) ->
                         key.toString() to value
-                    }.toMap().map {
-                        val (key, value) = it
+                    }.toMap().map { (key, value)->
                         val iconUrl =
-                            if (value is Map<*, *>) value["iconUrl"] as? CharSequence else null
-                        val name = if (value is Map<*, *>) value["name"] as? CharSequence else value
+                            if (value is ScriptableObject) value["iconUrl"] as? CharSequence else null
+                        val name = if (value is ScriptableObject) value["name"] as? CharSequence else value
                         Voice(key.toString(), name.toString(), iconUrl?.toString())
                     }
                 }

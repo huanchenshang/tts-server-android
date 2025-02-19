@@ -256,7 +256,7 @@ class PluginTtsUI : IConfigUI() {
                             value = tts.voice,
                             values = vm.voices.map { it.id },
                             entries = vm.voices.map { it.name },
-                            iconUrls = vm.voices.mapNotNull { it.iconUrl },
+                            iconUrls = vm.voices.map { it.iconUrl ?: "" },
                             onSelectedChange = { voice, name ->
                                 val lastName = vm.voices.find { it.id == tts.voice }?.name ?: ""
                                 onSysttsChange(

@@ -29,7 +29,7 @@ val dbm: DatabaseManager by lazy {
 
 
 @Database(
-    version = 25,
+    version = 26,
     entities = [
         SystemTts::class,
         SystemTtsV2::class,
@@ -58,6 +58,7 @@ val dbm: DatabaseManager by lazy {
         AutoMigration(from = 22, to = 23),
         AutoMigration(from = 23, to = 24),
         AutoMigration(from = 24, to = 25),
+        AutoMigration(from = 25, to = 26),
     ]
 )
 abstract class DatabaseManager : RoomDatabase() {
