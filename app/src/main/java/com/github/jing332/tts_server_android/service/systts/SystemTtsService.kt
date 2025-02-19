@@ -20,7 +20,9 @@ import android.speech.tts.TextToSpeechService
 import android.speech.tts.Voice
 import android.util.Log
 import androidx.annotation.StringRes
+import androidx.core.app.ServiceCompat.stopForeground
 import androidx.core.content.ContextCompat
+import androidx.core.content.ContextCompat.getSystemService
 import com.github.jing332.common.utils.longToast
 import com.github.jing332.common.utils.registerGlobalReceiver
 import com.github.jing332.common.utils.runOnUI
@@ -47,6 +49,11 @@ import com.github.jing332.tts_server_android.compose.MainActivity
 import com.github.jing332.tts_server_android.conf.SysTtsConfig
 import com.github.jing332.tts_server_android.constant.AppConst
 import com.github.jing332.tts_server_android.constant.SystemNotificationConst
+import com.github.jing332.tts_server_android.service.systts.SystemTtsService.Companion.ACTION_NOTIFY_CANCEL
+import com.github.jing332.tts_server_android.service.systts.SystemTtsService.Companion.ACTION_NOTIFY_KILL_PROCESS
+import com.github.jing332.tts_server_android.service.systts.SystemTtsService.Companion.ACTION_UPDATE_CONFIG
+import com.github.jing332.tts_server_android.service.systts.SystemTtsService.Companion.ACTION_UPDATE_REPLACER
+import com.github.jing332.tts_server_android.service.systts.SystemTtsService.Companion.NOTIFICATION_CHAN_ID
 import com.github.jing332.tts_server_android.service.systts.help.TextProcessor
 import com.github.michaelbull.result.Err
 import com.github.michaelbull.result.Ok
@@ -60,6 +67,7 @@ import kotlinx.coroutines.async
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
+import java.nio.ByteBuffer
 import java.util.Locale
 import kotlin.jvm.Throws
 import kotlin.system.exitProcess
@@ -344,6 +352,31 @@ class SystemTtsService : TextToSpeechService(), IEventDispatcher {
             delay(5000)
             stopForeground(true)
             mNotificationDisplayed = false
+        }
+    }
+
+    fun android.speech.tts.SynthesisCallback.write(pcmData: ByteBuffer) {
+        try {
+            val buffer = ByteArray(pcmData.remaining())
+            pcmData.get(buffer)
+            writeToCallBack(this, buffer)
+
+//            val maxBufferSize: Int = this.maxBufferSize
+//            var offset = pcmData.position() // Start from the current position
+
+//            while (pcmData.hasRemaining() && mTtsManager.isSynthesizing) {
+//                val arr = pcmData.array()
+//                val bytesToWrite = maxBufferSize.coerceAtMost(pcmData.limit() - pcmData.position());
+//
+//                // Use the ByteBuffer's internal array and offset
+//                this.audioAvailable(arr, pcmData.arrayOffset(), bytesToWrite);
+//
+////                offset += bytesToWrite;
+////                pcmData.position(offset); // Update ByteBuffer's position
+//            }
+
+        } catch (e: Exception) {
+            logE("write: ${e.toString()}", e);
         }
     }
 

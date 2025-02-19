@@ -1,13 +1,10 @@
 package com.github.jing332.tts
 
-import android.R.attr.handle
 import android.content.Context
-import android.system.Os.pipe
 import androidx.annotation.OptIn
 import androidx.media3.common.C
 import androidx.media3.common.audio.AudioProcessingPipeline
 import androidx.media3.common.audio.AudioProcessor
-import androidx.media3.common.audio.SonicAudioProcessor
 import androidx.media3.common.util.UnstableApi
 import androidx.media3.exoplayer.ExoPlaybackException
 import androidx.media3.exoplayer.audio.SilenceSkippingAudioProcessor
@@ -17,8 +14,8 @@ import com.github.jing332.common.utils.rootCause
 import com.github.jing332.tts.error.StreamProcessorError
 import com.github.jing332.tts.error.StreamProcessorError.AudioDecoding
 import com.github.jing332.tts.error.StreamProcessorError.HandleError
-import com.github.jing332.tts.manager.IPcmAudioCallback
 import com.github.jing332.tts.manager.IResultProcessor
+import com.github.jing332.tts.manager.PcmAudioDataListener
 import com.github.jing332.tts.manager.RequestPayload
 import com.github.jing332.tts.manager.TtsConfiguration
 import com.github.jing332.tts.manager.event.NormalEvent
@@ -29,13 +26,10 @@ import com.github.michaelbull.result.onFailure
 import com.google.common.collect.ImmutableList
 import io.github.oshai.kotlinlogging.KotlinLogging
 import kotlinx.coroutines.CancellationException
-import kotlinx.coroutines.runBlocking
-import okio.`-DeprecatedOkio`.buffer
 import java.io.ByteArrayInputStream
 import java.io.InputStream
 import java.nio.ByteBuffer
 import kotlin.jvm.Throws
-import kotlin.math.max
 import kotlin.system.measureTimeMillis
 
 internal class DefaultResultProcessor(
@@ -57,15 +51,11 @@ internal class DefaultResultProcessor(
     private suspend fun decode(
         ins: InputStream,
         tts: TtsConfiguration,
-        callback: IPcmAudioCallback,
+        onRead: (ByteBuffer) -> Unit,
     ) {
         if (tts.audioFormat.isNeedDecode) {
             mDecoder.callback = ExoAudioDecoder.Callback { byteBuffer ->
-                val buffer = ByteArray(byteBuffer.remaining())
-                byteBuffer.get(buffer)
-                runBlocking {
-                    callback.onPcmData(buffer)
-                }
+                onRead(byteBuffer)
             }
 
             if (context.cfg.streamPlayEnabled())
@@ -77,7 +67,7 @@ internal class DefaultResultProcessor(
 
 
         } else {
-            ins.readPcmChunk { callback.onPcmData(it) }
+            ins.readPcmChunk { onRead(ByteBuffer.wrap(it)) }
         }
 
     }
@@ -107,7 +97,7 @@ internal class DefaultResultProcessor(
         ins: InputStream,
         request: RequestPayload,
         targetSampleRate: Int,
-        callback: IPcmAudioCallback,
+        callback: PcmAudioDataListener,
     ): Result<Unit, StreamProcessorError> {
         val config = request.config
         logger.debug {
@@ -147,17 +137,19 @@ internal class DefaultResultProcessor(
             }
 
 
-            suspend fun handle(pcm: ByteArray?) {
+            fun handle(pcm: ByteBuffer?) {
+                if (pipelines.isEmpty()) {
+                    if (pcm != null) callback.receive(pcm)
+                    return
+                }
+
                 if (pcm == null) {
                     processor.queueEndOfStream()
-                    readProcessedData(processor, callback)
+                    callback.receive(processor.output)
                 } else {
-                    if (pipelines.isEmpty()) callback.onPcmData(pcm)
-
-                    val inBuffer = ByteBuffer.wrap(pcm)
-                    while (inBuffer.hasRemaining()) {
-                        processor.queueInput(inBuffer)
-                        readProcessedData(processor, callback)
+                    while (pcm.hasRemaining()) {
+                        processor.queueInput(pcm)
+                        callback.receive(processor.output)
                     }
                 }
             }
@@ -166,7 +158,8 @@ internal class DefaultResultProcessor(
                 decode(
                     ins = stream,
                     tts = config,
-                    callback = { pcm -> handle(pcm = pcm) })
+                    onRead = { pcm -> handle(pcm = pcm) })
+                handle(null)
             } catch (e: ExoPlaybackException) {
                 logger.error(e) { "streaming error" }
                 return if (e.type == ExoPlaybackException.TYPE_SOURCE)
@@ -203,16 +196,6 @@ internal class DefaultResultProcessor(
             logger.error(e) { "readBytes error" }
             Err(StreamProcessorError.AudioSource(e.cause ?: e))
         }
-    }
-
-    private suspend fun readProcessedData(
-        processor: AudioProcessingPipeline,
-        callback: IPcmAudioCallback,
-    ) {
-        val outBuffer = processor.output
-        val bytes = ByteArray(outBuffer.remaining())
-        outBuffer.get(bytes)
-        callback.onPcmData(bytes)
     }
 
     override suspend fun destroy() {

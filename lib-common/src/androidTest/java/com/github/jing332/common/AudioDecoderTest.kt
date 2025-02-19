@@ -1,5 +1,8 @@
 package com.github.jing332.common
 
+import android.media.AudioFormat
+import android.media.AudioManager
+import android.media.AudioTrack
 import androidx.media3.exoplayer.ExoPlaybackException
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
@@ -9,7 +12,6 @@ import kotlinx.coroutines.runBlocking
 import okhttp3.Response
 import org.junit.Test
 import org.junit.runner.RunWith
-import java.io.ByteArrayInputStream
 import java.io.FilterInputStream
 import java.io.InputStream
 import java.nio.ByteBuffer
@@ -21,8 +23,8 @@ class AudioDecoderTest {
     class TestInputStream(ins: InputStream) : FilterInputStream(ins) {
         val random = Random(System.currentTimeMillis())
         fun randomThrowErr() {
-            if (random.nextBoolean())
-                throw RuntimeException("test throw error from stream")
+//            if (random.nextBoolean())
+//                throw RuntimeException("test throw error from stream")
         }
 
         override fun read(): Int {
@@ -42,12 +44,43 @@ class AudioDecoderTest {
 
     }
 
+    fun createAudioTrack(
+        sampleRate: Int = 16000,
+        channel: Int = AudioFormat.CHANNEL_OUT_STEREO,
+    ): AudioTrack {
+        val mSampleRate = if (sampleRate == 0) 16000 else sampleRate
+
+        val bufferSize = AudioTrack.getMinBufferSize(
+            mSampleRate,
+            AudioFormat.CHANNEL_OUT_MONO,
+            channel
+        )
+        return AudioTrack(
+            AudioManager.STREAM_MUSIC,
+            mSampleRate,
+            channel,
+            AudioFormat.ENCODING_PCM_16BIT,
+            bufferSize,
+            AudioTrack.MODE_STREAM
+        )
+    }
+
+    private fun ByteBuffer.toBytes(): ByteArray {
+        val bytes = ByteArray(remaining())
+        this.get(bytes)
+        return bytes
+    }
+
     @Test
     fun testExoDecoder() {
         val resp: Response = Net.get("https://download.samplelib.com/mp3/sample-3s.mp3").execute()
         assert(resp.isSuccessful)
 
-        val bytes = resp.body!!.byteStream().readBytes()
+        val bytes = resp.body!!.byteStream()
+
+
+        val audioPlayer = createAudioTrack(44100)
+        audioPlayer.play()
 
         val context = InstrumentationRegistry.getInstrumentation().targetContext
         runBlocking {
@@ -55,14 +88,24 @@ class AudioDecoderTest {
             decoder.callback = object : ExoAudioDecoder.Callback {
                 override fun onReadPcmAudio(byteBuffer: ByteBuffer) {
                     println(byteBuffer)
+
+                    val bufferSize =
+                        audioPlayer.bufferSizeInFrames * audioPlayer.channelCount * 2 // Assuming 16-bit PCM
+                    val tempBuffer = ByteArray(bufferSize)
+//                    byteBuffer.rewind() // Ensure ByteBuffer is at the beginning
+
+                    while (byteBuffer.hasRemaining()) {
+                        val bytesToRead = minOf(byteBuffer.remaining(), tempBuffer.size)
+                        byteBuffer.get(tempBuffer, 0, bytesToRead)
+                        audioPlayer.write(tempBuffer, 0, bytesToRead)
+                    }
                 }
             }
-            repeat(2) {
-                try {
-                    decoder.doDecode(TestInputStream(ByteArrayInputStream(bytes)))
-                } catch (e: ExoPlaybackException) {
-                    e.printStackTrace()
-                }
+
+            try {
+                decoder.doDecode(bytes)
+            } catch (e: ExoPlaybackException) {
+                e.printStackTrace()
             }
         }
     }

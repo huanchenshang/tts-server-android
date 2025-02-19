@@ -10,7 +10,7 @@ interface IResultProcessor {
         ins: InputStream,
         request: RequestPayload,
         targetSampleRate: Int,
-        callback: IPcmAudioCallback
+        callback: PcmAudioDataListener
     ): Result<Unit, StreamProcessorError>
 
     suspend fun destroy() {}

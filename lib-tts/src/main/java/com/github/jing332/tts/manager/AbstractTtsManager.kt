@@ -4,6 +4,7 @@ import android.R.id.message
 import androidx.compose.foundation.interaction.DragInteraction
 import androidx.media3.exoplayer.util.SntpClient.isInitialized
 import com.github.jing332.common.utils.StringUtils
+import com.github.jing332.common.utils.toByteArray
 import com.github.jing332.tts.ConfigType
 import com.github.jing332.tts.ManagerContext
 import com.github.jing332.tts.error.RequesterError
@@ -26,12 +27,14 @@ import kotlinx.coroutines.TimeoutCancellationException
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.channels.SendChannel
 import kotlinx.coroutines.channels.produce
+import kotlinx.coroutines.channels.trySendBlocking
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withTimeout
 import java.io.InputStream
+import java.nio.ByteBuffer
 import kotlin.math.pow
 
 abstract class AbstractTtsManager() : ITtsManager {
@@ -174,7 +177,7 @@ abstract class AbstractTtsManager() : ITtsManager {
             ins = stream,
             request = request,
             targetSampleRate = maxSampleRate,
-            callback = { pcm -> channel.send(ChannelPayload.Bytes(pcm)) }
+            callback = { pcm -> channel.trySend(ChannelPayload.Bytes(pcm.toByteArray())) }
         ).onFailure { e ->
             event(ErrorEvent.ResultProcessor(request, e))
             return retry()

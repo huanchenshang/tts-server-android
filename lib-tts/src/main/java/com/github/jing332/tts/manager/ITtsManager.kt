@@ -13,7 +13,7 @@ interface ITtsManager {
     suspend fun synthesize(
         params: SystemParams,
         forceConfigId: Long? = null,
-        callback: SynthesisCallback
+        callback: SynthesisCallback,
     ): Result<Unit, SynthesisError>
 }
 
