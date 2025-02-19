@@ -1,7 +1,6 @@
 package com.github.jing332.tts_server_android.compose.theme
 
 import android.content.Context
-import android.view.WindowManager
 import androidx.activity.ComponentActivity
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material3.ColorScheme

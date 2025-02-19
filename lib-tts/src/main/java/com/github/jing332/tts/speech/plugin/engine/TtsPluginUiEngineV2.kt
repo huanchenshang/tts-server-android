@@ -90,24 +90,22 @@ class TtsPluginUiEngineV2(context: Context, plugin: Plugin) : TtsPluginEngineV2(
     fun getVoices(locale: String): List<Voice> {
         return engine.invokeMethod(editUiJsObject, FUNC_VOICES, locale).run {
             when (this) {
-                is Map<*, *> -> {
-                    this.map { (key, value) ->
-                        key.toString() to value.toString()
-                    }.map { Voice(it.first, it.second) }
-                }
-
                 is ScriptableObject -> {
                     toMap<CharSequence, Any>().map { (key, value) ->
                         key.toString() to value
-                    }.toMap().map { (key, value) ->
-                        val icon =
-                            if (value is ScriptableObject) (value.also {
-                                get("iconUrl") ?: get("icon")
-                            }) as? CharSequence else null
+                    }.map { (key, value) ->
+                        var icon: String? = null
+                        var name: String = if (value is CharSequence) value.toString() else ""
 
-                        val name =
-                            if (value is ScriptableObject) value["name"] as? CharSequence else value
-                        Voice(key.toString(), name.toString(), icon?.toString())
+                        if (value is ScriptableObject) {
+                            icon = value.get("iconUrl")?.toString()
+                                ?: value.get("icon")?.toString()
+
+                            name = value.get("name")?.toString() ?: name
+                        }
+
+
+                        Voice(key.toString(), name.toString(), icon)
                     }
                 }
 
