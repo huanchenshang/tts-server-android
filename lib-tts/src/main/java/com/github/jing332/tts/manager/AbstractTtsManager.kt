@@ -150,8 +150,8 @@ abstract class AbstractTtsManager() : ITtsManager {
                 requestAndProcess(channel, params, config.standbyConfig, 0, maxRetries)
             } else {
                 val next = retries + 1
-                // 2^[next] * 100ms
-                val ms = Double.fromBits(2).pow(next.coerceAtMost(5)) * 100
+                // 2^[next] * 800ms
+                val ms = Double.fromBits(2).pow(next.coerceAtMost(5)) * 800
                 delay(ms.toLong())
                 requestAndProcess(channel, params, config, next, maxRetries)
             }
