@@ -82,6 +82,7 @@ import coil3.compose.AsyncImagePainter.State.Empty.painter
 import coil3.compose.SubcomposeAsyncImage
 import coil3.compose.SubcomposeAsyncImageContent
 import com.github.jing332.compose.rememberLazyListReorderCache
+import com.github.jing332.compose.widgets.CenterTextImage
 import com.github.jing332.database.dbm
 import com.github.jing332.database.entities.plugin.Plugin
 import com.github.jing332.tts_server_android.R
@@ -313,22 +314,8 @@ private fun Item(
                         contentScale = ContentScale.Crop,
                         modifier = Modifier.size(32.dp),
                         error = {
-                            Box {
-                                Box(
-                                    Modifier
-                                        .size(32.dp)
-                                        .background(
-                                            MaterialTheme.colorScheme.secondaryContainer,
-                                            shape = CircleShape
-                                        ),
-                                )
-                                Text(
-                                    name.first().toString(),
-                                    modifier = Modifier
-                                        .align(Alignment.Center)
-                                        .semantics { invisibleToUser() },
-                                )
-                            }
+                            CenterTextImage(name.first().toString())
+
                         }
                     )
                 }
