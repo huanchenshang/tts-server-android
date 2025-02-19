@@ -5,30 +5,17 @@ import android.app.Application
 import android.content.Context
 import android.content.Intent
 import android.os.Process
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Female
-import androidx.compose.material.icons.filled.Male
 import androidx.core.content.ContextCompat
-import androidx.core.content.ContextCompat.startActivity
 import androidx.core.graphics.drawable.toBitmap
-import androidx.media3.exoplayer.image.BitmapFactoryImageDecoder
-import coil3.Bitmap
-import coil3.BitmapImage
-import coil3.Image
 import coil3.ImageLoader
 import coil3.SingletonImageLoader
 import coil3.annotation.DelicateCoilApi
 import coil3.asImage
-import coil3.fetch.ImageFetchResult
-import coil3.imageLoader
 import coil3.intercept.Interceptor
-import coil3.request.ImageRequest
 import coil3.request.ImageResult
 import coil3.request.SuccessResult
 import coil3.request.crossfade
-import com.drake.net.Net.options
 import com.github.jing332.database.entities.systts.SystemTtsV2
-import com.github.jing332.tts_server_android.compose.CoilStringFetcher
 import com.github.jing332.tts_server_android.constant.AppConst
 import com.github.jing332.tts_server_android.model.hanlp.HanlpManager
 import kotlinx.coroutines.DelicateCoroutinesApi
@@ -64,7 +51,6 @@ class App : Application() {
 
         SingletonImageLoader.setUnsafe(
             ImageLoader.Builder(context).components {
-                add(CoilStringFetcher.Factory())
                 add(object : Interceptor {
                     override suspend fun intercept(chain: Interceptor.Chain): ImageResult {
                         val data = chain.request.data

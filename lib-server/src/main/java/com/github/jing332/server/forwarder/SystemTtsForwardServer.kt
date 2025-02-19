@@ -5,6 +5,7 @@ import com.github.jing332.server.BaseCallback
 import com.github.jing332.server.Server
 import com.github.jing332.server.installPlugins
 import io.ktor.http.ContentType
+import io.ktor.http.decodeURLQueryComponent
 import io.ktor.server.application.ApplicationCallPipeline
 import io.ktor.server.application.call
 import io.ktor.server.engine.embeddedServer
@@ -32,14 +33,17 @@ class SystemTtsForwardServer(val port: Int, val callback: Callback) : Server {
                 val uri = call.request.uri
                 val remoteAddress = call.request.origin.remoteAddress
 
-                callback.log(level = Log.INFO, "$method: $uri \n remote: $remoteAddress \n")
+                callback.log(
+                    level = Log.INFO,
+                    "$method: ${uri.decodeURLQueryComponent()} \n remote: $remoteAddress \n"
+                )
             }
 
             routing {
                 staticResources("/", "forwarder")
 
                 suspend fun RoutingContext.handleTts(
-                    params: TtsParams
+                    params: TtsParams,
                 ) {
                     call.respondOutputStream(ContentType.parse("audio/wav")) {
                         callback.tts(output = this, params)
@@ -77,7 +81,10 @@ class SystemTtsForwardServer(val port: Int, val callback: Callback) : Server {
                     val engine = call.parameters.getOrFail("engine")
                     val voice = call.parameters["voice"] ?: ""
                     val pitch = call.parameters["pitch"] ?: "50"
-                    call.respond(LegadoUtils.getLegadoJson(api, name, engine, voice, pitch))
+
+                    call.respond(
+                        LegadoUtils.getLegadoJson(api, name, engine, voice, pitch)
+                    )
                 }
 
             }

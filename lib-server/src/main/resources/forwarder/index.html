@@ -212,7 +212,8 @@
     }
 
     function onBtnOneImportClick() {
-        window.location.href = 'legado://import/httpTTS?src=' + $('#legadoUrl')[0].value
+
+        window.location.href = 'legado://import/httpTTS?src=' + encodeURIComponent($('#legadoUrl')[0].value)
     }
 
     function onBtnImportClick() {
