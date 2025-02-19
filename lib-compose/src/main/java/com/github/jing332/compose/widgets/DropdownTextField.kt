@@ -32,7 +32,7 @@ fun DropdownTextField(
     value: Any,
     values: List<Any>,
     entries: List<String>,
-    iconUrls: List<String>? = null,
+    icons: List<Any?> = emptyList(),
     enabled: Boolean = true,
     leadingIcon: @Composable (() -> Unit)? = null,
     onValueSame: (current: Any, new: Any) -> Boolean = { current, new -> current == new },
@@ -85,8 +85,8 @@ fun DropdownTextField(
                             )
                         },
                         leadingIcon = {
-                            val url = remember(iconUrls) { iconUrls?.get(index) }
-                            if (url.isNullOrBlank() == false)
+                            val url = remember(icons) { icons[index] }
+                            if (url != null)
                                 AsyncImage(url, null)
                         },
                         onClick = {

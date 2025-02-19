@@ -65,23 +65,25 @@ fun AppSelectionDialog(
     value: Any,
     values: List<Any>,
     entries: List<String>,
-    iconUrls: List<String>? = null,
+    icons: List<Any?> = emptyList(),
     isLoading: Boolean = false,
     searchEnabled: Boolean = values.size > 5,
 
-    itemContent: @Composable RowScope.(Boolean, String, String?, Any) -> Unit = { isSelected, entry, iconUrl, _ ->
+    itemContent: @Composable RowScope.(Boolean, String, Any?, Any) -> Unit = { isSelected, entry, icon, _ ->
         val clip = LocalClipboardManager.current
         val context = LocalContext.current
-        if (iconUrl.isNullOrBlank() == false)
+        if (icon != null)
             AsyncImage(
                 modifier = Modifier
                     .clip(CircleShape)
                     .size(32.dp)
                     .clickableRipple(onLongClick = {
-                        clip.setText(buildAnnotatedString { append(iconUrl) })
-                        context.toast(R.string.copied)
+                        if (icon is CharSequence) {
+                            clip.setText(buildAnnotatedString { append(icon.toString()) })
+                            context.toast(R.string.copied)
+                        }
                     }, onClick = {}),
-                model = iconUrl,
+                model = icon,
                 contentDescription = null
             )
         SelectionContainer {
@@ -196,7 +198,7 @@ fun AppSelectionDialog(
                                 !entry.contains(searchText, ignoreCase = true)
                             ) return@itemsIndexed
 
-                            val icon = iconUrls?.getOrNull(i)
+                            val icon = icons?.getOrNull(i)
                             val current = values[i]
                             val isSelected = onValueSame(value, current)
                             Row(

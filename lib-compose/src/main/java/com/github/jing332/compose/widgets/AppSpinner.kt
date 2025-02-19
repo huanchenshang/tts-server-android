@@ -39,7 +39,7 @@ private fun TextFieldSelectionDialog(
     value: Any,
     values: List<Any>,
     entries: List<String>,
-    iconUrls: List<String>? = null,
+    icons: List<Any?> = emptyList(),
     enabled: Boolean = true,
 
     onSelectedChange: (key: Any, value: String) -> Unit,
@@ -60,7 +60,7 @@ private fun TextFieldSelectionDialog(
             value = value,
             values = values,
             entries = entries,
-            iconUrls = iconUrls,
+            icons = icons,
             onClick = { v, entry ->
                 onSelectedChange.invoke(v, entry)
                 expanded = false
@@ -124,7 +124,7 @@ fun AppSpinner(
     value: Any,
     values: List<Any>,
     entries: List<String>,
-    iconUrls: List<String>? = null,
+    icons: List<Any?> = emptyList(),
     maxDropDownCount: Int = ComposeWidgetSettings.maxDropDownCount,
     enabled: Boolean = true,
 
@@ -143,7 +143,7 @@ fun AppSpinner(
             value = value,
             values = values,
             entries = entries,
-            iconUrls = iconUrls,
+            icons = icons,
             enabled = enabled,
             onValueSame = onValueSame,
             onSelectedChange = onSelectedChange,
@@ -156,7 +156,7 @@ fun AppSpinner(
             value = value,
             values = values,
             entries = entries,
-            iconUrls = iconUrls,
+            icons = icons,
             enabled = enabled,
             onSelectedChange = onSelectedChange,
             onValueSame = onValueSame,

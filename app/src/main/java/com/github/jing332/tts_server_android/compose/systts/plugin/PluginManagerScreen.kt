@@ -1,20 +1,29 @@
 package com.github.jing332.tts_server_android.compose.systts.plugin
 
 import android.R.attr.fontWeight
+import android.R.attr.lineHeight
 import android.content.Intent
 import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.setValue
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.requiredSize
+import androidx.compose.foundation.layout.requiredSizeIn
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.wrapContentHeight
+import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.Input
@@ -45,6 +54,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Shadow
@@ -53,16 +63,24 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.invisibleToUser
 import androidx.compose.ui.semantics.role
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.stateDescription
+import androidx.compose.ui.text.PlatformTextStyle
+import androidx.compose.ui.text.TextPainter
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import cn.hutool.core.lang.Assert.state
 import coil3.compose.AsyncImage
+import coil3.compose.AsyncImagePainter
+import coil3.compose.AsyncImagePainter.State.Empty.painter
+import coil3.compose.SubcomposeAsyncImage
+import coil3.compose.SubcomposeAsyncImageContent
 import com.github.jing332.compose.rememberLazyListReorderCache
 import com.github.jing332.database.dbm
 import com.github.jing332.database.entities.plugin.Plugin
@@ -73,6 +91,7 @@ import com.github.jing332.tts_server_android.compose.SharedViewModel
 import com.github.jing332.tts_server_android.compose.systts.ConfigDeleteDialog
 import com.github.jing332.tts_server_android.constant.AppConst
 import com.github.jing332.tts_server_android.utils.MyTools
+import com.hankcs.hanlp.dictionary.py.Yunmu.er
 import kotlinx.coroutines.flow.conflate
 import kotlinx.serialization.encodeToString
 import org.burnoutcrew.reorderable.detectReorderAfterLongPress
@@ -288,22 +307,38 @@ private fun Item(
                 )
 
                 Box {
-                    AsyncImage(
+                    SubcomposeAsyncImage(
                         iconUrl,
                         null,
-                        contentScale = ContentScale.Inside,
-                        modifier = Modifier.size(48.dp)
+                        contentScale = ContentScale.Crop,
+                        modifier = Modifier.size(32.dp),
+                        error = {
+                            Box {
+                                Box(
+                                    Modifier
+                                        .size(32.dp)
+                                        .background(
+                                            MaterialTheme.colorScheme.secondaryContainer,
+                                            shape = CircleShape
+                                        ),
+                                )
+                                Text(
+                                    name.first().toString(),
+                                    modifier = Modifier
+                                        .align(Alignment.Center)
+                                        .semantics { invisibleToUser() },
+                                )
+                            }
+                        }
                     )
                 }
 
                 Column(
                     Modifier
                         .weight(1f)
+                        .padding(start = 8.dp)
                         .fillMaxWidth(),
-                    horizontalAlignment = Alignment.CenterHorizontally
                 ) {
-                    Row {
-                    }
                     Text(
                         text = name,
                         style = MaterialTheme.typography.titleMedium,

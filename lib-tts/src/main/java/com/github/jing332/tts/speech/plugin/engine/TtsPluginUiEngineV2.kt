@@ -6,7 +6,6 @@ import com.github.jing332.common.utils.dp
 import com.github.jing332.database.entities.plugin.Plugin
 import com.github.jing332.script.toMap
 import io.github.oshai.kotlinlogging.KotlinLogging
-import org.mozilla.javascript.NativeMap
 import org.mozilla.javascript.ScriptableObject
 import java.util.Locale
 
@@ -100,11 +99,15 @@ class TtsPluginUiEngineV2(context: Context, plugin: Plugin) : TtsPluginEngineV2(
                 is ScriptableObject -> {
                     toMap<CharSequence, Any>().map { (key, value) ->
                         key.toString() to value
-                    }.toMap().map { (key, value)->
-                        val iconUrl =
-                            if (value is ScriptableObject) value["iconUrl"] as? CharSequence else null
-                        val name = if (value is ScriptableObject) value["name"] as? CharSequence else value
-                        Voice(key.toString(), name.toString(), iconUrl?.toString())
+                    }.toMap().map { (key, value) ->
+                        val icon =
+                            if (value is ScriptableObject) (value.also {
+                                get("iconUrl") ?: get("icon")
+                            }) as? CharSequence else null
+
+                        val name =
+                            if (value is ScriptableObject) value["name"] as? CharSequence else value
+                        Voice(key.toString(), name.toString(), icon?.toString())
                     }
                 }
 
@@ -149,5 +152,5 @@ class TtsPluginUiEngineV2(context: Context, plugin: Plugin) : TtsPluginEngineV2(
         }
     }
 
-    data class Voice(val id: String, val name: String, val iconUrl: String? = null)
+    data class Voice(val id: String, val name: String, val icon: String? = null)
 }

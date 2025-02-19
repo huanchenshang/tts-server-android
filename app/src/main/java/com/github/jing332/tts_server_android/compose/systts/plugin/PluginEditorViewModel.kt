@@ -121,16 +121,13 @@ class PluginEditorViewModel(app: Application) : AndroidViewModel(app) {
     }
 
     fun stopDebug() {
-        mDebugJob?.cancel()
-        engine.onStop()
+        runCatching {
+            mDebugJob?.cancel()
+            engine.onStop()
+        }
     }
 
     private fun writeErrorLog(t: Throwable) {
-//        val errStr = if (t is ScriptException) {
-//            "${t.lineNumber}Line: ${t.rootCause?.message ?: t}"
-//        } else {
-//            t.message + "(${t.readableString})"
-//        }
         console.error(t.message)
     }
 

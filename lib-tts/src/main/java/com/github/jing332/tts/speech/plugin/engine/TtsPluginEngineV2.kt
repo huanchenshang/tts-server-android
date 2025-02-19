@@ -9,6 +9,10 @@ import com.github.jing332.script.runtime.NativeResponse
 import com.github.jing332.script.simple.CompatScriptRuntime
 import com.github.jing332.script.source.toScriptSource
 import com.github.jing332.tts.speech.EmptyInputStream
+import com.github.jing332.tts.speech.plugin.engine.TtsPluginEngineV2.Companion.FUNC_GET_AUDIO
+import com.github.jing332.tts.speech.plugin.engine.TtsPluginEngineV2.Companion.FUNC_GET_AUDIO_V2
+import com.github.jing332.tts.speech.plugin.engine.TtsPluginEngineV2.Companion.FUNC_ON_LOAD
+import com.github.jing332.tts.speech.plugin.engine.TtsPluginEngineV2.Companion.FUNC_ON_STOP
 import kotlinx.coroutines.runInterruptible
 import kotlinx.coroutines.sync.Mutex
 import org.mozilla.javascript.ScriptableObject
@@ -49,10 +53,10 @@ open class TtsPluginEngineV2(val context: Context, var plugin: Plugin) {
             ttsrv.tts = value
         }
 
-    protected val pluginJsObj: ScriptableObject by lazy {
-        (engine.get(OBJ_PLUGIN_JS) as? ScriptableObject)
+    protected val pluginJsObj: ScriptableObject
+        get() = (engine.get(OBJ_PLUGIN_JS) as? ScriptableObject)
             ?: throw IllegalStateException("Object $OBJ_PLUGIN_JS not found")
-    }
+
 
     protected var engine: RhinoScriptEngine = RhinoScriptEngine(runtime)
 
@@ -68,7 +72,6 @@ open class TtsPluginEngineV2(val context: Context, var plugin: Plugin) {
             plugin.pluginId = get("id").toString()
             plugin.author = get("author").toString()
             plugin.iconUrl = get("iconUrl")?.toString() ?: ""
-
 
             try {
                 plugin.defVars = get("vars") as Map<String, Map<String, String>>
