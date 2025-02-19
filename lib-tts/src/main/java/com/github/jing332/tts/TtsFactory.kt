@@ -17,7 +17,7 @@ object TtsFactory {
             is PluginTtsSource -> {
                 PluginTtsService(
                     context,
-                    source.plugin ?: dbm.pluginDao.getByPluginId(source.pluginId) ?: return null
+                    source.plugin ?: dbm.pluginDao.getEnabled(source.pluginId) ?: return null
                 )
             }
 

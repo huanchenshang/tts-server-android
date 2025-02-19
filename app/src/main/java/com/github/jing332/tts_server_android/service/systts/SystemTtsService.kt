@@ -29,6 +29,7 @@ import com.github.jing332.common.utils.startForegroundCompat
 import com.github.jing332.common.utils.toHtmlBold
 import com.github.jing332.database.dbm
 import com.github.jing332.database.entities.systts.TtsConfigurationDTO
+import com.github.jing332.tts.ConfigType
 
 import com.github.jing332.tts.TtsManagerConfig
 import com.github.jing332.tts.TtsManagerImpl
@@ -579,9 +580,18 @@ class SystemTtsService : TextToSpeechService(), IEventDispatcher {
                 )
             )
 
-            ErrorEvent.ConfigEmpty -> {}
-            is ErrorEvent.BgmLoading -> {}
-            is ErrorEvent.Repository -> {}
+            ErrorEvent.ConfigEmpty -> {
+                logE(R.string.config_empty_error)
+            }
+
+            is ErrorEvent.BgmLoading -> {
+                logE(R.string.config_load_error, e.cause)
+            }
+
+            is ErrorEvent.Repository -> {
+                logE(R.string.config_load_error, e.cause)
+            }
+
             is ErrorEvent.DirectPlay -> logE(getString(R.string.systts_log_direct_play, e.cause))
             is ErrorEvent.ResultProcessor -> e.error.let { processor ->
                 when (processor) {
@@ -610,11 +620,20 @@ class SystemTtsService : TextToSpeechService(), IEventDispatcher {
         }
     }
 
+    fun ConfigType.toLocaleString() = when (this) {
+        ConfigType.PRESET -> getString(R.string.preset)
+        ConfigType.SINGLE_VOICE -> getString(R.string.single_voice)
+        ConfigType.TAG -> getString(R.string.tag)
+    }
+
     private fun handleTextProcessorError(err: TextProcessorError) {
         when (err) {
             is TextProcessorError.HandleText -> logE("", err.error)
-            is TextProcessorError.MissingConfig -> TODO()
-            is TextProcessorError.MissingRule -> TODO()
+            is TextProcessorError.MissingConfig -> {
+                logE(getString(R.string.missing_config, err.type.toLocaleString()))
+            }
+
+            is TextProcessorError.MissingRule -> logE(R.string.missing_speech_rule)
         }
     }
 
