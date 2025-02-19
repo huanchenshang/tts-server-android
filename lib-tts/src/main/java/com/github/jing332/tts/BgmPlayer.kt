@@ -1,6 +1,5 @@
 package com.github.jing332.tts
 
-import android.util.Log
 import androidx.media3.common.MediaItem
 import androidx.media3.common.PlaybackException
 import androidx.media3.common.Player
@@ -21,8 +20,11 @@ class BgmPlayer(val context: ManagerContext) : IBgmPlayer {
         val logger = KotlinLogging.logger(TAG)
     }
 
-    private val exoPlayer by lazy {
-        ExoPlayer.Builder(context.androidContext).build().apply {
+    private var exoPlayer: ExoPlayer? = null
+    private val currentPlayList = mutableListOf<BgmSource>()
+
+    override fun init() {
+        exoPlayer = ExoPlayer.Builder(context.androidContext).build().apply {
             addListener(object : Player.Listener {
                 override fun onMediaItemTransition(mediaItem: MediaItem?, reason: Int) {
                     super.onMediaItemTransition(mediaItem, reason)
@@ -34,7 +36,7 @@ class BgmPlayer(val context: ManagerContext) : IBgmPlayer {
                 override fun onPlayerError(error: PlaybackException) {
                     super.onPlayerError(error)
 
-                    logger.error(error){"bgm error, skip current media"}
+                    logger.error(error) { "bgm error, skip current media" }
                     removeMediaItem(currentMediaItemIndex)
                     seekToNextMediaItem()
                     prepare()
@@ -44,30 +46,30 @@ class BgmPlayer(val context: ManagerContext) : IBgmPlayer {
             shuffleModeEnabled = context.cfg.bgmShuffleEnabled()
         }
     }
-    private val currentPlayList = mutableListOf<BgmSource>()
 
     override fun stop() {
         logger.debug { "bgm stop" }
-        runOnUI { exoPlayer.pause() }
+        runOnUI { exoPlayer?.pause() }
     }
+
 
     override fun destroy() {
         logger.debug { "bgm destroy" }
         runOnUI {
-            exoPlayer.release()
+            exoPlayer?.release()
         }
     }
 
     override fun play() {
         logger.debug { "bgm play" }
         runOnUI {
-            if (!exoPlayer.isPlaying) exoPlayer.play()
+            if (exoPlayer?.isPlaying == false) exoPlayer?.play()
         }
     }
 
     override fun setPlayList(
         list: List<BgmSource>,
-    ) = runOnUI{
+    ) = runOnUI {
         logger.atDebug {
             message = "bgm setPlayList"
             payload = mapOf("list" to list)
@@ -77,8 +79,8 @@ class BgmPlayer(val context: ManagerContext) : IBgmPlayer {
         currentPlayList.clear()
         currentPlayList.addAll(list)
 
-        exoPlayer.stop()
-        exoPlayer.clearMediaItems()
+        exoPlayer?.stop()
+        exoPlayer?.clearMediaItems()
         for (source in list) {
             val file = File(source.path)
             if (file.isDirectory) {
@@ -91,7 +93,7 @@ class BgmPlayer(val context: ManagerContext) : IBgmPlayer {
                 addMediaItem(source.volume, file)
             }
         }
-        exoPlayer.prepare()
+        exoPlayer?.prepare()
     }
 
     private fun addMediaItem(volume: Float, file: File): Boolean {
@@ -105,7 +107,7 @@ class BgmPlayer(val context: ManagerContext) : IBgmPlayer {
         }
         val item =
             MediaItem.Builder().setTag(volume).setUri(file.absolutePath).build()
-        exoPlayer.addMediaItem(item)
+        exoPlayer?.addMediaItem(item)
 
         return true
     }

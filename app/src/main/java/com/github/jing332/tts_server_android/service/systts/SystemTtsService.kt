@@ -44,6 +44,7 @@ import com.github.jing332.tts.manager.event.ErrorEvent
 import com.github.jing332.tts.manager.event.Event
 import com.github.jing332.tts.manager.event.IEventDispatcher
 import com.github.jing332.tts.manager.event.NormalEvent
+import com.github.jing332.tts_server_android.App.Companion.context
 import com.github.jing332.tts_server_android.R
 import com.github.jing332.tts_server_android.compose.MainActivity
 import com.github.jing332.tts_server_android.conf.SysTtsConfig
@@ -103,26 +104,14 @@ class SystemTtsService : TextToSpeechService(), IEventDispatcher {
 
 
     private val mTextProcessor = TextProcessor()
-    private val mTtsManager: ITtsManager by lazy {
-        TtsManagerImpl.global.apply {
-            context.androidContext = this@SystemTtsService.applicationContext
-            context.event = this@SystemTtsService
-            context.cfg = TtsManagerConfig(
-                requestTimeout = SysTtsConfig::requestTimeout,
-                maxRetryTimes = SysTtsConfig::maxRetryCount,
-                streamPlayEnabled = SysTtsConfig::isStreamPlayModeEnabled,
-                silenceSkipEnabled = SysTtsConfig::isSkipSilentAudio,
-                bgmShuffleEnabled = SysTtsConfig::isBgmShuffleEnabled,
-                bgmVolume = SysTtsConfig::bgmVolume
-            )
-            textProcessor = mTextProcessor
-        }
-    }
+    private var mTtsManager: ITtsManager? = null
+
 
     private val mNotificationReceiver: NotificationReceiver by lazy { NotificationReceiver() }
     private val mLocalReceiver: LocalReceiver by lazy { LocalReceiver() }
 
     private val mScope = CoroutineScope(Job())
+
 
     // WIFI 锁
     private val mWifiLock by lazy {
@@ -160,7 +149,21 @@ class SystemTtsService : TextToSpeechService(), IEventDispatcher {
     fun initManager() {
         logger.info { "initialize or load configruation" }
         mScope.launch {
-            mTtsManager.init()
+            mTtsManager = mTtsManager ?: TtsManagerImpl.global.apply {
+                context.androidContext = this@SystemTtsService.applicationContext
+                context.event = this@SystemTtsService
+                context.cfg = TtsManagerConfig(
+                    requestTimeout = SysTtsConfig::requestTimeout,
+                    maxRetryTimes = SysTtsConfig::maxRetryCount,
+                    streamPlayEnabled = SysTtsConfig::isStreamPlayModeEnabled,
+                    silenceSkipEnabled = SysTtsConfig::isSkipSilentAudio,
+                    bgmShuffleEnabled = SysTtsConfig::isBgmShuffleEnabled,
+                    bgmVolume = SysTtsConfig::bgmVolume
+                )
+                textProcessor = mTextProcessor
+            }
+
+            mTtsManager!!.init()
         }
     }
 
@@ -175,7 +178,8 @@ class SystemTtsService : TextToSpeechService(), IEventDispatcher {
         logger.debug { "service destroy" }
 
         mScope.launch {
-            mTtsManager.destroy()
+            mTtsManager?.destroy()
+            mTtsManager = null
         }
         unregisterReceiver(mNotificationReceiver)
         AppConst.localBroadcast.unregisterReceiver(mLocalReceiver)
@@ -308,8 +312,8 @@ class SystemTtsService : TextToSpeechService(), IEventDispatcher {
                     callback.error(TextToSpeech.ERROR_INVALID_REQUEST)
                     return@runBlocking
                 }.value
-                synthesizerJob = async {
-                    mTtsManager.synthesize(
+                synthesizerJob = mScope.launch {
+                    mTtsManager!!.synthesize(
                         params = SystemParams(text = request.charSequenceText.toString()),
                         forceConfigId = cfgId,
                         callback = object :
@@ -387,7 +391,7 @@ class SystemTtsService : TextToSpeechService(), IEventDispatcher {
         try {
             val maxBufferSize: Int = callback.maxBufferSize
             var offset = 0
-            while (offset < pcmData.size && mTtsManager.isSynthesizing) {
+            while (offset < pcmData.size && mTtsManager!!.isSynthesizing) {
                 val bytesToWrite = maxBufferSize.coerceAtMost(pcmData.size - offset)
                 callback.audioAvailable(pcmData, offset, bytesToWrite)
                 offset += bytesToWrite
@@ -507,7 +511,7 @@ class SystemTtsService : TextToSpeechService(), IEventDispatcher {
                 }
 
                 ACTION_NOTIFY_CANCEL -> { // 通知按钮{取消}
-                    if (mTtsManager.isSynthesizing)
+                    if (mTtsManager!!.isSynthesizing)
                         onStop() /* 取消当前播放 */
                     else /* 无播放，关闭通知 */ {
                         stopForeground(true)

@@ -3,6 +3,7 @@ package com.github.jing332.tts.manager
 import android.R.id.message
 import androidx.compose.foundation.interaction.DragInteraction
 import androidx.media3.exoplayer.util.SntpClient.isInitialized
+import com.drake.net.utils.withMain
 import com.github.jing332.common.utils.StringUtils
 import com.github.jing332.common.utils.toByteArray
 import com.github.jing332.tts.ConfigType
@@ -252,12 +253,12 @@ abstract class AbstractTtsManager() : ITtsManager {
             )
         }
 
-        bgmPlayer.play()
+        withMain { bgmPlayer.play() }
         try {
             executeSynthesis(params, callback, forceConfigId)
         } finally {
             logger.debug { "synthesize done" }
-            bgmPlayer.stop()
+            withMain { bgmPlayer.stop() }
         }
     }
 
@@ -289,7 +290,11 @@ abstract class AbstractTtsManager() : ITtsManager {
                     bgmList.add(BgmSource(path = it, volume = bgm.volume))
                 }
             }
-            bgmPlayer.setPlayList(list = bgmList)
+
+            withMain {
+                bgmPlayer.init()
+                bgmPlayer.setPlayList(list = bgmList)
+            }
         } catch (e: Exception) {
             event(ErrorEvent.BgmLoading(e))
             return@withLock

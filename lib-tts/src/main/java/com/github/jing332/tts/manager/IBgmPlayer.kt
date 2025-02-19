@@ -3,6 +3,7 @@ package com.github.jing332.tts.manager
 interface IBgmPlayer {
     fun play()
     fun stop()
+    fun init()
     fun destroy()
     fun setPlayList(
         list: List<BgmSource>
