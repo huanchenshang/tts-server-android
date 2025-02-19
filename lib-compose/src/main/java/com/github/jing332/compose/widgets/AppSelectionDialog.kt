@@ -37,6 +37,7 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
+import coil3.compose.AsyncImage
 import com.github.jing332.common.utils.ClipboardUtils
 import com.github.jing332.common.utils.performLongPress
 import com.github.jing332.common.utils.toast
@@ -51,10 +52,12 @@ fun AppSelectionDialog(
     value: Any,
     values: List<Any>,
     entries: List<String>,
+    iconUrls: List<String>? = null,
     isLoading: Boolean = false,
     searchEnabled: Boolean = values.size > 5,
 
-    itemContent: @Composable RowScope.(Boolean, String, Any) -> Unit = { isSelected, entry, _ ->
+    itemContent: @Composable RowScope.(Boolean, String, String?, Any) -> Unit = { isSelected, entry, iconUrl, _ ->
+        AsyncImage(iconUrl, null)
         Text(
             entry,
             style = MaterialTheme.typography.titleMedium,
@@ -134,6 +137,7 @@ fun AppSelectionDialog(
                                 !entry.contains(searchText, ignoreCase = true)
                             ) return@itemsIndexed
 
+                            val icon = iconUrls?.getOrNull(i)
                             val current = values[i]
                             val isSelected = onValueSame(value, current)
                             Row(
@@ -151,7 +155,7 @@ fun AppSelectionDialog(
                                     )
                                     .minimumInteractiveComponentSize(),
                             ) {
-                                itemContent(isSelected, entry, value)
+                                itemContent(isSelected, entry, icon, value)
                             }
 
                         }

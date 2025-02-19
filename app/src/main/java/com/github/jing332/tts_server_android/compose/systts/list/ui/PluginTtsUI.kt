@@ -254,16 +254,11 @@ class PluginTtsUI : IConfigUI() {
                                 .padding(top = 4.dp),
                             label = { Text(stringResource(id = R.string.label_voice)) },
                             value = tts.voice,
-                            values = vm.voices.map { it.first },
-                            entries = vm.voices.map { it.second },
+                            values = vm.voices.map { it.id },
+                            entries = vm.voices.map { it.name },
+                            iconUrls = vm.voices.mapNotNull { it.iconUrl },
                             onSelectedChange = { voice, name ->
-                                Log.d(
-                                    "PluginTtsUI",
-                                    "voice onSelectedChange: voice=$voice, name=$name"
-                                )
-
-                                val lastName =
-                                    vm.voices.find { it.first == tts.voice }?.second ?: ""
+                                val lastName = vm.voices.find { it.id == tts.voice }?.name ?: ""
                                 onSysttsChange(
                                     systts.copy(
                                         displayName =
@@ -278,10 +273,6 @@ class PluginTtsUI : IConfigUI() {
                                 )
 
                                 runCatching {
-                                    Log.d(
-                                        "PluginTtsUI",
-                                        "updateCustomUI: locale=${tts.locale}, voice=$voice"
-                                    )
                                     vm.updateCustomUI(tts.locale, voice)
                                 }.onFailure {
                                     context.displayErrorDialog(it)

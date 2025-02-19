@@ -88,22 +88,28 @@ class TtsPluginUiEngineV2(context: Context, plugin: Plugin) : TtsPluginEngineV2(
         }
     }
 
-    fun getVoices(locale: String): Map<String, String> {
+    fun getVoices(locale: String): List<Voice> {
         return engine.invokeMethod(editUiJsObject, FUNC_VOICES, locale).run {
             when (this) {
                 is Map<*, *> -> {
                     this.map { (key, value) ->
                         key.toString() to value.toString()
-                    }.toMap()
+                    }.map { Voice(it.first, it.second) }
                 }
 
                 is NativeMap -> {
-                    this.toMap<CharSequence, CharSequence>().map { (key, value) ->
-                        key.toString() to value.toString()
-                    }.toMap()
+                    toMap<CharSequence, Any>().map { (key, value) ->
+                        key.toString() to value
+                    }.toMap().map {
+                        val (key, value) = it
+                        val iconUrl =
+                            if (value is Map<*, *>) value["iconUrl"] as? CharSequence else null
+                        val name = if (value is Map<*, *>) value["name"] as? CharSequence else value
+                        Voice(key.toString(), name.toString(), iconUrl?.toString())
+                    }
                 }
 
-                else -> emptyMap()
+                else -> emptyList()
             }
         }
     }
@@ -143,4 +149,6 @@ class TtsPluginUiEngineV2(context: Context, plugin: Plugin) : TtsPluginEngineV2(
         } catch (_: NoSuchMethodException) {
         }
     }
+
+    data class Voice(val id: String, val name: String, val iconUrl: String? = null)
 }

@@ -35,6 +35,9 @@ interface PluginDao {
     @Query("SELECT * FROM plugin WHERE pluginId = :pluginId ")
     fun getByPluginId(pluginId: String): Plugin?
 
+    @Query("SELECT * FROM plugin WHERE pluginId = :pluginId AND isEnabled")
+    fun getEnabled(pluginId: String): Plugin?
+
     fun insertOrUpdate(vararg args: Plugin) {
         for (v in args) {
             val old = getByPluginId(v.pluginId)

@@ -30,7 +30,9 @@ class PluginTtsViewModel(app: Application) : AndroidViewModel(app) {
 
     @Suppress("UNCHECKED_CAST")
     fun service(): ITtsService<ITtsSource> {
-        return PluginTtsService(app, engine.plugin).also { it.engine = engine } as ITtsService<ITtsSource>
+        return PluginTtsService(app, engine.plugin).also {
+            it.engine = engine
+        } as ITtsService<ITtsSource>
     }
 
     private fun initEngine(plugin: Plugin?, source: PluginTtsSource) {
@@ -45,13 +47,13 @@ class PluginTtsViewModel(app: Application) : AndroidViewModel(app) {
     }
 
     private fun getPluginFromDB(id: String) =
-        dbm.pluginDao.getByPluginId(pluginId = id)
+        dbm.pluginDao.getEnabled(pluginId = id)
             ?: throw IllegalStateException("Plugin $id not found from database")
 
     var isLoading by mutableStateOf(true)
 
     val locales = mutableStateListOf<Pair<String, String>>()
-    val voices = mutableStateListOf<Pair<String, String>>()
+    val voices = mutableStateListOf<TtsPluginUiEngineV2.Voice>()
 
     suspend fun load(
         context: Context,
@@ -89,7 +91,6 @@ class PluginTtsViewModel(app: Application) : AndroidViewModel(app) {
 
     suspend fun updateVoices(locale: String) {
         val list = engine.getVoices(locale).toList()
-        logger.debug { "updateVoices(${locale}): ${voices.joinToString { it.first + " - " + it.second }}" }
         withMain {
             voices.clear()
             voices.addAll(list)

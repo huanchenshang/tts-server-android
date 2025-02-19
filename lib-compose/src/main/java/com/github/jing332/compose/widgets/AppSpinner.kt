@@ -39,6 +39,7 @@ private fun TextFieldSelectionDialog(
     value: Any,
     values: List<Any>,
     entries: List<String>,
+    iconUrls : List<String>? = null,
     enabled: Boolean = true,
 
     onSelectedChange: (key: Any, value: String) -> Unit,
@@ -122,6 +123,7 @@ fun AppSpinner(
     value: Any,
     values: List<Any>,
     entries: List<String>,
+    iconUrls : List<String>? = null,
     maxDropDownCount: Int = ComposeWidgetSettings.maxDropDownCount,
     enabled: Boolean = true,
 
