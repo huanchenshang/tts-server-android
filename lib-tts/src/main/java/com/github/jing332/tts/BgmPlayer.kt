@@ -56,6 +56,7 @@ class BgmPlayer(val context: ManagerContext) : IBgmPlayer {
     override fun destroy() {
         logger.debug { "bgm destroy" }
         runOnUI {
+            exoPlayer?.stop()
             exoPlayer?.release()
         }
     }
