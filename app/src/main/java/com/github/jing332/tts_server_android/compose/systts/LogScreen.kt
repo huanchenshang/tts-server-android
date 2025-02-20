@@ -1,10 +1,7 @@
 package com.github.jing332.tts_server_android.compose.systts
 
-import android.view.HapticFeedbackConstants
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.ExperimentalFoundationApi
-import androidx.compose.foundation.background
-import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -37,13 +34,10 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
-import androidx.core.graphics.toColor
 import androidx.core.text.HtmlCompat
 import com.github.jing332.common.LogEntry
 import com.github.jing332.common.toArgb
 import com.github.jing332.common.toLogLevelChar
-import com.github.jing332.common.utils.ClipboardUtils
-import com.github.jing332.common.utils.toast
 import com.github.jing332.compose.ComposeExtensions.toAnnotatedString
 import com.github.jing332.tts_server_android.R
 import kotlinx.coroutines.launch
