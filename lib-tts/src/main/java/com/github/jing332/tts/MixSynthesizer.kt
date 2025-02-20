@@ -1,17 +1,17 @@
 package com.github.jing332.tts
 
-import com.github.jing332.tts.manager.AbstractTtsManager
-import com.github.jing332.tts.manager.IBgmPlayer
-import com.github.jing332.tts.manager.IResultProcessor
-import com.github.jing332.tts.manager.ITextProcessor
-import com.github.jing332.tts.manager.ITtsRepository
-import com.github.jing332.tts.manager.ITtsRequester
+import com.github.jing332.tts.synthesizer.AbstractMixSynthesizer
+import com.github.jing332.tts.synthesizer.IBgmPlayer
+import com.github.jing332.tts.synthesizer.IResultProcessor
+import com.github.jing332.tts.synthesizer.ITextProcessor
+import com.github.jing332.tts.synthesizer.ITtsRepository
+import com.github.jing332.tts.synthesizer.ITtsRequester
 import io.github.oshai.kotlinlogging.KotlinLogging
 import splitties.init.appCtx
 
-open class TtsManagerImpl(
-    final override val context: ManagerContext
-) : AbstractTtsManager() {
+open class MixSynthesizer(
+    final override val context: SynthesizerContext
+) : AbstractMixSynthesizer() {
     override var textProcessor: ITextProcessor = TextProcessor(context)
     override var ttsRequester: ITtsRequester = DefaultTtsRequester(context)
     override var streamProcessor: IResultProcessor = DefaultResultProcessor(context)
@@ -21,11 +21,11 @@ open class TtsManagerImpl(
     companion object {
         val global by lazy {
             val logger = KotlinLogging.logger("TtsManager")
-            TtsManagerImpl(
-                ManagerContext(
+            MixSynthesizer(
+                SynthesizerContext(
                     androidContext = appCtx,
                     logger = logger,
-                    cfg = TtsManagerConfig()
+                    cfg = SynthesizerConfig()
                 )
             )
         }

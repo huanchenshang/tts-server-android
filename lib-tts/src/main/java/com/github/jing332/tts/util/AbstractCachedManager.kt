@@ -1,4 +1,4 @@
-package com.github.jing332.tts
+package com.github.jing332.tts.util
 
 import cn.hutool.cache.impl.TimedCache
 import java.util.concurrent.ConcurrentHashMap

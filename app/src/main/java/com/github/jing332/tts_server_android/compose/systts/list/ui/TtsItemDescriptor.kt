@@ -2,9 +2,9 @@ package com.github.jing332.tts_server_android.compose.systts.list.ui
 
 import com.github.jing332.database.entities.systts.IConfiguration
 import com.github.jing332.database.entities.systts.TtsConfigurationDTO
-import com.github.jing332.database.entities.systts.source.ITtsSource
+import com.github.jing332.database.entities.systts.source.TextToSpeechSource
 
-abstract class TtsItemDescriptor<T : ITtsSource>(config: IConfiguration) : ItemDescriptor() {
+abstract class TtsItemDescriptor<T : TextToSpeechSource>(config: IConfiguration) : ItemDescriptor() {
     val config: TtsConfigurationDTO = config as TtsConfigurationDTO
     @Suppress("UNCHECKED_CAST")
     val source: T = this.config.source as T

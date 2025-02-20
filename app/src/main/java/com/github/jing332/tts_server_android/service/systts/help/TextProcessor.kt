@@ -7,9 +7,9 @@ import com.github.jing332.database.dbm
 import com.github.jing332.database.entities.systts.SpeechRuleInfo
 import com.github.jing332.tts.ConfigType
 import com.github.jing332.tts.error.TextProcessorError
-import com.github.jing332.tts.manager.ITextProcessor
-import com.github.jing332.tts.manager.TextSegment
-import com.github.jing332.tts.manager.TtsConfiguration
+import com.github.jing332.tts.synthesizer.ITextProcessor
+import com.github.jing332.tts.synthesizer.TextSegment
+import com.github.jing332.tts.synthesizer.TtsConfiguration
 import com.github.jing332.tts_server_android.conf.SystemTtsConfig
 import com.github.jing332.tts_server_android.model.rhino.speech_rule.SpeechRuleEngine
 import com.github.michaelbull.result.Err

@@ -1,9 +1,9 @@
 package com.github.jing332.tts
 
 import com.github.jing332.tts.error.RequesterError
-import com.github.jing332.tts.manager.ITtsRequester
-import com.github.jing332.tts.manager.SystemParams
-import com.github.jing332.tts.manager.TtsConfiguration
+import com.github.jing332.tts.synthesizer.ITtsRequester
+import com.github.jing332.tts.synthesizer.SystemParams
+import com.github.jing332.tts.synthesizer.TtsConfiguration
 import com.github.jing332.tts.speech.EngineState
 import com.github.michaelbull.result.Err
 import com.github.michaelbull.result.Ok
@@ -11,7 +11,7 @@ import com.github.michaelbull.result.Result
 import kotlinx.coroutines.CancellationException
 
 class DefaultTtsRequester(
-    var context: ManagerContext,
+    var context: SynthesizerContext,
 ) : ITtsRequester {
     override suspend fun request(
         params: SystemParams, tts: TtsConfiguration,

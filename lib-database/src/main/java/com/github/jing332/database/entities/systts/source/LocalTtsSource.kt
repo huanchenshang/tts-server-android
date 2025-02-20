@@ -16,7 +16,7 @@ data class LocalTtsSource(
 
     val extraParams: MutableList<LocalTtsParameter>? = null,
     val isDirectPlayMode: Boolean = true
-) : ITtsSource() {
+) : TextToSpeechSource() {
     companion object {
         const val SPEED_FOLLOW = 0f
         const val PITCH_FOLLOW = 0f

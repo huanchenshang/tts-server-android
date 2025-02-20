@@ -11,7 +11,7 @@ import kotlinx.serialization.json.JsonClassDiscriminator
 @OptIn(ExperimentalSerializationApi::class)
 @Serializable
 @JsonClassDiscriminator("#type")
-sealed class ITtsSource : Parcelable {
+sealed class TextToSpeechSource : Parcelable {
 
     open fun isSyncPlayMode(): Boolean = false
 

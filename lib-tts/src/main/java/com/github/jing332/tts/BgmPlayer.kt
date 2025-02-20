@@ -7,14 +7,14 @@ import androidx.media3.exoplayer.ExoPlayer
 import com.github.jing332.common.utils.FileUtils
 import com.github.jing332.common.utils.FileUtils.mimeType
 import com.github.jing332.common.utils.runOnUI
-import com.github.jing332.tts.manager.BgmSource
-import com.github.jing332.tts.manager.IBgmPlayer
+import com.github.jing332.tts.synthesizer.BgmSource
+import com.github.jing332.tts.synthesizer.IBgmPlayer
 import io.github.oshai.kotlinlogging.KotlinLogging
 import java.io.File
 import kotlin.math.pow
 
 
-class BgmPlayer(val context: ManagerContext) : IBgmPlayer {
+class BgmPlayer(val context: SynthesizerContext) : IBgmPlayer {
     companion object {
         const val TAG = "BgmPlayer"
         val logger = KotlinLogging.logger(TAG)

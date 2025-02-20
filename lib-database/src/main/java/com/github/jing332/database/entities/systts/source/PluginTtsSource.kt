@@ -22,7 +22,7 @@ data class PluginTtsSource(
     @Transient
     @IgnoredOnParcel
     val plugin: Plugin? = null,
-) : ITtsSource() {
+) : TextToSpeechSource() {
 
 
     override fun getKey(): String {

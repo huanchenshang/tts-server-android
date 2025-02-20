@@ -14,11 +14,11 @@ import com.github.jing332.common.utils.rootCause
 import com.github.jing332.tts.error.StreamProcessorError
 import com.github.jing332.tts.error.StreamProcessorError.AudioDecoding
 import com.github.jing332.tts.error.StreamProcessorError.HandleError
-import com.github.jing332.tts.manager.IResultProcessor
-import com.github.jing332.tts.manager.PcmAudioDataListener
-import com.github.jing332.tts.manager.RequestPayload
-import com.github.jing332.tts.manager.TtsConfiguration
-import com.github.jing332.tts.manager.event.NormalEvent
+import com.github.jing332.tts.synthesizer.IResultProcessor
+import com.github.jing332.tts.synthesizer.PcmAudioDataListener
+import com.github.jing332.tts.synthesizer.RequestPayload
+import com.github.jing332.tts.synthesizer.TtsConfiguration
+import com.github.jing332.tts.synthesizer.event.NormalEvent
 import com.github.michaelbull.result.Err
 import com.github.michaelbull.result.Ok
 import com.github.michaelbull.result.Result
@@ -33,7 +33,7 @@ import kotlin.jvm.Throws
 import kotlin.system.measureTimeMillis
 
 internal class DefaultResultProcessor(
-    private val context: ManagerContext,
+    private val context: SynthesizerContext,
 ) : IResultProcessor {
     companion object {
         val logger = KotlinLogging.logger("DefaultResultProcessor")

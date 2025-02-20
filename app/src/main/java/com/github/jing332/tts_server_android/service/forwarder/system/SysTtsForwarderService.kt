@@ -3,25 +3,21 @@
 package com.github.jing332.tts_server_android.service.forwarder.system
 
 import android.speech.tts.TextToSpeech
-import com.github.jing332.common.LogLevel
-import com.github.jing332.database.entities.systts.AudioParams
 import com.github.jing332.database.entities.systts.source.LocalTtsSource
 import com.github.jing332.server.forwarder.Engine
 import com.github.jing332.server.forwarder.SystemTtsForwardServer
 import com.github.jing332.server.forwarder.TtsParams
 import com.github.jing332.server.forwarder.Voice
 import com.github.jing332.tts.CachedEngineManager
-import com.github.jing332.tts.manager.SystemParams
+import com.github.jing332.tts.synthesizer.SystemParams
 import com.github.jing332.tts.speech.EngineState
-import com.github.jing332.tts.speech.local.LocalTtsService
+import com.github.jing332.tts.speech.local.LocalTtsProvider
 import com.github.jing332.tts_server_android.App
 import com.github.jing332.tts_server_android.R
 import com.github.jing332.tts_server_android.conf.SystemTtsForwarderConfig
-import com.github.jing332.tts_server_android.constant.AppConst
 import com.github.jing332.tts_server_android.help.LocalTtsEngineHelper
 import com.github.jing332.tts_server_android.service.forwarder.AbsForwarderService
 import kotlinx.coroutines.runBlocking
-import kotlinx.serialization.encodeToString
 import java.io.OutputStream
 
 class SysTtsForwarderService(
@@ -52,7 +48,7 @@ class SysTtsForwarderService(
     }
 
     private var mServer: SystemTtsForwardServer? = null
-    private var mLocalTTS: LocalTtsService? = null
+    private var mLocalTTS: LocalTtsProvider? = null
     private val mLocalTtsHelper by lazy { LocalTtsEngineHelper(this) }
 
     override fun onCreate() {
@@ -60,12 +56,12 @@ class SysTtsForwarderService(
         instance = this
     }
 
-    private fun getEngine(name: String): LocalTtsService {
+    private fun getEngine(name: String): LocalTtsProvider {
         val cacheEngine = CachedEngineManager.getEngine(
             this@SysTtsForwarderService,
             LocalTtsSource(engine = name)
         ) ?: throw IllegalArgumentException("Engine not found: $name")
-        return cacheEngine as LocalTtsService
+        return cacheEngine as LocalTtsProvider
     }
 
     override fun initServer() {
@@ -81,9 +77,9 @@ class SysTtsForwarderService(
                     engine = params.engine,
                     voice = params.voice,
                 )
-                val e: LocalTtsService =
+                val e: LocalTtsProvider =
                     CachedEngineManager.getEngine(this@SysTtsForwarderService, source)
-                            as? LocalTtsService
+                            as? LocalTtsProvider
                         ?: throw IllegalArgumentException("Engine not found: ${params.engine}")
                 if (e.state is EngineState.Uninitialized)
                     runBlocking { e.onInit() }

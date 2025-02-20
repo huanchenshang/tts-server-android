@@ -1,10 +1,10 @@
 package com.github.jing332.tts.speech
 
-import com.github.jing332.database.entities.systts.source.ITtsSource
-import com.github.jing332.tts.manager.SystemParams
+import com.github.jing332.database.entities.systts.source.TextToSpeechSource
+import com.github.jing332.tts.synthesizer.SystemParams
 import java.io.InputStream
 
-abstract class ITtsService<in T : ITtsSource> : ILifeState {
+abstract class TextToSpeechProvider<in T : TextToSpeechSource> : ILifeState {
     abstract var state: EngineState
     open fun isSyncPlay(source: T): Boolean {
         return false

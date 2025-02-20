@@ -3,13 +3,12 @@ package com.github.jing332.tts
 import com.github.jing332.database.dbm
 import com.github.jing332.database.entities.systts.BgmConfiguration
 import com.github.jing332.database.entities.systts.TtsConfigurationDTO
-import com.github.jing332.tts.manager.ITtsRepository
-import com.github.jing332.tts.manager.StandbyInfo
-import com.github.jing332.tts.manager.TtsConfiguration
-import com.github.jing332.tts.manager.TtsConfiguration.Companion.toVO
+import com.github.jing332.tts.synthesizer.ITtsRepository
+import com.github.jing332.tts.synthesizer.TtsConfiguration
+import com.github.jing332.tts.synthesizer.TtsConfiguration.Companion.toVO
 
 internal class TtsRepository(
-    val context: ManagerContext,
+    val context: SynthesizerContext,
 ) : ITtsRepository {
 
     override fun init() {

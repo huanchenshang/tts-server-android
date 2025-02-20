@@ -20,9 +20,7 @@ import android.speech.tts.TextToSpeechService
 import android.speech.tts.Voice
 import android.util.Log
 import androidx.annotation.StringRes
-import androidx.core.app.ServiceCompat.stopForeground
 import androidx.core.content.ContextCompat
-import androidx.core.content.ContextCompat.getSystemService
 import com.github.jing332.common.utils.longToast
 import com.github.jing332.common.utils.registerGlobalReceiver
 import com.github.jing332.common.utils.runOnUI
@@ -33,28 +31,22 @@ import com.github.jing332.database.dbm
 import com.github.jing332.database.entities.systts.TtsConfigurationDTO
 import com.github.jing332.tts.ConfigType
 
-import com.github.jing332.tts.TtsManagerConfig
-import com.github.jing332.tts.TtsManagerImpl
+import com.github.jing332.tts.SynthesizerConfig
+import com.github.jing332.tts.MixSynthesizer
 import com.github.jing332.tts.error.StreamProcessorError
 import com.github.jing332.tts.error.SynthesisError
 import com.github.jing332.tts.error.TextProcessorError
-import com.github.jing332.tts.manager.ITtsManager
-import com.github.jing332.tts.manager.SystemParams
-import com.github.jing332.tts.manager.event.ErrorEvent
-import com.github.jing332.tts.manager.event.Event
-import com.github.jing332.tts.manager.event.IEventDispatcher
-import com.github.jing332.tts.manager.event.NormalEvent
-import com.github.jing332.tts_server_android.App.Companion.context
+import com.github.jing332.tts.synthesizer.Synthesizer
+import com.github.jing332.tts.synthesizer.SystemParams
+import com.github.jing332.tts.synthesizer.event.ErrorEvent
+import com.github.jing332.tts.synthesizer.event.Event
+import com.github.jing332.tts.synthesizer.event.IEventDispatcher
+import com.github.jing332.tts.synthesizer.event.NormalEvent
 import com.github.jing332.tts_server_android.R
 import com.github.jing332.tts_server_android.compose.MainActivity
 import com.github.jing332.tts_server_android.conf.SysTtsConfig
 import com.github.jing332.tts_server_android.constant.AppConst
 import com.github.jing332.tts_server_android.constant.SystemNotificationConst
-import com.github.jing332.tts_server_android.service.systts.SystemTtsService.Companion.ACTION_NOTIFY_CANCEL
-import com.github.jing332.tts_server_android.service.systts.SystemTtsService.Companion.ACTION_NOTIFY_KILL_PROCESS
-import com.github.jing332.tts_server_android.service.systts.SystemTtsService.Companion.ACTION_UPDATE_CONFIG
-import com.github.jing332.tts_server_android.service.systts.SystemTtsService.Companion.ACTION_UPDATE_REPLACER
-import com.github.jing332.tts_server_android.service.systts.SystemTtsService.Companion.NOTIFICATION_CHAN_ID
 import com.github.jing332.tts_server_android.service.systts.help.TextProcessor
 import com.github.michaelbull.result.Err
 import com.github.michaelbull.result.Ok
@@ -64,7 +56,6 @@ import com.github.michaelbull.result.onSuccess
 import io.github.oshai.kotlinlogging.KotlinLogging
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
-import kotlinx.coroutines.async
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
@@ -104,7 +95,7 @@ class SystemTtsService : TextToSpeechService(), IEventDispatcher {
 
 
     private val mTextProcessor = TextProcessor()
-    private var mTtsManager: ITtsManager? = null
+    private var mTtsManager: Synthesizer? = null
 
 
     private val mNotificationReceiver: NotificationReceiver by lazy { NotificationReceiver() }
@@ -149,10 +140,10 @@ class SystemTtsService : TextToSpeechService(), IEventDispatcher {
     fun initManager() {
         logger.info { "initialize or load configruation" }
         mScope.launch {
-            mTtsManager = mTtsManager ?: TtsManagerImpl.global.apply {
+            mTtsManager = mTtsManager ?: MixSynthesizer.global.apply {
                 context.androidContext = this@SystemTtsService.applicationContext
                 context.event = this@SystemTtsService
-                context.cfg = TtsManagerConfig(
+                context.cfg = SynthesizerConfig(
                     requestTimeout = SysTtsConfig::requestTimeout,
                     maxRetryTimes = SysTtsConfig::maxRetryCount,
                     streamPlayEnabled = SysTtsConfig::isStreamPlayModeEnabled,
@@ -317,7 +308,7 @@ class SystemTtsService : TextToSpeechService(), IEventDispatcher {
                         params = SystemParams(text = request.charSequenceText.toString()),
                         forceConfigId = cfgId,
                         callback = object :
-                            com.github.jing332.tts.manager.SynthesisCallback {
+                            com.github.jing332.tts.synthesizer.SynthesisCallback {
                             override fun onSynthesizeStart(sampleRate: Int) {
                                 callback.start(
                                     /* sampleRateInHz = */ sampleRate,

@@ -4,8 +4,8 @@ import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
 import com.github.jing332.database.entities.systts.AudioParams
 import com.github.jing332.database.entities.systts.source.LocalTtsSource
-import com.github.jing332.tts.manager.SystemParams
-import com.github.jing332.tts.speech.local.LocalTtsService
+import com.github.jing332.tts.synthesizer.SystemParams
+import com.github.jing332.tts.speech.local.LocalTtsProvider
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import org.junit.Test
@@ -17,7 +17,7 @@ class LocalTtsServiceTest {
     fun testCancelable() {
         runBlocking {
             val context = InstrumentationRegistry.getInstrumentation().targetContext
-            val tts = LocalTtsService(context, "")
+            val tts = LocalTtsProvider(context, "")
             tts.onInit()
             val file = tts.getAudioFile(
                 source = LocalTtsSource(),

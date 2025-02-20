@@ -7,7 +7,7 @@ import android.speech.tts.Voice
 import kotlinx.coroutines.delay
 import java.util.*
 
-class LocalTtsEngineHelper(val context: Context) {
+class AndroidTtsEngine(val context: Context) {
     companion object {
         private const val INIT_STATUS_WAITING = -2
     }

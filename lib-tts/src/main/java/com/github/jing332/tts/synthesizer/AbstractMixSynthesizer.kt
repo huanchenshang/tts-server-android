@@ -1,19 +1,16 @@
-package com.github.jing332.tts.manager
+package com.github.jing332.tts.synthesizer
 
-import android.R.id.message
-import androidx.compose.foundation.interaction.DragInteraction
-import androidx.media3.exoplayer.util.SntpClient.isInitialized
 import com.drake.net.utils.withMain
 import com.github.jing332.common.utils.StringUtils
 import com.github.jing332.common.utils.toByteArray
 import com.github.jing332.tts.ConfigType
-import com.github.jing332.tts.ManagerContext
+import com.github.jing332.tts.SynthesizerContext
 import com.github.jing332.tts.error.RequesterError
 import com.github.jing332.tts.error.SynthesisError
 import com.github.jing332.tts.error.TextProcessorError
-import com.github.jing332.tts.manager.event.ErrorEvent
-import com.github.jing332.tts.manager.event.Event
-import com.github.jing332.tts.manager.event.NormalEvent
+import com.github.jing332.tts.synthesizer.event.ErrorEvent
+import com.github.jing332.tts.synthesizer.event.Event
+import com.github.jing332.tts.synthesizer.event.NormalEvent
 import com.github.jing332.tts.speech.EmptyInputStream
 import com.github.michaelbull.result.Err
 import com.github.michaelbull.result.Ok
@@ -25,7 +22,6 @@ import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineName
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.TimeoutCancellationException
-import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.channels.SendChannel
 import kotlinx.coroutines.channels.produce
 import kotlinx.coroutines.channels.trySendBlocking
@@ -35,10 +31,9 @@ import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withTimeout
 import java.io.InputStream
-import java.nio.ByteBuffer
 import kotlin.math.pow
 
-abstract class AbstractTtsManager() : ITtsManager {
+abstract class AbstractMixSynthesizer() : Synthesizer {
     companion object {
         const val PROCUDE_CAPACITY: Int = 256
     }
@@ -47,7 +42,7 @@ abstract class AbstractTtsManager() : ITtsManager {
         get() = context.logger
 
 
-    abstract val context: ManagerContext
+    abstract val context: SynthesizerContext
 
     abstract val textProcessor: ITextProcessor
     abstract val ttsRequester: ITtsRequester

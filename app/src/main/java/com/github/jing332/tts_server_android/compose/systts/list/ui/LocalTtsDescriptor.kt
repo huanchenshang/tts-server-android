@@ -4,7 +4,6 @@ import android.content.Context
 import com.github.jing332.database.entities.systts.SystemTtsV2
 import com.github.jing332.database.entities.systts.TtsConfigurationDTO
 import com.github.jing332.database.entities.systts.source.LocalTtsSource
-import com.github.jing332.tts.manager.TtsConfiguration
 import com.github.jing332.tts_server_android.R
 
 class LocalTtsDescriptor(val context: Context, val systemTts: SystemTtsV2) :

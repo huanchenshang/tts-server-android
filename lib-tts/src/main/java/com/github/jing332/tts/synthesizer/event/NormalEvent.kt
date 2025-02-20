@@ -1,6 +1,6 @@
-package com.github.jing332.tts.manager.event
+package com.github.jing332.tts.synthesizer.event
 
-import com.github.jing332.tts.manager.RequestPayload
+import com.github.jing332.tts.synthesizer.RequestPayload
 
 sealed interface NormalEvent : Event {
     data class Request(

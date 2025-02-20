@@ -9,9 +9,9 @@ import com.github.jing332.database.entities.systts.AudioParams
 import com.github.jing332.database.entities.systts.source.LocalTtsParameter
 import com.github.jing332.database.entities.systts.source.LocalTtsSource
 import com.github.jing332.tts.exception.EngineException
-import com.github.jing332.tts.manager.SystemParams
 import com.github.jing332.tts.speech.EngineState
-import com.github.jing332.tts.speech.ITtsService
+import com.github.jing332.tts.speech.TextToSpeechProvider
+import com.github.jing332.tts.synthesizer.SystemParams
 import io.github.oshai.kotlinlogging.KotlinLogging
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.coroutineScope
@@ -23,12 +23,11 @@ import java.io.InputStream
 import java.util.Locale
 import kotlin.coroutines.Continuation
 import kotlin.coroutines.resume
-import kotlin.math.log
 
-class LocalTtsService(
+class LocalTtsProvider(
     private val context: Context,
     private val engine: String
-) : ITtsService<LocalTtsSource>() {
+) : TextToSpeechProvider<LocalTtsSource>() {
     companion object {
         const val TAG = "LocalTtsService"
         private val logger = KotlinLogging.logger(TAG)

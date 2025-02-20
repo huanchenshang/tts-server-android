@@ -1,16 +1,16 @@
-package com.github.jing332.tts.manager
+package com.github.jing332.tts.synthesizer
 
 import com.github.jing332.database.entities.systts.AudioParams
 import com.github.jing332.database.entities.systts.BaseAudioFormat
 import com.github.jing332.database.entities.systts.SpeechRuleInfo
 import com.github.jing332.database.entities.systts.TtsConfigurationDTO
-import com.github.jing332.database.entities.systts.source.ITtsSource
+import com.github.jing332.database.entities.systts.source.TextToSpeechSource
 
 data class TtsConfiguration(
     val speechInfo: SpeechRuleInfo = SpeechRuleInfo(),
     val audioParams: AudioParams = AudioParams(),
     val audioFormat: BaseAudioFormat = BaseAudioFormat(),
-    val source: ITtsSource,
+    val source: TextToSpeechSource,
 
     val standbyConfig: TtsConfiguration? = null
 ) {

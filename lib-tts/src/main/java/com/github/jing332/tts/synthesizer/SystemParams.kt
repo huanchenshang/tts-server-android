@@ -1,4 +1,4 @@
-package com.github.jing332.tts.manager
+package com.github.jing332.tts.synthesizer
 
 data class SystemParams(
     val text: String = "",

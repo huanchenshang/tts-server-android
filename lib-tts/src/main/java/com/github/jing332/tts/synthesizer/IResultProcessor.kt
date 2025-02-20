@@ -1,4 +1,4 @@
-package com.github.jing332.tts.manager
+package com.github.jing332.tts.synthesizer
 
 import android.content.Context
 import com.github.jing332.tts.error.StreamProcessorError

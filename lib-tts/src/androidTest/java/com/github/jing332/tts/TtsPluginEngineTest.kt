@@ -5,8 +5,8 @@ import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
 import com.github.jing332.database.entities.plugin.Plugin
 import com.github.jing332.database.entities.systts.source.PluginTtsSource
-import com.github.jing332.tts.manager.SystemParams
-import com.github.jing332.tts.speech.plugin.PluginTtsService
+import com.github.jing332.tts.synthesizer.SystemParams
+import com.github.jing332.tts.speech.plugin.PluginTtsProvider
 import com.github.jing332.tts.speech.plugin.engine.TtsPluginUiEngineV2
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
@@ -154,7 +154,7 @@ class TtsPluginEngineTest {
             
        } 
         """.trimIndent()
-        val ttsEngineService = object : PluginTtsService(context, Plugin(code = code)) {
+        val ttsEngineService = object : PluginTtsProvider(context, Plugin(code = code)) {
         }
         val job = launch(Dispatchers.IO) {
             ttsEngineService.onInit()

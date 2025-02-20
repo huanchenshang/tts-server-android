@@ -3,13 +3,13 @@ package com.github.jing332.tts
 import android.content.Context
 import com.github.jing332.common.utils.StringUtils
 import com.github.jing332.tts.error.TextProcessorError
-import com.github.jing332.tts.manager.ITextProcessor
-import com.github.jing332.tts.manager.TextSegment
-import com.github.jing332.tts.manager.TtsConfiguration
+import com.github.jing332.tts.synthesizer.ITextProcessor
+import com.github.jing332.tts.synthesizer.TextSegment
+import com.github.jing332.tts.synthesizer.TtsConfiguration
 import com.github.michaelbull.result.Ok
 import com.github.michaelbull.result.Result
 
-internal class TextProcessor(val context: ManagerContext) : ITextProcessor {
+internal class TextProcessor(val context: SynthesizerContext) : ITextProcessor {
     private var configs: Map<Long, TtsConfiguration> = mapOf()
     override fun init(
         context: Context,

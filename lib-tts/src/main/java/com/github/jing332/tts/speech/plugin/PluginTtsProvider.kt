@@ -3,16 +3,16 @@ package com.github.jing332.tts.speech.plugin
 import android.content.Context
 import com.github.jing332.database.entities.plugin.Plugin
 import com.github.jing332.database.entities.systts.source.PluginTtsSource
-import com.github.jing332.tts.manager.SystemParams
 import com.github.jing332.tts.speech.EngineState
-import com.github.jing332.tts.speech.ITtsService
+import com.github.jing332.tts.speech.TextToSpeechProvider
 import com.github.jing332.tts.speech.plugin.engine.TtsPluginEngineV2
+import com.github.jing332.tts.synthesizer.SystemParams
 import java.io.InputStream
 
-open class PluginTtsService(
+open class PluginTtsProvider(
     val context: Context,
     val plugin: Plugin,
-) : ITtsService<PluginTtsSource>() {
+) : TextToSpeechProvider<PluginTtsSource>() {
 
     private var mEngine: TtsPluginEngineV2? = null
 
@@ -42,7 +42,7 @@ open class PluginTtsService(
     override suspend fun onInit() {
         state = EngineState.Initializing
         if (mEngine == null)
-            mEngine = TtsPluginEngineManager.getEngine(context, plugin)
+            mEngine = TtsPluginEngineManager.get(context, plugin)
 
         state = EngineState.Initialized
     }

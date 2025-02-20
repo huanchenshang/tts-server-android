@@ -5,18 +5,8 @@ import android.media.AudioFormat
 import android.media.AudioTrack
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
-import com.github.jing332.database.entities.systts.BaseAudioFormat
-import com.github.jing332.database.entities.systts.BgmConfiguration
-import com.github.jing332.tts.manager.ITextProcessor
-import com.github.jing332.tts.manager.ITtsRepository
-import com.github.jing332.tts.manager.SynthesisCallback
-import com.github.jing332.tts.manager.SystemParams
-import com.github.jing332.tts.manager.TextSegment
-import com.github.jing332.tts.manager.TtsConfiguration
-import com.github.jing332.database.entities.systts.source.LocalTtsSource
-import com.github.jing332.tts.manager.StandbyInfo
-import com.github.michaelbull.result.Ok
-import com.github.michaelbull.result.Result
+import com.github.jing332.tts.synthesizer.SynthesisCallback
+import com.github.jing332.tts.synthesizer.SystemParams
 import kotlinx.coroutines.runBlocking
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -39,7 +29,7 @@ class TtsManagerImplTest {
         var audioTrack: AudioTrack? = null
 
 
-        val manager = TtsManagerImpl.global
+        val manager = MixSynthesizer.global
         manager.init()
 
         manager.synthesize(

@@ -1,10 +1,10 @@
-package com.github.jing332.tts.manager
+package com.github.jing332.tts.synthesizer
 
 import com.github.jing332.tts.error.SynthesisError
 import com.github.michaelbull.result.Result
 
 
-interface ITtsManager {
+interface Synthesizer {
     val isSynthesizing: Boolean
     suspend fun init()
     suspend fun destroy()
