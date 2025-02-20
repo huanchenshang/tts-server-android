@@ -75,7 +75,6 @@ abstract class AbstractTtsManager() : ITtsManager {
      * @return null means presetConfigId is not found from database
      */
     private suspend fun textProcess(
-        channel: SendChannel<ChannelPayload>,
         params: SystemParams,
         presetConfigId: Long?,
     ): List<TextSegment>? {
@@ -178,7 +177,7 @@ abstract class AbstractTtsManager() : ITtsManager {
             ins = stream,
             request = request,
             targetSampleRate = maxSampleRate,
-            callback = { pcm -> channel.trySend(ChannelPayload.Bytes(pcm.toByteArray())) }
+            callback = { pcm -> channel.trySendBlocking(ChannelPayload.Bytes(pcm.toByteArray())) }
         ).onFailure { e ->
             event(ErrorEvent.ResultProcessor(request, e))
             return retry()
@@ -197,12 +196,12 @@ abstract class AbstractTtsManager() : ITtsManager {
         val channel =
             produce<ChannelPayload>(CoroutineName("Synthesis producer"), PROCUDE_CAPACITY) {
                 val sendChannel = this.channel
-                val list = textProcess(sendChannel, params, presetConfigId)
+                val list = textProcess(params, presetConfigId)
                 if (list == null)
                     channel.send(ChannelPayload.NotFoundPresetConfig)
                 else
-                    for (fragment in list) {
-                        requestAndProcess(channel, params.copy(text = fragment.text), fragment.tts)
+                    for (segment in list) {
+                        requestAndProcess(channel, params.copy(text = segment.text), segment.tts)
                     }
             }
 
