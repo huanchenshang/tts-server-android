@@ -5,6 +5,7 @@ import com.github.jing332.server.BaseCallback
 import com.github.jing332.server.Server
 import com.github.jing332.server.installPlugins
 import io.ktor.http.ContentType
+import io.ktor.http.HttpStatusCode
 import io.ktor.http.decodeURLQueryComponent
 import io.ktor.server.application.ApplicationCallPipeline
 import io.ktor.server.application.call
@@ -45,7 +46,7 @@ class SystemTtsForwardServer(val port: Int, val callback: Callback) : Server {
                 suspend fun RoutingContext.handleTts(
                     params: TtsParams,
                 ) {
-                    call.respondOutputStream(ContentType.parse("audio/wav")) {
+                    call.respondOutputStream(ContentType.parse("audio/x-wav"), status = HttpStatusCode.OK) {
                         callback.tts(output = this, params)
                     }
                 }
