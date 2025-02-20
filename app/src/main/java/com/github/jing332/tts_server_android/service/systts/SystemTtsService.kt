@@ -28,6 +28,7 @@ import com.github.jing332.common.utils.sizeToReadable
 import com.github.jing332.common.utils.startForegroundCompat
 import com.github.jing332.common.utils.toHtmlBold
 import com.github.jing332.database.dbm
+import com.github.jing332.database.entities.systts.AudioParams
 import com.github.jing332.database.entities.systts.TtsConfigurationDTO
 import com.github.jing332.tts.ConfigType
 
@@ -149,7 +150,14 @@ class SystemTtsService : TextToSpeechService(), IEventDispatcher {
                     streamPlayEnabled = SysTtsConfig::isStreamPlayModeEnabled,
                     silenceSkipEnabled = SysTtsConfig::isSkipSilentAudio,
                     bgmShuffleEnabled = SysTtsConfig::isBgmShuffleEnabled,
-                    bgmVolume = SysTtsConfig::bgmVolume
+                    bgmVolume = SysTtsConfig::bgmVolume,
+                    audioParams = {
+                        AudioParams(
+                            speed = SysTtsConfig.audioParamsSpeed,
+                            volume = SysTtsConfig.audioParamsVolume,
+                            pitch = SysTtsConfig.audioParamsPitch
+                        )
+                    }
                 )
                 textProcessor = mTextProcessor
             }

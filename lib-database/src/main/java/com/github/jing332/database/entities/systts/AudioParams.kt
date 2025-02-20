@@ -7,14 +7,14 @@ import kotlinx.serialization.Serializable
 @Parcelize
 @Serializable
 data class AudioParams(
-    var speed: Float = FOLLOW_GLOBAL_VALUE,
+    var speed: Float = FOLLOW,
 
-    var volume: Float = FOLLOW_GLOBAL_VALUE,
+    var volume: Float = FOLLOW,
 
-    var pitch: Float = FOLLOW_GLOBAL_VALUE
+    var pitch: Float = FOLLOW,
 ) : Parcelable {
     companion object {
-        const val FOLLOW_GLOBAL_VALUE = 0f
+        const val FOLLOW = 0f
     }
 
     val isDefaultValue: Boolean
@@ -22,9 +22,17 @@ data class AudioParams(
 
     fun copyIfFollow(followSpeed: Float, followVolume: Float, followPitch: Float): AudioParams {
         return AudioParams(
-            if (speed == FOLLOW_GLOBAL_VALUE) followSpeed else speed,
-            if (volume == FOLLOW_GLOBAL_VALUE) followVolume else volume,
-            if (pitch == FOLLOW_GLOBAL_VALUE) followPitch else pitch
+            if (speed == FOLLOW) followSpeed else speed,
+            if (volume == FOLLOW) followVolume else volume,
+            if (pitch == FOLLOW) followPitch else pitch
+        )
+    }
+
+    fun copyIfFollow(params: AudioParams): AudioParams {
+        return AudioParams(
+            if (speed == FOLLOW) params.speed else speed,
+            if (volume == FOLLOW) params.volume else volume,
+            if (pitch == FOLLOW) params.pitch else pitch
         )
     }
 

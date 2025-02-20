@@ -1,6 +1,7 @@
 package com.github.jing332.tts
 
 import com.github.jing332.database.dbm
+import com.github.jing332.database.entities.systts.AudioParams
 import com.github.jing332.database.entities.systts.BgmConfiguration
 import com.github.jing332.database.entities.systts.TtsConfigurationDTO
 import com.github.jing332.tts.synthesizer.ITtsRepository
@@ -20,6 +21,7 @@ internal class TtsRepository(
 
 
     override fun getAllTts(): Map<Long, TtsConfiguration> {
+        val tp = context.cfg.audioParams()
         val groupWithTts = dbm.systemTtsV2.getAllGroupWithTts()
         val map = mutableMapOf<Long, TtsConfiguration>()
         val standbyConfigs =
@@ -30,6 +32,7 @@ internal class TtsRepository(
                     config.toVO()
                 }
         for (group in groupWithTts) {
+            val gp = group.group.audioParams.copyIfFollow(tp)
             for (tts in group.list.sortedBy { it.order }) {
                 if (!tts.isEnabled) continue
                 val c = tts.config; if (c !is TtsConfigurationDTO) continue
@@ -39,9 +42,10 @@ internal class TtsRepository(
                             it.speechInfo.tagRuleId == c.speechRule.tagRuleId &&
                             it.speechInfo.tagName == c.speechRule.tagName
                 }
+
                 map[tts.id] = TtsConfiguration(
                     speechInfo = c.speechRule,
-                    audioParams = c.audioParams,
+                    audioParams = c.audioParams.copyIfFollow(gp),
                     audioFormat = c.audioFormat,
                     source = c.source,
                     standbyConfig = standby

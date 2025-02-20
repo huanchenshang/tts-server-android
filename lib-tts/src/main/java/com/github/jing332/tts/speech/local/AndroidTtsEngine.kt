@@ -143,9 +143,9 @@ class AndroidTtsEngine(
 
             suspendCancellableCoroutine<Result<InputStream, TtsEngineError>> { continuation ->
                 val pos = PipedOutputStream()
+                val pis = PipedInputStream(pos)
                 tts.setOnUtteranceProgressListener(object : UtteranceProgressListener() {
                     override fun onStart(utteranceId: String) {
-                        val pis = PipedInputStream(pos)
                         continuation.resume(Ok(pis))
                     }
 

@@ -27,9 +27,9 @@ fun GroupAudioParamsDialog(
     BasicAudioParamsDialog(
         onDismissRequest = onDismissRequest,
         onReset = {
-            speed = AudioParams.FOLLOW_GLOBAL_VALUE
-            volume = AudioParams.FOLLOW_GLOBAL_VALUE
-            pitch = AudioParams.FOLLOW_GLOBAL_VALUE
+            speed = AudioParams.FOLLOW
+            volume = AudioParams.FOLLOW
+            pitch = AudioParams.FOLLOW
         },
         speed = speed,
         onSpeedChange = { speed = it },
@@ -40,11 +40,11 @@ fun GroupAudioParamsDialog(
         buttons = {
             Row {
                 TextButton(
-                    enabled = speed != AudioParams.FOLLOW_GLOBAL_VALUE || volume != AudioParams.FOLLOW_GLOBAL_VALUE || pitch != AudioParams.FOLLOW_GLOBAL_VALUE,
+                    enabled = speed != AudioParams.FOLLOW || volume != AudioParams.FOLLOW || pitch != AudioParams.FOLLOW,
                     onClick = {
-                        speed = AudioParams.FOLLOW_GLOBAL_VALUE
-                        volume = AudioParams.FOLLOW_GLOBAL_VALUE
-                        pitch = AudioParams.FOLLOW_GLOBAL_VALUE
+                        speed = AudioParams.FOLLOW
+                        volume = AudioParams.FOLLOW
+                        pitch = AudioParams.FOLLOW
                     }) {
                     Text(stringResource(id = R.string.reset))
                 }

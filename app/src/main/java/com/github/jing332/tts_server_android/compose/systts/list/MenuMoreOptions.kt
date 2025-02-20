@@ -30,6 +30,7 @@ import com.github.jing332.tts_server_android.compose.systts.plugin.PluginManager
 import com.github.jing332.tts_server_android.compose.systts.replace.ReplaceManagerActivity
 import com.github.jing332.tts_server_android.compose.systts.speechrule.SpeechRuleManagerActivity
 import com.github.jing332.tts_server_android.conf.SystemTtsConfig
+import com.github.jing332.tts_server_android.service.systts.SystemTtsService
 
 @Composable
 internal fun MenuMoreOptions(
@@ -49,6 +50,7 @@ internal fun MenuMoreOptions(
     if (showAudioParamsDialog)
         GlobalAudioParamsDialog {
             showAudioParamsDialog = false
+            SystemTtsService.notifyUpdateConfig()
         }
 
     val context = LocalContext.current
