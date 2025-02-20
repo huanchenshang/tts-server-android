@@ -40,8 +40,8 @@ fun DropdownTextField(
     onSelectedChange: (value: Any, entry: String) -> Unit,
 ) {
     val index = remember(value, values) { values.indexOf(value) }
-    var selectedText = remember(entries, values) { entries.getOrNull(max(0, index)) ?: "" }
-    val icon = remember(icons) { icons.getOrNull(index) }
+    var selectedText = remember(entries, index) { entries.getOrNull(max(0, index)) ?: "" }
+    val icon = remember(icons, index) { icons.getOrNull(index) }
     var expanded by remember { mutableStateOf(false) }
 
     LaunchedEffect(values, entries) {
