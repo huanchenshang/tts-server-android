@@ -34,6 +34,7 @@ fun CenterTextImage(
             modifier = Modifier
                 .align(Alignment.Center)
                 .semantics { invisibleToUser() },
+            style = MaterialTheme.typography.titleMedium,
         )
     }
 

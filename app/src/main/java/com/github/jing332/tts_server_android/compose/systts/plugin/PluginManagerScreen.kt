@@ -1,34 +1,24 @@
 package com.github.jing332.tts_server_android.compose.systts.plugin
 
-import android.R.attr.fontWeight
-import android.R.attr.lineHeight
 import android.content.Intent
 import androidx.compose.foundation.ExperimentalFoundationApi
-import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.setValue
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.requiredSize
-import androidx.compose.foundation.layout.requiredSizeIn
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.wrapContentHeight
-import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.Input
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.AppShortcut
+import androidx.compose.material.icons.filled.CleaningServices
 import androidx.compose.material.icons.filled.DeleteForever
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.EditNote
@@ -42,7 +32,6 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.LocalTextStyle
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
@@ -54,37 +43,24 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.drawBehind
-import androidx.compose.ui.draw.shadow
-import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.graphics.Shadow
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.contentDescription
-import androidx.compose.ui.semantics.invisibleToUser
 import androidx.compose.ui.semantics.role
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.stateDescription
-import androidx.compose.ui.text.PlatformTextStyle
-import androidx.compose.ui.text.TextPainter
-import androidx.compose.ui.text.TextStyle
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import cn.hutool.core.lang.Assert.state
-import coil3.compose.AsyncImage
-import coil3.compose.AsyncImagePainter
-import coil3.compose.AsyncImagePainter.State.Empty.painter
 import coil3.compose.SubcomposeAsyncImage
-import coil3.compose.SubcomposeAsyncImageContent
+import com.github.jing332.common.utils.longToast
 import com.github.jing332.compose.rememberLazyListReorderCache
 import com.github.jing332.compose.widgets.CenterTextImage
 import com.github.jing332.database.dbm
 import com.github.jing332.database.entities.plugin.Plugin
+import com.github.jing332.tts_server_android.App.Companion.context
 import com.github.jing332.tts_server_android.R
 import com.github.jing332.tts_server_android.compose.LocalNavController
 import com.github.jing332.tts_server_android.compose.ShadowReorderableItem
@@ -92,7 +68,6 @@ import com.github.jing332.tts_server_android.compose.SharedViewModel
 import com.github.jing332.tts_server_android.compose.systts.ConfigDeleteDialog
 import com.github.jing332.tts_server_android.constant.AppConst
 import com.github.jing332.tts_server_android.utils.MyTools
-import com.hankcs.hanlp.dictionary.py.Yunmu.er
 import kotlinx.coroutines.flow.conflate
 import kotlinx.serialization.encodeToString
 import org.burnoutcrew.reorderable.detectReorderAfterLongPress
@@ -124,11 +99,12 @@ fun PluginManagerScreen(sharedVM: SharedViewModel, onFinishActivity: () -> Unit)
     var showDeleteDialog by remember { mutableStateOf<Plugin?>(null) }
     if (showDeleteDialog != null) {
         val plugin = showDeleteDialog!!
-        ConfigDeleteDialog(onDismissRequest = { showDeleteDialog = null }, name = plugin.name) {
+        ConfigDeleteDialog(onDismissRequest = { showDeleteDialog = null }, content = plugin.name) {
             dbm.pluginDao.delete(plugin)
             showDeleteDialog = null
         }
     }
+
 
     var showVarsSettings by remember { mutableStateOf<Plugin?>(null) }
     if (showVarsSettings != null) {
@@ -261,6 +237,11 @@ fun PluginManagerScreen(sharedVM: SharedViewModel, onFinishActivity: () -> Unit)
                         onEdit = { onEdit(item) },
                         onSetVars = { showVarsSettings = item },
                         onDelete = { showDeleteDialog = item },
+                        onClear = {
+
+                            PluginManager(item).clearCache()
+                            context.longToast(R.string.clear_cache_ok)
+                        },
                         onExport = { showExportConfig = listOf(item) }
                     )
                 }
@@ -279,6 +260,7 @@ private fun Item(
     iconUrl: String?,
     isEnabled: Boolean,
     onEnabledChange: (Boolean) -> Unit,
+    onClear: () -> Unit,
     onEdit: () -> Unit,
     onSetVars: () -> Unit,
     onExport: () -> Unit,
@@ -315,7 +297,6 @@ private fun Item(
                         modifier = Modifier.size(32.dp),
                         error = {
                             CenterTextImage(name.first().toString())
-
                         }
                     )
                 }
@@ -366,6 +347,8 @@ private fun Item(
                                     }
                                 )
 
+
+
                             DropdownMenuItem(
                                 text = { Text(stringResource(id = R.string.export_config)) },
                                 onClick = {
@@ -378,6 +361,17 @@ private fun Item(
                             )
 
                             HorizontalDivider()
+
+                            DropdownMenuItem(
+                                text = { Text(stringResource(R.string.clear_cache)) },
+                                onClick = {
+                                    showOptions = false
+                                    onClear()
+                                },
+                                leadingIcon = {
+                                    Icon(Icons.Default.CleaningServices, null)
+                                }
+                            )
 
                             DropdownMenuItem(
                                 text = {

@@ -184,7 +184,7 @@ internal fun ListManagerScreen(
     var deleteTts by remember { mutableStateOf<SystemTtsV2?>(null) }
     if (deleteTts != null) {
         ConfigDeleteDialog(
-            onDismissRequest = { deleteTts = null }, name = deleteTts?.displayName ?: ""
+            onDismissRequest = { deleteTts = null }, content = deleteTts?.displayName ?: ""
         ) {
             dbm.systemTtsV2.delete(deleteTts!!)
             deleteTts = null

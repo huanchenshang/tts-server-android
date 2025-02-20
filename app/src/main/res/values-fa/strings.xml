@@ -463,4 +463,6 @@
     <string name="config_load_error">加载配置失败：%1$s</string>
     <string name="male">男</string>
     <string name="female">女</string>
+    <string name="clear_cache_desc">当需要更新语音列表，可尝试清除插件缓存以从网络重新获取。</string>
+    <string name="clear_cache_ok">清除成功</string>
 </resources>

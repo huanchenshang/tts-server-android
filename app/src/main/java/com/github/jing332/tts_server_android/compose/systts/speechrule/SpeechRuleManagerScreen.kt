@@ -83,7 +83,7 @@ fun SpeechRuleManagerScreen(sharedVM: SharedViewModel, finish: () -> Unit) {
     if (showDeleteDialog != null)
         ConfigDeleteDialog(
             onDismissRequest = { showDeleteDialog = null },
-            name = showDeleteDialog!!.name
+            content = showDeleteDialog!!.name
         ) {
             dbm.speechRuleDao.delete(showDeleteDialog!!)
             showDeleteDialog = null

@@ -17,6 +17,7 @@ object AppConst {
     val fileProviderAuthor = BuildConfig.APPLICATION_ID + ".fileprovider"
     val localBroadcast by lazy { LocalBroadcastManager.getInstance(App.context) }
     val externalFilesDir by lazy { checkNotNull(App.context.getExternalFilesDir("")) { "getExternalFilesDir() == null" } }
+    val externalCacheDir by lazy { checkNotNull(App.context.externalCacheDir) { "externalCacheDir == null" } }
 
 
     var isSysTtsLogEnabled = true
@@ -63,6 +64,6 @@ object AppConst {
 
     data class AppInfo(
         var versionCode: Long = 0L,
-        var versionName: String = ""
+        var versionName: String = "",
     )
 }

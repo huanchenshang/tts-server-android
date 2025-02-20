@@ -89,7 +89,7 @@ fun GroupItem(
     var showDeleteDialog by remember { mutableStateOf(false) }
     if (showDeleteDialog)
         ConfigDeleteDialog(
-            onDismissRequest = { showDeleteDialog = false }, name = name, onConfirm = onDelete
+            onDismissRequest = { showDeleteDialog = false }, content = name, onConfirm = onDelete
         )
 
     Row(
