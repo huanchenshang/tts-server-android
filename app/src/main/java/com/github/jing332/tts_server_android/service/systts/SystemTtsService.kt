@@ -37,6 +37,7 @@ import com.github.jing332.tts.MixSynthesizer
 import com.github.jing332.tts.error.StreamProcessorError
 import com.github.jing332.tts.error.SynthesisError
 import com.github.jing332.tts.error.TextProcessorError
+import com.github.jing332.tts.synthesizer.RequestPayload
 import com.github.jing332.tts.synthesizer.Synthesizer
 import com.github.jing332.tts.synthesizer.SystemParams
 import com.github.jing332.tts.synthesizer.event.ErrorEvent
@@ -555,6 +556,10 @@ class SystemTtsService : TextToSpeechService(), IEventDispatcher {
         }
     }
 
+    private fun RequestPayload.text(): String {
+        return text.toHtmlBold() + "<br>" + config.source
+    }
+
     private fun normalEvent(e: NormalEvent) {
         when (e) {
             is NormalEvent.Request ->
@@ -564,7 +569,7 @@ class SystemTtsService : TextToSpeechService(), IEventDispatcher {
                     logI(
                         getString(
                             R.string.systts_log_request_audio,
-                            e.request.text.toHtmlBold() + "<br>" + e.request.config.source.voice
+                            e.request.text()
                         )
                     )
 
@@ -572,7 +577,7 @@ class SystemTtsService : TextToSpeechService(), IEventDispatcher {
             is NormalEvent.DirectPlay -> logI(
                 getString(
                     R.string.systts_log_direct_play,
-                    e.request.text.toHtmlBold()
+                    e.request.text()
                 )
             )
 
@@ -583,7 +588,7 @@ class SystemTtsService : TextToSpeechService(), IEventDispatcher {
                             R.string.systts_log_success,
                             e.size.sizeToReadable(),
                             "${e.costTime}ms"
-                        ) + "<br> ${e.request.text}"
+                        ) + "<br> ${e.request.text()}"
                     )
             }
 
@@ -591,13 +596,13 @@ class SystemTtsService : TextToSpeechService(), IEventDispatcher {
                 logI(
                     getString(
                         R.string.loading_audio_stream,
-                        e.request.params.text
+                        e.request.text()
                     )
                 )
 
             is NormalEvent.StandbyTts -> logI(
                 getString(
-                    R.string.use_standby_tts, e.request.config.source.voice
+                    R.string.use_standby_tts, e.request.text()
                 )
             )
 
@@ -634,21 +639,21 @@ class SystemTtsService : TextToSpeechService(), IEventDispatcher {
                     is StreamProcessorError.AudioDecoding -> logE(
                         getString(
                             R.string.audio_decoding_error,
-                            processor.error.toString()
+                            processor.error.toString() + "<br>" + e.request.text()
                         )
                     )
 
                     is StreamProcessorError.AudioSource -> logE(
                         getString(
                             R.string.audio_source_error,
-                            processor.error.toString()
+                            processor.error.toString() + "<br>" + e.request.text()
                         )
                     )
 
                     is StreamProcessorError.HandleError -> logE(
                         getString(
                             R.string.stream_handle_error,
-                            processor.error.toString()
+                            processor.error.toString() + "<br>" + e.request.text()
                         )
                     )
                 }
@@ -664,12 +669,12 @@ class SystemTtsService : TextToSpeechService(), IEventDispatcher {
 
     private fun handleTextProcessorError(err: TextProcessorError) {
         when (err) {
-            is TextProcessorError.HandleText -> logE("", err.error)
+            is TextProcessorError.HandleText -> logE(R.string.systts_log_text_handle_failed, err.error)
             is TextProcessorError.MissingConfig -> {
                 logE(getString(R.string.missing_config, err.type.toLocaleString()))
             }
 
-            is TextProcessorError.MissingRule -> logE(R.string.missing_speech_rule)
+            is TextProcessorError.MissingRule -> logE(getString(R.string.missing_speech_rule, err.id))
         }
     }
 
