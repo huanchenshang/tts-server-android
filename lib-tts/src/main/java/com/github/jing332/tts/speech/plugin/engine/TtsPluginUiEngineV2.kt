@@ -6,8 +6,10 @@ import com.github.jing332.common.utils.dp
 import com.github.jing332.database.entities.plugin.Plugin
 import com.github.jing332.script.toMap
 import io.github.oshai.kotlinlogging.KotlinLogging
+import org.mozilla.javascript.ScriptRuntime
 import org.mozilla.javascript.ScriptableObject
 import java.util.Locale
+import kotlin.to
 
 class TtsPluginUiEngineV2(context: Context, plugin: Plugin) : TtsPluginEngineV2(context, plugin) {
     companion object {
@@ -91,8 +93,8 @@ class TtsPluginUiEngineV2(context: Context, plugin: Plugin) : TtsPluginEngineV2(
         return engine.invokeMethod(editUiJsObject, FUNC_VOICES, locale).run {
             when (this) {
                 is ScriptableObject -> {
-                    toMap<CharSequence, Any>().map { (key, value) ->
-                        key.toString() to value
+                    toMap<Any, Any>().map { (key, value) ->
+                        ScriptRuntime.toString(key) to value
                     }.map { (key, value) ->
                         var icon: String? = null
                         var name: String = if (value is CharSequence) value.toString() else ""

@@ -135,11 +135,24 @@ fun AppSpinner(
         onSelectedChange.invoke(values[0], entries[0])
     }
 
+    val index = remember(value, values) { values.indexOf(value) }
+    val icon = remember(icons) { icons.getOrNull(index) }
+
+    // Non-null causes placeholder issues
+    @Composable
+    fun leading(): @Composable (() -> Unit)? {
+        return if (leadingIcon == null && icon != null) {
+            {
+                AsyncCircleImage(icon)
+            }
+        } else null
+    }
+
     if (maxDropDownCount > 0 && values.size > maxDropDownCount) {
         TextFieldSelectionDialog(
             modifier = modifier,
             label = label,
-            leadingIcon = leadingIcon,
+            leadingIcon = leading(),
             value = value,
             values = values,
             entries = entries,
@@ -152,7 +165,7 @@ fun AppSpinner(
         DropdownTextField(
             modifier = modifier,
             label = label,
-            leadingIcon = leadingIcon,
+            leadingIcon = leading(),
             value = value,
             values = values,
             entries = entries,
