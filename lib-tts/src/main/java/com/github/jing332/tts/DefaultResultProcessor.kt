@@ -53,7 +53,8 @@ internal class DefaultResultProcessor(
         tts: TtsConfiguration,
         onRead: (ByteBuffer) -> Unit,
     ) {
-        if (tts.audioFormat.isNeedDecode) {
+
+        if (tts.shouldDecode()) {
             mDecoder.callback = ExoAudioDecoder.Callback { byteBuffer ->
                 onRead(byteBuffer)
             }

@@ -11,7 +11,10 @@ import kotlinx.serialization.Serializable
 data class TtsConfigurationDTO(
     val speechRule: SpeechRuleInfo = SpeechRuleInfo(),
     val audioParams: AudioParams = AudioParams(),
-    val audioFormat: BaseAudioFormat = BaseAudioFormat(),
+    val audioFormat: BasicAudioFormat = BasicAudioFormat(),
     val source: TextToSpeechSource,
 ) : IConfiguration() {
+    fun isNeedDecode(): Boolean{
+        return source.shouldDecode(audioFormat)
+    }
 }

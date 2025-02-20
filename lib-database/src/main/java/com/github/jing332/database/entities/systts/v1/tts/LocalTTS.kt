@@ -2,7 +2,7 @@ package com.github.jing332.database.entities.systts.v1.tts
 
 import android.os.Parcelable
 import com.github.jing332.database.entities.systts.AudioParams
-import com.github.jing332.database.entities.systts.BaseAudioFormat
+import com.github.jing332.database.entities.systts.BasicAudioFormat
 import com.github.jing332.database.entities.systts.SpeechRuleInfo
 import com.github.jing332.database.entities.systts.source.LocalTtsParameter
 import kotlinx.parcelize.Parcelize
@@ -27,7 +27,7 @@ data class LocalTTS(
     override var rate: Int = 0,
 
     override var audioPlayer: PlayerParams = PlayerParams(),
-    override var audioFormat: BaseAudioFormat = BaseAudioFormat(isNeedDecode = true),
+    override var audioFormat: BasicAudioFormat = BasicAudioFormat(isNeedDecode = true),
     override var audioParams: AudioParams = AudioParams(),
     @Transient
     override var speechRule: SpeechRuleInfo = SpeechRuleInfo(),

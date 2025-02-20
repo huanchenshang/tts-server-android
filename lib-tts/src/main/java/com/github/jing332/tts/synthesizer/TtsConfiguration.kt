@@ -1,7 +1,7 @@
 package com.github.jing332.tts.synthesizer
 
 import com.github.jing332.database.entities.systts.AudioParams
-import com.github.jing332.database.entities.systts.BaseAudioFormat
+import com.github.jing332.database.entities.systts.BasicAudioFormat
 import com.github.jing332.database.entities.systts.SpeechRuleInfo
 import com.github.jing332.database.entities.systts.TtsConfigurationDTO
 import com.github.jing332.database.entities.systts.source.TextToSpeechSource
@@ -9,11 +9,15 @@ import com.github.jing332.database.entities.systts.source.TextToSpeechSource
 data class TtsConfiguration(
     val speechInfo: SpeechRuleInfo = SpeechRuleInfo(),
     val audioParams: AudioParams = AudioParams(),
-    val audioFormat: BaseAudioFormat = BaseAudioFormat(),
+    val audioFormat: BasicAudioFormat = BasicAudioFormat(),
     val source: TextToSpeechSource,
 
-    val standbyConfig: TtsConfiguration? = null
+    val standbyConfig: TtsConfiguration? = null,
 ) {
+    fun shouldDecode(): Boolean {
+        return source.shouldDecode(audioFormat)
+    }
+
     companion object {
         fun TtsConfigurationDTO.toVO(): TtsConfiguration {
             return TtsConfiguration(

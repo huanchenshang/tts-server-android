@@ -7,6 +7,7 @@ import androidx.media3.exoplayer.ExoPlaybackException
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
 import com.drake.net.Net
+import com.github.jing332.common.audio.AudioUtils
 import com.github.jing332.common.audio.exo.ExoAudioDecoder
 import kotlinx.coroutines.runBlocking
 import okhttp3.Response
@@ -44,27 +45,6 @@ class AudioDecoderTest {
 
     }
 
-    fun createAudioTrack(
-        sampleRate: Int = 16000,
-        channel: Int = AudioFormat.CHANNEL_OUT_STEREO,
-    ): AudioTrack {
-        val mSampleRate = if (sampleRate == 0) 16000 else sampleRate
-
-        val bufferSize = AudioTrack.getMinBufferSize(
-            mSampleRate,
-            AudioFormat.CHANNEL_OUT_MONO,
-            channel
-        )
-        return AudioTrack(
-            AudioManager.STREAM_MUSIC,
-            mSampleRate,
-            channel,
-            AudioFormat.ENCODING_PCM_16BIT,
-            bufferSize,
-            AudioTrack.MODE_STREAM
-        )
-    }
-
     private fun ByteBuffer.toBytes(): ByteArray {
         val bytes = ByteArray(remaining())
         this.get(bytes)
@@ -79,7 +59,7 @@ class AudioDecoderTest {
         val bytes = resp.body!!.byteStream()
 
 
-        val audioPlayer = createAudioTrack(44100)
+        val audioPlayer = AudioUtils.createAudioTrack(44100)
         audioPlayer.play()
 
         val context = InstrumentationRegistry.getInstrumentation().targetContext

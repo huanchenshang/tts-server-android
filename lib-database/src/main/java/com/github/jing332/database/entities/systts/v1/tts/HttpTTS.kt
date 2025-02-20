@@ -2,7 +2,7 @@ package com.github.jing332.database.entities.systts.v1.tts
 
 import android.os.Parcelable
 import com.github.jing332.database.entities.systts.AudioParams
-import com.github.jing332.database.entities.systts.BaseAudioFormat
+import com.github.jing332.database.entities.systts.BasicAudioFormat
 import com.github.jing332.database.entities.systts.SpeechRuleInfo
 import kotlinx.parcelize.IgnoredOnParcel
 import kotlinx.parcelize.Parcelize
@@ -22,7 +22,7 @@ data class HttpTTS(
     override var volume: Int = 1,
     override var rate: Int = 1,
 
-    override var audioFormat: com.github.jing332.database.entities.systts.BaseAudioFormat = BaseAudioFormat(),
+    override var audioFormat: com.github.jing332.database.entities.systts.BasicAudioFormat = BasicAudioFormat(),
     override var audioPlayer: PlayerParams = PlayerParams(),
     override var audioParams: AudioParams = AudioParams(),
     @Transient

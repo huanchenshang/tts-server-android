@@ -1,7 +1,7 @@
 package com.github.jing332.database.entities.systts.v1.tts
 
 import com.github.jing332.database.entities.systts.AudioParams
-import com.github.jing332.database.entities.systts.BaseAudioFormat
+import com.github.jing332.database.entities.systts.BasicAudioFormat
 import com.github.jing332.database.entities.systts.SpeechRuleInfo
 import kotlinx.parcelize.IgnoredOnParcel
 import kotlinx.parcelize.Parcelize
@@ -19,7 +19,7 @@ data class BgmTTS(
     override var pitch: Int = 0,
     override var volume: Int = 0,
     override var rate: Int = 0,
-    override var audioFormat: com.github.jing332.database.entities.systts.BaseAudioFormat = BaseAudioFormat(),
+    override var audioFormat: com.github.jing332.database.entities.systts.BasicAudioFormat = BasicAudioFormat(),
     override var audioPlayer: PlayerParams = PlayerParams(),
 
     @Transient

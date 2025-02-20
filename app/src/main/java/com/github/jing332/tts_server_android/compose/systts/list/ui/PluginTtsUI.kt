@@ -30,7 +30,7 @@ import com.github.jing332.compose.widgets.LabelSlider
 import com.github.jing332.compose.widgets.LoadingContent
 import com.github.jing332.compose.widgets.LoadingDialog
 import com.github.jing332.database.entities.plugin.Plugin
-import com.github.jing332.database.entities.systts.BaseAudioFormat
+import com.github.jing332.database.entities.systts.BasicAudioFormat
 import com.github.jing332.database.entities.systts.SystemTtsV2
 import com.github.jing332.database.entities.systts.TtsConfigurationDTO
 import com.github.jing332.database.entities.systts.source.PluginTtsSource
@@ -177,7 +177,7 @@ class PluginTtsUI : IConfigUI() {
                     systts.copy(
                         displayName = if (systts.displayName.isNullOrBlank()) displayName else systts.displayName,
                         config = (systts.config as TtsConfigurationDTO).copy(
-                            audioFormat = BaseAudioFormat(
+                            audioFormat = BasicAudioFormat(
                                 sampleRate = sampleRate,
                                 isNeedDecode = isNeedDecode
                             )

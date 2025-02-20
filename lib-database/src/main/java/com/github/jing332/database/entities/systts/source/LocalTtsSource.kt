@@ -1,5 +1,6 @@
 package com.github.jing332.database.entities.systts.source
 
+import com.github.jing332.database.entities.systts.BasicAudioFormat
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
@@ -15,7 +16,7 @@ data class LocalTtsSource(
     val volume: Float = VOLUME_FOLLOW,
 
     val extraParams: MutableList<LocalTtsParameter>? = null,
-    val isDirectPlayMode: Boolean = true
+    val isDirectPlayMode: Boolean = true,
 ) : TextToSpeechSource() {
     companion object {
         const val SPEED_FOLLOW = 0f
@@ -26,4 +27,10 @@ data class LocalTtsSource(
     override fun getKey(): String = engine
 
     override fun isSyncPlayMode(): Boolean = isDirectPlayMode
+    override fun shouldDecode(format: BasicAudioFormat): Boolean {
+        return if (!isDirectPlayMode)
+            false
+        else
+            super.shouldDecode(format)
+    }
 }

@@ -4,7 +4,6 @@ package com.github.jing332.tts_server_android.compose.systts.list.ui
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
@@ -47,8 +46,8 @@ import com.github.jing332.database.entities.systts.TtsConfigurationDTO
 import com.github.jing332.database.entities.systts.source.LocalTtsSource
 import com.github.jing332.tts_server_android.R
 import com.github.jing332.tts_server_android.compose.systts.AuditionDialog
-import com.github.jing332.tts_server_android.compose.systts.list.ui.widgets.BasicInfoEditScreen
 import com.github.jing332.tts_server_android.compose.systts.list.ui.widgets.AuditionTextField
+import com.github.jing332.tts_server_android.compose.systts.list.ui.widgets.BasicInfoEditScreen
 import com.github.jing332.tts_server_android.compose.systts.list.ui.widgets.SaveActionHandler
 import com.github.jing332.tts_server_android.compose.systts.list.ui.widgets.TtsTopAppBar
 import com.github.jing332.tts_server_android.ui.view.AppDialogs.displayErrorDialog
@@ -141,7 +140,7 @@ class LocalTtsUI() : IConfigUI() {
                                     config = config.copy(
                                         source = source.copy(
                                             isDirectPlayMode = !source.isDirectPlayMode
-                                        )
+                                        ),
                                     )
                                 )
                             )

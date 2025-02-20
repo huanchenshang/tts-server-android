@@ -2,7 +2,7 @@ package com.github.jing332.database.entities.systts.v1.tts
 
 import android.os.Parcelable
 import com.github.jing332.database.entities.systts.AudioParams
-import com.github.jing332.database.entities.systts.BaseAudioFormat
+import com.github.jing332.database.entities.systts.BasicAudioFormat
 import com.github.jing332.database.entities.systts.SpeechRuleInfo
 import kotlinx.parcelize.Parcelize
 import kotlinx.serialization.ExperimentalSerializationApi
@@ -28,7 +28,7 @@ sealed class ITextToSpeechEngine(
     abstract var locale: String
 
     abstract var speechRule: SpeechRuleInfo
-    abstract var audioFormat: BaseAudioFormat
+    abstract var audioFormat: BasicAudioFormat
     abstract var audioPlayer: PlayerParams
     abstract var audioParams: AudioParams
 
