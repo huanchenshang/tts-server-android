@@ -105,15 +105,12 @@ internal class DefaultResultProcessor(
             "req=${request.text}, sampleRate=${config.audioFormat.sampleRate}, targetSampleRate=${targetSampleRate}"
         }
 
-        val sonicEnabled =
-            config.audioParams.speed != 1f || config.audioParams.pitch != 1f
-                    || config.audioParams.volume != 1f && config.audioFormat.sampleRate != targetSampleRate
         try {
             val stream = getAudioStream(ins, request).onFailure { return Err(it) }.value
 
             val pipelines = listOf(
                 if (context.cfg.silenceSkipEnabled()) skipAudioProcessor else null,
-                if (sonicEnabled) sonicAudioProcessor else null
+                sonicAudioProcessor
             ).filterNotNull()
             val processor = AudioProcessingPipeline(ImmutableList.copyOf(pipelines))
 
@@ -125,14 +122,18 @@ internal class DefaultResultProcessor(
                         C.ENCODING_PCM_16BIT
                     )
                 )
-                if (sonicEnabled)
-                    sonicAudioProcessor.apply {
-                        speed = if (config.audioParams.speed <= 0f) 1f else config.audioParams.speed
-                        volume =
-                            if (config.audioParams.volume <= 0f) 1f else config.audioParams.volume
-                        pitch = if (config.audioParams.pitch <= 0f) 1f else config.audioParams.pitch
-                        rate = config.audioFormat.sampleRate.toFloat() / targetSampleRate.toFloat()
+
+                sonicAudioProcessor.apply {
+                    speed = if (config.audioParams.speed <= 0f) 1f else config.audioParams.speed
+                    volume =
+                        if (config.audioParams.volume <= 0f) 1f else config.audioParams.volume
+                    pitch = if (config.audioParams.pitch <= 0f) 1f else config.audioParams.pitch
+                    rate = config.audioFormat.sampleRate.toFloat() / targetSampleRate.toFloat()
+
+                    logger.debug {
+                        "sonicAudioProcessor: speed=${speed}, volume=${volume}, pitch=${pitch}, rate=${rate}"
                     }
+                }
 
                 processor.flush()
             }

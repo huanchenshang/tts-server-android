@@ -173,9 +173,8 @@ class SystemTtsService : TextToSpeechService(), IEventDispatcher {
 
 
     override fun onDestroy() {
-        super.onDestroy()
-
         logger.debug { "service destroy" }
+        super.onDestroy()
 
         mScope.launch {
             mTtsManager?.destroy()
@@ -264,7 +263,7 @@ class SystemTtsService : TextToSpeechService(), IEventDispatcher {
     }
 
     override fun onStop() {
-        logger.info { getString(R.string.cancel) }
+        logger.debug { getString(R.string.cancel) }
         synthesizerJob?.cancel()
         synthesizerJob = null
         updateNotification(getString(R.string.systts_state_idle), "")
@@ -301,7 +300,7 @@ class SystemTtsService : TextToSpeechService(), IEventDispatcher {
         updateNotification(getString(R.string.systts_state_synthesizing), text)
 
         if (text.isBlank()) {
-            logger.debug { "空文本请求，跳过" }
+            logger.debug { "Skip empty text request" }
             callback.start(16000, AudioFormat.ENCODING_PCM_16BIT, 1)
             callback.done()
         } else

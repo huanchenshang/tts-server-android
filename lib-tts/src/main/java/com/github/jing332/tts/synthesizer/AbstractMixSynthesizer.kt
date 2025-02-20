@@ -2,6 +2,7 @@ package com.github.jing332.tts.synthesizer
 
 import com.drake.net.utils.withMain
 import com.github.jing332.common.utils.StringUtils
+import com.github.jing332.common.utils.runOnUI
 import com.github.jing332.common.utils.toByteArray
 import com.github.jing332.tts.ConfigType
 import com.github.jing332.tts.SynthesizerContext
@@ -247,12 +248,12 @@ abstract class AbstractMixSynthesizer() : Synthesizer {
             )
         }
 
-        withMain { bgmPlayer.play() }
+        runOnUI { bgmPlayer.play() }
         try {
             executeSynthesis(params, callback, forceConfigId)
         } finally {
             logger.debug { "synthesize done" }
-            withMain { bgmPlayer.stop() }
+            runOnUI { bgmPlayer.stop() }
         }
     }
 
