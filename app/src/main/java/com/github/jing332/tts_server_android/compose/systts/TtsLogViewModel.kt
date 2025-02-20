@@ -68,14 +68,13 @@ class TtsLogViewModel : ViewModel() {
         }
     }
 
-    suspend fun add(line: String) {
+    fun add(line: String) {
         try {
             val logEntry = toLogEntry(line)
-            withMain {
-                if (logs.size > MAX_SIZE)
-                    logs.removeRange(0, 10)
-                logs.add(logEntry)
-            }
+            if (logs.size > MAX_SIZE)
+                logs.removeRange(0, 10)
+            logs.add(logEntry)
+
         } catch (e: Exception) {
         }
     }
@@ -83,7 +82,11 @@ class TtsLogViewModel : ViewModel() {
     @Suppress("DEPRECATION")
     suspend fun pull() {
         runCatching {
-            file.readLines().takeLast(MAX_SIZE).forEach { add(it) }
+            file.readLines().takeLast(MAX_SIZE).apply {
+                withMain {
+                    forEach { add(it) }
+                }
+            }
         }.onFailure {
             logs.add(LogEntry(level = LogLevel.ERROR, message = it.stackTraceToString()))
         }

@@ -145,8 +145,8 @@ abstract class AbstractMixSynthesizer() : Synthesizer {
                 requestAndProcess(channel, params, config.standbyConfig, 0, maxRetries)
             } else {
                 val next = retries + 1
-                // 2^[next] * 800ms
-                val ms = Double.fromBits(2).pow(next.coerceAtMost(5)) * 800
+                // 2^[next] * 500ms
+                val ms = Math.pow(2.toDouble(), next.coerceAtMost(5).toDouble()) * 500
                 delay(ms.toLong())
                 requestAndProcess(channel, params, config, next, maxRetries)
             }

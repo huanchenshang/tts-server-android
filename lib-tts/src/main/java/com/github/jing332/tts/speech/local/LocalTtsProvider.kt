@@ -44,6 +44,8 @@ class LocalTtsProvider(
             extraParams = source.extraParams ?: emptyList(),
             init(source, params)
         ).onFailure {
+            onDestroy()
+            onInit()
             throw EngineException(it.toString())
         }.value
     }
@@ -55,7 +57,10 @@ class LocalTtsProvider(
             voice = source.voice,
             extraParams = source.extraParams ?: emptyList(),
             params = init(source, params)
-        )
+        ).onFailure {
+            onDestroy()
+            onInit()
+        }
     }
 
     override var state: EngineState = EngineState.Uninitialized()
