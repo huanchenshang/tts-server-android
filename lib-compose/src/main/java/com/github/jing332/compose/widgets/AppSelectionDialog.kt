@@ -14,7 +14,6 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.text.selection.SelectionContainer
@@ -51,7 +50,6 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
-import coil3.compose.AsyncImage
 import com.github.jing332.common.utils.toast
 import com.github.jing332.compose.ComposeExtensions.clickableRipple
 import com.github.jing332.compose.R
@@ -73,9 +71,8 @@ fun AppSelectionDialog(
         val clip = LocalClipboardManager.current
         val context = LocalContext.current
         if (icon != null)
-            AsyncImage(
+            AsyncCircleImage(
                 modifier = Modifier
-                    .clip(CircleShape)
                     .size(32.dp)
                     .clickableRipple(onLongClick = {
                         if (icon is CharSequence) {

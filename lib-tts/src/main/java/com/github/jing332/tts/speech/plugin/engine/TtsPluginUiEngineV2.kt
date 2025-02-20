@@ -1,8 +1,10 @@
 package com.github.jing332.tts.speech.plugin.engine
 
+import android.R.attr.country
 import android.content.Context
 import android.widget.LinearLayout
 import com.github.jing332.common.utils.dp
+import com.github.jing332.common.utils.toCountryFlagEmoji
 import com.github.jing332.database.entities.plugin.Plugin
 import com.github.jing332.script.toMap
 import io.github.oshai.kotlinlogging.KotlinLogging
@@ -73,9 +75,9 @@ class TtsPluginUiEngineV2(context: Context, plugin: Plugin) : TtsPluginEngineV2(
         return engine.invokeMethod(editUiJsObject, FUNC_LOCALES).run {
             when (this) {
                 is List<*> -> this.associate {
-                    it.toString() to Locale.forLanguageTag(it.toString()).run {
-                        this.getDisplayName(this)
-                    }
+                    val locale = Locale.forLanguageTag(it.toString())
+                    val displayName = locale.country.toCountryFlagEmoji() + " " + locale.displayName
+                    it.toString() to displayName
                 }
 
                 is Map<*, *> -> {

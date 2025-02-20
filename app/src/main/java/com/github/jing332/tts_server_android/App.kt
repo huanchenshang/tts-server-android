@@ -6,6 +6,7 @@ import android.content.Context
 import android.content.Intent
 import android.os.Process
 import androidx.core.content.ContextCompat
+import androidx.core.content.ContextCompat.startActivity
 import androidx.core.graphics.drawable.toBitmap
 import coil3.ImageLoader
 import coil3.SingletonImageLoader
@@ -15,7 +16,9 @@ import coil3.intercept.Interceptor
 import coil3.request.ImageResult
 import coil3.request.SuccessResult
 import coil3.request.crossfade
+import com.github.jing332.compose.widgets.AsyncCircleImageSettings
 import com.github.jing332.database.entities.systts.SystemTtsV2
+import com.github.jing332.tts_server_android.App.Companion.context
 import com.github.jing332.tts_server_android.constant.AppConst
 import com.github.jing332.tts_server_android.model.hanlp.HanlpManager
 import kotlinx.coroutines.DelicateCoroutinesApi
@@ -49,32 +52,13 @@ class App : Application() {
 
         SystemTtsV2.Converters.json = AppConst.jsonBuilder
 
+        AsyncCircleImageSettings.interceptor = AsyncImageInterceptor
+
         SingletonImageLoader.setUnsafe(
-            ImageLoader.Builder(context).components {
-                add(object : Interceptor {
-                    override suspend fun intercept(chain: Interceptor.Chain): ImageResult {
-                        val data = chain.request.data
-                        if (data is CharSequence) {
-                            val drawId = when (data.toString().lowercase()) {
-                                "male" -> R.drawable.male
-                                "female" -> R.drawable.female
-                                else -> null
-                            }
-
-                            val bitmap = drawId?.run {
-                                ContextCompat.getDrawable(chain.request.context, this)?.toBitmap()
-                            }
-
-                            if (bitmap != null)
-                                return SuccessResult(bitmap.asImage(), chain.request)
-                        }
-
-                        return chain.proceed()
-                    }
-
-                })
-
-            }.crossfade(true).build()
+            ImageLoader
+                .Builder(context)
+                .crossfade(true)
+                .build()
         )
 
         GlobalScope.launch {

@@ -82,7 +82,6 @@ class PluginTtsViewModel(app: Application) : AndroidViewModel(app) {
 
     private suspend fun updateLocales() {
         val list = engine.getLocales().toList()
-        logger.debug { "updateLocales: ${locales.joinToString { it.first + " - " + it.second }}" }
         withMain {
             locales.clear()
             locales.addAll(list)

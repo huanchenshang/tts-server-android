@@ -122,6 +122,22 @@ fun String.firstCharUpperCase(): String {
     return replaceFirstChar { if (it.isLowerCase()) it.titlecase(Locale.getDefault()) else it.toString() }
 }
 
+/**
+ *  Input 3166 alpha-2 [Locale.getCountry]
+ */
+fun String.toCountryFlagEmoji(): String {
+    if (this.length != 2) {
+        return this
+    }
+    if (!this[0].isLetter() || !this[1].isLetter()) {
+        return this
+    }
+    val firstLetter = Character.codePointAt(this.uppercase(), 0) - 0x41 + 0x1F1E6
+    val secondLetter = Character.codePointAt(this.uppercase(), 1) - 0x41 + 0x1F1E6
+    return String(Character.toChars(firstLetter)) + String(Character.toChars(secondLetter))
+}
+
+
 fun Int.sizeToReadable(locale: Locale = Locale.getDefault()): String =
     this.toLong().sizeToReadable(locale)
 
