@@ -15,11 +15,6 @@ class LocalTtsViewModel : ViewModel() {
     val locales = mutableStateListOf<Locale>()
     val voices = mutableStateListOf<Voice>()
 
-    fun init() {
-        engines.clear()
-        engines.addAll(LocalTtsEngine.getEngines())
-    }
-
     suspend fun setEngine(engine: String) {
         val ok = this.engine.setEngine(engine)
         if (!ok) return

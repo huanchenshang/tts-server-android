@@ -45,6 +45,7 @@ import com.github.jing332.compose.widgets.LoadingContent
 import com.github.jing332.database.entities.systts.SystemTtsV2
 import com.github.jing332.database.entities.systts.TtsConfigurationDTO
 import com.github.jing332.database.entities.systts.source.LocalTtsSource
+import com.github.jing332.tts_server_android.PackageDrawable
 import com.github.jing332.tts_server_android.R
 import com.github.jing332.tts_server_android.compose.systts.AuditionDialog
 import com.github.jing332.tts_server_android.compose.systts.list.ui.widgets.AuditionTextField
@@ -258,6 +259,7 @@ class LocalTtsUI() : IConfigUI() {
                             value = source.engine,
                             values = vm.engines.map { it.name },
                             entries = vm.engines.map { it.label },
+                            icons = vm.engines.map { PackageDrawable(it.name, it.icon)},
                             onSelectedChange = { k, name ->
                                 onSysttsChange(systts.copySource(source.copy(engine = k as String)))
                                 displayName = name
@@ -287,6 +289,7 @@ class LocalTtsUI() : IConfigUI() {
                                     if (it.features == null || it.features.isEmpty()) "" else it.features.toString()
                                 "${it.name} $featureStr"
                             },
+
                             onSelectedChange = { k, _ ->
                                 onSysttsChange(systts.copySource(source.copy(voice = k as String)))
                             }
