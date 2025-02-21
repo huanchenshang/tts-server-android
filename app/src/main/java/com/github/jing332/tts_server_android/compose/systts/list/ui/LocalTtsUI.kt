@@ -36,6 +36,7 @@ import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.drake.net.utils.withIO
+import com.github.jing332.common.utils.toCountryFlagEmoji
 import com.github.jing332.common.utils.toScale
 import com.github.jing332.compose.widgets.AppSpinner
 import com.github.jing332.compose.widgets.DenseOutlinedField
@@ -58,7 +59,7 @@ class LocalTtsUI() : IConfigUI() {
     override fun ParamsEditScreen(
         modifier: Modifier,
         systemTts: SystemTtsV2,
-        onSystemTtsChange: (SystemTtsV2) -> Unit
+        onSystemTtsChange: (SystemTtsV2) -> Unit,
     ) {
         val config = systemTts.config as TtsConfigurationDTO
         val source = config.source as LocalTtsSource
@@ -166,7 +167,7 @@ class LocalTtsUI() : IConfigUI() {
         systemTts: SystemTtsV2,
         onSystemTtsChange: (SystemTtsV2) -> Unit,
         onSave: () -> Unit,
-        onCancel: () -> Unit
+        onCancel: () -> Unit,
     ) {
         val scope = rememberCoroutineScope()
         Scaffold(
@@ -195,7 +196,7 @@ class LocalTtsUI() : IConfigUI() {
         modifier: Modifier,
         systts: SystemTtsV2,
         onSysttsChange: (SystemTtsV2) -> Unit,
-        vm: LocalTtsViewModel = viewModel()
+        vm: LocalTtsViewModel = viewModel(),
     ) {
         var displayName by remember { mutableStateOf("") }
         val systts by rememberUpdatedState(newValue = systts)
@@ -268,7 +269,7 @@ class LocalTtsUI() : IConfigUI() {
                             label = { Text(stringResource(id = R.string.label_language)) },
                             value = source.locale,
                             values = vm.locales.map { it.toLanguageTag() },
-                            entries = vm.locales.map { it.displayName },
+                            entries =  vm.locales.map { it.country.toCountryFlagEmoji() + " " + it.displayName },
                             onSelectedChange = { loc, _ ->
                                 onSysttsChange(systts.copySource(source.copy(locale = loc as String)))
 
