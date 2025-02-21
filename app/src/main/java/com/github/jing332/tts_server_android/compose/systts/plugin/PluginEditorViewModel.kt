@@ -102,8 +102,8 @@ class PluginEditorViewModel(app: Application) : AndroidViewModel(app) {
                 engine.onLoad()
                 val stream = engine.getAudio(
                     text = PluginConfig.textParam.value,
-                    locale = pluginSource.voice,
-                    voice = pluginSource.locale
+                    locale = pluginSource.locale,
+                    voice = pluginSource.voice
                 )
 
                 val bytes = stream.readBytes()
