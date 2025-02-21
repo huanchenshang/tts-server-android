@@ -20,6 +20,7 @@ import android.speech.tts.TextToSpeechService
 import android.speech.tts.Voice
 import android.util.Log
 import androidx.annotation.StringRes
+import androidx.core.app.NotificationManagerCompat
 import androidx.core.content.ContextCompat
 import com.github.jing332.common.utils.longToast
 import com.github.jing332.common.utils.registerGlobalReceiver
@@ -55,6 +56,7 @@ import com.github.michaelbull.result.Ok
 import com.github.michaelbull.result.Result
 import com.github.michaelbull.result.onFailure
 import com.github.michaelbull.result.onSuccess
+import com.github.michaelbull.result.runCatching
 import io.github.oshai.kotlinlogging.KotlinLogging
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
@@ -429,7 +431,14 @@ class SystemTtsService : TextToSpeechService(), IEventDispatcher {
                     getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
                 mNotificationManager.createNotificationChannel(chan)
             }
-            startForegroundCompat(SystemNotificationConst.ID_SYSTEM_TTS, getNotification())
+            val notifi = getNotification()
+            runCatching {
+                startForegroundCompat(SystemNotificationConst.ID_SYSTEM_TTS, notifi)
+            }.onFailure {
+                NotificationManagerCompat.from(this)
+                    .notify(SystemNotificationConst.ID_SYSTEM_TTS, notifi)
+            }
+
             mNotificationDisplayed = true
         }
     }
@@ -670,14 +679,23 @@ class SystemTtsService : TextToSpeechService(), IEventDispatcher {
 
     private fun handleTextProcessorError(err: TextProcessorError) {
         when (err) {
-            is TextProcessorError.HandleText -> logE(R.string.systts_log_text_handle_failed, err.error)
+            is TextProcessorError.HandleText -> logE(
+                R.string.systts_log_text_handle_failed,
+                err.error
+            )
+
             is TextProcessorError.MissingConfig -> {
-                val str = getString(R.string.missing_config,err.type.toLocaleString() )
+                val str = getString(R.string.missing_config, err.type.toLocaleString())
                 longToast(str)
                 logE(str)
             }
 
-            is TextProcessorError.MissingRule -> logE(getString(R.string.missing_speech_rule, err.id))
+            is TextProcessorError.MissingRule -> logE(
+                getString(
+                    R.string.missing_speech_rule,
+                    err.id
+                )
+            )
         }
     }
 
