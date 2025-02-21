@@ -8,6 +8,7 @@ import com.github.jing332.tts.speech.local.AndroidTtsEngine
 import com.github.michaelbull.result.onFailure
 import com.github.michaelbull.result.onSuccess
 import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.withTimeout
 import org.junit.Test
 import org.junit.runner.RunWith
 
@@ -16,6 +17,7 @@ class AndroidTtsEngineTest {
     private suspend fun engine(): AndroidTtsEngine {
         val context = InstrumentationRegistry.getInstrumentation().targetContext
         val engine = AndroidTtsEngine(context)
+//        engine.init("org.nobody.multitts")
         engine.init("com.google.android.tts")
         return engine
     }
@@ -29,13 +31,31 @@ class AndroidTtsEngineTest {
     }
 
     @Test
+    fun getFile() {
+        runBlocking {
+            val context = InstrumentationRegistry.getInstrumentation().targetContext
+            val player = ExoAudioPlayer(context)
+
+            val engine = engine()
+            engine.getFile("Hello 你好").onFailure {
+                throw RuntimeException("Engine failed")
+            }.onSuccess {
+                println(it.absolutePath)
+                player.play(it.inputStream())
+            }
+        }
+    }
+
+    @Test
     fun getStream() {
         runBlocking {
             val context = InstrumentationRegistry.getInstrumentation().targetContext
             val player = ExoAudioPlayer(context)
             val engine = engine()
-            engine.getStream(text = "Hello 你好").onSuccess {
-                player.play(it.readBytes())
+            withTimeout(2000) {
+                engine.getStream(text = "Hello 你好").onSuccess {
+                    player.play(it.readBytes())
+                }
             }
             player.release()
         }

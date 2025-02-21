@@ -3,26 +3,27 @@
 package com.github.jing332.tts_server_android.service.forwarder.system
 
 import android.speech.tts.TextToSpeech
+import com.github.jing332.database.entities.systts.AudioParams
 import com.github.jing332.database.entities.systts.source.LocalTtsSource
 import com.github.jing332.server.forwarder.Engine
 import com.github.jing332.server.forwarder.SystemTtsForwardServer
 import com.github.jing332.server.forwarder.TtsParams
 import com.github.jing332.server.forwarder.Voice
 import com.github.jing332.tts.CachedEngineManager
-import com.github.jing332.tts.synthesizer.SystemParams
-import com.github.jing332.tts.speech.EngineState
+import com.github.jing332.tts.speech.local.AndroidTtsEngine
 import com.github.jing332.tts.speech.local.LocalTtsProvider
 import com.github.jing332.tts_server_android.App
 import com.github.jing332.tts_server_android.R
 import com.github.jing332.tts_server_android.conf.SystemTtsForwarderConfig
 import com.github.jing332.tts_server_android.help.LocalTtsEngineHelper
 import com.github.jing332.tts_server_android.service.forwarder.AbsForwarderService
-import kotlinx.coroutines.runBlocking
-import java.io.OutputStream
+import com.github.michaelbull.result.onFailure
+import io.github.oshai.kotlinlogging.KotlinLogging
+import java.io.File
 
 class SysTtsForwarderService(
     override val port: Int = SystemTtsForwarderConfig.port.value,
-    override val isWakeLockEnabled: Boolean = SystemTtsForwarderConfig.isWakeLockEnabled.value
+    override val isWakeLockEnabled: Boolean = SystemTtsForwarderConfig.isWakeLockEnabled.value,
 ) :
     AbsForwarderService(
         "SysTtsForwarderService",
@@ -41,6 +42,9 @@ class SysTtsForwarderService(
         const val ACTION_ON_STARTING = "ACTION_ON_STARTING"
         const val ACTION_ON_LOG = "ACTION_ON_LOG"
 
+        private val logger = KotlinLogging.logger(TAG)
+
+
         val isRunning: Boolean
             get() = instance?.isRunning == true
 
@@ -50,6 +54,7 @@ class SysTtsForwarderService(
     private var mServer: SystemTtsForwardServer? = null
     private var mLocalTTS: LocalTtsProvider? = null
     private val mLocalTtsHelper by lazy { LocalTtsEngineHelper(this) }
+    private val androidTts by lazy { AndroidTtsEngine(this) }
 
     override fun onCreate() {
         super.onCreate()
@@ -72,32 +77,24 @@ class SysTtsForwarderService(
             override fun log(level: Int, message: String) {
                 sendLog(level, message)
             }
-            override suspend fun tts(output: OutputStream, params: TtsParams) {
-                val source = LocalTtsSource(
-                    engine = params.engine,
-                    voice = params.voice,
+
+            override suspend fun tts(params: TtsParams): File? {
+                val speed = (params.speed + 100) / 100f
+                val pitch = params.pitch / 100f
+
+                logger.debug { "android tts init: $params" }
+                androidTts.init(params.engine)
+
+                logger.debug { "android tts get file..." }
+                val file = androidTts.getFile(
+                    params.text,
+                    params.voice,
+                    params = AudioParams(speed = speed, pitch = pitch)
                 )
-                val e: LocalTtsProvider =
-                    CachedEngineManager.getEngine(this@SysTtsForwarderService, source)
-                            as? LocalTtsProvider
-                        ?: throw IllegalArgumentException("Engine not found: ${params.engine}")
-                if (e.state is EngineState.Uninitialized)
-                    runBlocking { e.onInit() }
 
-                val stream = runBlocking {
-                    e.getStream(
-                        source = source,
-                        params = SystemParams(
-                            text = params.text,
-                            speed = (params.speed + 100) / 100f,
-                            pitch = params.pitch / 100f
-                        )
-                    )
-                }
-
-                stream.use {
-                    it.copyTo(output)
-                }
+                return file.onFailure {
+                    return null
+                }.value
             }
 
             override suspend fun voices(engine: String): List<Voice> {

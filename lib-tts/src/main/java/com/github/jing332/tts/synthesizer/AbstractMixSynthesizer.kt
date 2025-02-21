@@ -237,6 +237,8 @@ abstract class AbstractMixSynthesizer() : Synthesizer {
         get() = mutex.isLocked
 
 
+    private var initError: SynthesisError? = null
+
     override suspend fun synthesize(
         params: SystemParams, forceConfigId: Long?, callback: SynthesisCallback,
     ): Result<Unit, SynthesisError> = mutex.withLock {
@@ -246,6 +248,10 @@ abstract class AbstractMixSynthesizer() : Synthesizer {
                 "forceConfigId" to forceConfigId,
                 "params" to params,
             )
+        }
+
+        initError?.let {
+            return@withLock Err(it)
         }
 
         runOnUI { bgmPlayer.play() }

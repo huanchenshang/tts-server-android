@@ -114,6 +114,67 @@ class AndroidTtsEngine(
 
     private val mutex = Mutex()
 
+    /**
+     * Generate a wav file for the given text.
+     */
+    suspend fun getFile(
+        text: String,
+        locale: String = "",
+        voice: String = "",
+        extraParams: List<LocalTtsParameter> = emptyList(),
+        params: AudioParams = AudioParams(),
+    ): Result<File, TtsEngineError> = mutex.withLock {
+        val tts = mTts ?: return@withLock Err(TtsEngineError.Initialization)
+        coroutineScope {
+            val filename = System.currentTimeMillis().toString() + ".wav"
+            val file = File(cacheDir, filename)
+            if (file.parentFile?.exists() != true && file.parentFile?.mkdirs() != true)
+                return@coroutineScope Err(TtsEngineError.File)
+
+            fun delete() {
+                try {
+                    file.delete()
+                } catch (_: Exception) {
+                }
+            }
+
+            val bundle = setEnginePlayParams(tts, locale, voice, extraParams, params)
+            val ret = tts.synthesizeToFile(text, bundle, file, filename)
+            if (ret != TextToSpeech.SUCCESS) {
+                delete()
+                return@coroutineScope Err(TtsEngineError.Engine)
+            }
+
+            // 使用 suspendCancellableCoroutine 等待合成完成
+            suspendCancellableCoroutine<Result<File, TtsEngineError>> { continuation ->
+                tts.setOnUtteranceProgressListener(object : UtteranceProgressListener() {
+                    override fun onStart(utteranceId: String?) {
+                    }
+
+                    override fun onDone(utteranceId: String?) {
+                        continuation.resume(Ok(file))
+                    }
+
+                    override fun onError(utteranceId: String?) {
+                        // 合成出错，删除文件并返回错误
+                        delete()
+                        continuation.resume(Err(TtsEngineError.Engine)) // 可以考虑更具体的错误
+                    }
+
+                })
+
+                continuation.invokeOnCancellation {
+                    delete()
+                    mTts?.stop()
+                }
+            }
+        }
+    }
+
+
+    /**
+     * Generate a pcm audio stream for the given text.
+     */
     suspend fun getStream(
         text: String,
         locale: String = "",
@@ -171,6 +232,7 @@ class AndroidTtsEngine(
 
                 continuation.invokeOnCancellation {
                     delete()
+                    pos.close()
                     mTts?.stop()
                 }
             }

@@ -14,7 +14,6 @@ import okhttp3.Response
 import org.junit.Assert.assertEquals
 import org.junit.Test
 import org.junit.runner.RunWith
-import java.io.OutputStream
 
 /**
  * Instrumented test, which will execute on an Android device.
@@ -33,7 +32,7 @@ class ServerTest {
     @Test
     fun forwarder() {
         val server = SystemTtsForwardServer(1233, object : SystemTtsForwardServer.Callback {
-            override suspend fun tts(output: OutputStream, params: TtsParams) {
+            override suspend fun tts(output: TtsParams, params: TtsParams) {
                 val resp: Response =
                     Net.get("https://download.samplelib.com/wav/sample-3s.wav").execute()
                 resp.body!!.byteStream().use { it.copyTo(output) }

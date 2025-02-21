@@ -9,6 +9,7 @@ import io.ktor.http.HttpStatusCode
 import io.ktor.http.decodeURLQueryComponent
 import io.ktor.server.application.ApplicationCallPipeline
 import io.ktor.server.application.call
+import io.ktor.server.application.log
 import io.ktor.server.engine.embeddedServer
 import io.ktor.server.http.content.staticResources
 import io.ktor.server.netty.Netty
@@ -23,7 +24,7 @@ import io.ktor.server.routing.get
 import io.ktor.server.routing.post
 import io.ktor.server.routing.routing
 import io.ktor.server.util.getOrFail
-import java.io.OutputStream
+import java.io.File
 
 class SystemTtsForwardServer(val port: Int, val callback: Callback) : Server {
     private val ktor by lazy {
@@ -46,8 +47,23 @@ class SystemTtsForwardServer(val port: Int, val callback: Callback) : Server {
                 suspend fun RoutingContext.handleTts(
                     params: TtsParams,
                 ) {
-                    call.respondOutputStream(ContentType.parse("audio/x-wav"), status = HttpStatusCode.OK) {
-                        callback.tts(output = this, params)
+                    val file = callback.tts(params)
+                    if (file == null) {
+                        call.application.log.error("[InternalServerError] Android TTS Engine Error")
+                        call.respond(HttpStatusCode.InternalServerError, "Android TTS Engine Error")
+                    } else {
+                        call.application.log.info("[OK] Android TTS Engine OK")
+
+                        call.respondOutputStream(
+                            ContentType.parse("audio/x-wav"),
+                            HttpStatusCode.OK,
+                            contentLength = file.length()
+                        ) {
+                            file.inputStream().use {
+                                it.copyTo(this)
+                            }
+                            file.delete()
+                        }
                     }
                 }
 
@@ -102,9 +118,8 @@ class SystemTtsForwardServer(val port: Int, val callback: Callback) : Server {
 
     interface Callback : BaseCallback {
         suspend fun tts(
-            output: OutputStream,
             params: TtsParams,
-        )
+        ): File?
 
         suspend fun voices(engine: String): List<Voice>
         suspend fun engines(): List<Engine>

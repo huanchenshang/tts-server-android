@@ -288,6 +288,7 @@ class SystemTtsService : TextToSpeechService(), IEventDispatcher {
         return Ok(null)
     }
 
+    @Synchronized
     override fun onSynthesizeText(
         request: SynthesisRequest,
         callback: android.speech.tts.SynthesisCallback,
@@ -312,7 +313,7 @@ class SystemTtsService : TextToSpeechService(), IEventDispatcher {
                     return@runBlocking
                 }.value
                 synthesizerJob = mScope.launch {
-                    mTtsManager!!.synthesize(
+                    mTtsManager?.synthesize(
                         params = SystemParams(text = request.charSequenceText.toString()),
                         forceConfigId = cfgId,
                         callback = object :
@@ -330,10 +331,10 @@ class SystemTtsService : TextToSpeechService(), IEventDispatcher {
                             }
 
                         }
-                    ).onSuccess {
+                    )?.onSuccess {
                         logger.debug { "done" }
                         callback.done()
-                    }.onFailure {
+                    }?.onFailure {
                         logE("error: $it")
                         when (it) {
                             SynthesisError.ConfigEmpty -> {
@@ -345,7 +346,7 @@ class SystemTtsService : TextToSpeechService(), IEventDispatcher {
                                 callback.error(TextToSpeech.ERROR_INVALID_REQUEST)
                             }
                         }
-                    }
+                    } ?: callback.error(TextToSpeech.ERROR_SYNTHESIS)
                 }
                 synthesizerJob?.join()
             }
