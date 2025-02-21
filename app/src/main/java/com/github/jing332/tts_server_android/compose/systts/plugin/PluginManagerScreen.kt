@@ -289,17 +289,7 @@ private fun Item(
                     }
                 )
 
-                Box {
-                    SubcomposeAsyncImage(
-                        iconUrl,
-                        null,
-                        contentScale = ContentScale.Crop,
-                        modifier = Modifier.size(32.dp),
-                        error = {
-                            CenterTextImage(name.first().toString())
-                        }
-                    )
-                }
+                PluginImage(model = iconUrl, name = name)
 
                 Column(
                     Modifier

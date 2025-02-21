@@ -65,6 +65,7 @@ import com.github.jing332.tts_server_android.compose.systts.ConfigExportBottomSh
 import com.github.jing332.tts_server_android.compose.systts.list.ui.ItemDescriptorFactory
 import com.github.jing332.tts_server_android.compose.systts.list.ui.widgets.QuickEditBottomSheet
 import com.github.jing332.tts_server_android.compose.systts.list.ui.widgets.TagDataClearConfirmDialog
+import com.github.jing332.tts_server_android.compose.systts.plugin.PluginSelectionDialog
 import com.github.jing332.tts_server_android.compose.systts.sizeToToggleableState
 import com.github.jing332.tts_server_android.constant.AppConst
 import com.github.jing332.tts_server_android.constant.SpeechTarget
