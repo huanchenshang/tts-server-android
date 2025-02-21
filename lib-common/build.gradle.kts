@@ -41,6 +41,7 @@ dependencies {
     api(libs.kotlin.result)
     api(libs.kotlinx.serialization.json)
     api(libs.apache.commons.text)
+    api(libs.logging)
 
     implementation(libs.coreKtx)
     implementation(libs.appcompat)
