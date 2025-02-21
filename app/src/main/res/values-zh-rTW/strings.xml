@@ -451,4 +451,5 @@
     <string name="clear_cache_desc">当需要更新语音列表，可尝试清除插件缓存以从网络重新获取。</string>
     <string name="clear_cache_ok">清除成功</string>
     <string name="login">登录</string>
+    <string name="reload">重新加载</string>
 </resources>

@@ -27,7 +27,7 @@ import androidx.lifecycle.LifecycleOwner
 
 fun Service.startForegroundCompat(
     notificationId: Int,
-    notification: Notification
+    notification: Notification,
 ) {
     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) { // A14
         startForeground(
@@ -43,7 +43,7 @@ fun Service.startForegroundCompat(
 
 fun Context.registerGlobalReceiver(
     actions: List<String>,
-    receiver: BroadcastReceiver
+    receiver: BroadcastReceiver,
 ) {
     ContextCompat.registerReceiver(this, receiver, IntentFilter().apply {
         actions.forEach { addAction(it) }
@@ -150,7 +150,7 @@ fun View.isVisibleOnScreen(): Boolean {
  */
 fun androidx.activity.ComponentActivity.addOnBackPressed(
     owner: LifecycleOwner,
-    onBackPressed: () -> Boolean
+    onBackPressed: () -> Boolean,
 ): OnBackPressedCallback {
     return backPressedCallback(onBackPressed).also {
         onBackPressedDispatcher.addCallback(owner, it)

@@ -11,32 +11,50 @@ import android.webkit.WebSettings
 import android.webkit.WebView
 import androidx.activity.compose.setContent
 import androidx.appcompat.app.AppCompatActivity
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.filled.Save
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.pulltorefresh.PullToRefreshBox
+import androidx.compose.material3.pulltorefresh.rememberPullToRefreshState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.unit.dp
 import androidx.lifecycle.lifecycleScope
 import com.drake.net.utils.withIO
 import com.drake.net.utils.withMain
 import com.github.jing332.common.utils.fromCookie
 import com.github.jing332.common.utils.longToast
+import com.github.jing332.compose.widgets.AsyncCircleImage
 import com.github.jing332.tts_server_android.R
 import com.github.jing332.tts_server_android.compose.theme.AppTheme
 import com.google.accompanist.web.AccompanistWebChromeClient
 import com.google.accompanist.web.AccompanistWebViewClient
+import com.google.accompanist.web.LoadingState
 import com.google.accompanist.web.WebView
 import com.google.accompanist.web.rememberWebViewNavigator
 import com.google.accompanist.web.rememberWebViewState
@@ -44,6 +62,7 @@ import io.github.oshai.kotlinlogging.KotlinLogging
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
+import org.apache.commons.text.StringEscapeUtils
 
 class PluginLoginActivity : AppCompatActivity() {
     companion object {
@@ -57,7 +76,7 @@ class PluginLoginActivity : AppCompatActivity() {
         const val OK: Int = 1
     }
 
-    private var cookie: String = ""
+    private var binding = ""
 
     private suspend fun WebView.evaluateJavascript(script: String): String = coroutineScope {
         val mutex = Mutex(true)
@@ -74,7 +93,7 @@ class PluginLoginActivity : AppCompatActivity() {
 
         logger.info { "js result: $result" }
         mutex.lock()
-        result
+        StringEscapeUtils.unescapeJson(result).trimStart('"').trimEnd('"')
     }
 
     private suspend fun parseBinding(webView: WebView, binding: String): String = withIO {
@@ -94,11 +113,11 @@ class PluginLoginActivity : AppCompatActivity() {
             }
 
             "locals" -> {
-                webView.evaluateJavascript("localStorage.getItem('${start}')")
+                webView.evaluateJavascript("localStorage.getItem('${end}')")
             }
 
             "sessions" -> {
-                webView.evaluateJavascript("sessionStorage.getItem('${start}')")
+                webView.evaluateJavascript("sessionStorage.getItem('${end}')")
             }
 
             else -> {
@@ -123,10 +142,10 @@ class PluginLoginActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
+        binding = intent.getStringExtra(ARG_BINDING) ?: ""
         val loginUrl = intent.getStringExtra(ARG_LOGIN_URL)
-        val binding = intent.getStringExtra(ARG_BINDING)
         val description = intent.getStringExtra(ARG_DESC) ?: ""
-        if (loginUrl == null || binding == null) {
+        if (loginUrl.isNullOrBlank() || binding.isBlank()) {
             logger.error { "loginUrl or binding is null" }
             finish()
             return
@@ -136,22 +155,38 @@ class PluginLoginActivity : AppCompatActivity() {
 
         setContent {
             AppTheme {
+                var title by remember { mutableStateOf(getString(R.string.login)) }
+                var icon by remember { mutableStateOf<Bitmap?>(null) }
                 Scaffold(topBar = {
                     TopAppBar(
                         title = {
-                            Column {
-                                Text(
-                                    stringResource(R.string.login),
-                                    style = MaterialTheme.typography.titleMedium
-                                )
+                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                icon?.let {
+                                    AsyncCircleImage(
+                                        it,
+                                        modifier = Modifier.size(32.dp)
+                                    )
+                                }
+                                Spacer(Modifier.width(8.dp))
+                                Column {
+                                    Text(title, maxLines = 1)
 
-                                Text(
-                                    description,
-                                    style = MaterialTheme.typography.titleSmall
-                                )
+                                    Text(
+                                        description,
+                                        style = MaterialTheme.typography.titleSmall,
+                                        maxLines = 3
+                                    )
+                                }
                             }
                         },
                         actions = {
+                            IconButton(onClick = {
+                                webview?.reload()
+                            }) {
+                                Icon(Icons.Default.Refresh, stringResource(R.string.reload))
+                            }
+
+
                             IconButton(onClick = {
                                 lifecycleScope.launch {
                                     finished(
@@ -167,6 +202,8 @@ class PluginLoginActivity : AppCompatActivity() {
                     LoginScreen(
                         modifier = Modifier.padding(padding),
                         loginUrl,
+                        onTitleUpdate = { title = it },
+                        onIconUpdate = { icon = it },
                         onCreated = { webview = it }
                     )
                 }
@@ -174,12 +211,15 @@ class PluginLoginActivity : AppCompatActivity() {
         }
     }
 
+    @OptIn(ExperimentalMaterial3Api::class)
     @SuppressLint("SetJavaScriptEnabled")
     @Composable
     fun LoginScreen(
         modifier: Modifier = Modifier,
         loginUrl: String,
         userAgent: String = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/133.0.0.0 Safari/537.36 Edg/133.0.0.0",
+        onTitleUpdate: (String) -> Unit,
+        onIconUpdate: (Bitmap) -> Unit,
         onCreated: (WebView) -> Unit,
     ) {
         val state = rememberWebViewState(
@@ -227,9 +267,11 @@ class PluginLoginActivity : AppCompatActivity() {
                         """document.querySelector('meta[name="viewport"]').setAttribute('content', 'width=1024px, height=1024px,initial-scale=' + (document.documentElement.clientWidth / 1024));""",
                         null
                     );
-//                    cookie = CookieManager.getInstance().getCookie(url)
 
                     super.onPageFinished(view, url)
+
+                    onTitleUpdate(view.title ?: "")
+                    onIconUpdate(view.favicon ?: return)
                 }
 
                 override fun shouldOverrideUrlLoading(
@@ -257,33 +299,56 @@ class PluginLoginActivity : AppCompatActivity() {
         }
 
         Column(modifier) {
-            WebView(
-                state = state,
-                modifier = Modifier
-                    .fillMaxSize(),
-                navigator = navigator,
-                onCreated = {
-                    it.setScrollBarStyle(WebView.SCROLLBARS_OUTSIDE_OVERLAY);
-                    it.setScrollbarFadingEnabled(true);
-                    it.settings.apply {
-                        javaScriptEnabled = true
-                        domStorageEnabled = true
+            val process =
+                if (state.loadingState is LoadingState.Loading) (state.loadingState as LoadingState.Loading).progress else 0f
+
+            AnimatedVisibility(process > 0) {
+                LinearProgressIndicator(
+                    progress = { process },
+                    modifier = Modifier.fillMaxWidth(),
+                )
+            }
+
+            LaunchedEffect(state.pageIcon) {
+                onIconUpdate(state.pageIcon ?: return@LaunchedEffect)
+            }
+
+            val refreshState = rememberPullToRefreshState()
+
+            PullToRefreshBox(
+                state.loadingState != LoadingState.Finished,
+                state = refreshState,
+                onRefresh = {},
+            ) {
+                WebView(
+                    state = state,
+                    modifier = Modifier.fillMaxSize(),
+                    navigator = navigator,
+                    onCreated = {
+                        it.setScrollBarStyle(WebView.SCROLLBARS_OUTSIDE_OVERLAY);
+                        it.setScrollbarFadingEnabled(true);
+                        it.settings.apply {
+                            javaScriptEnabled = true
+                            domStorageEnabled = true
 
 
-                        databaseEnabled = true
-                        userAgentString = userAgent
+                            databaseEnabled = true
+                            userAgentString = userAgent
 
-                        loadWithOverviewMode = true;
-                        layoutAlgorithm = WebSettings.LayoutAlgorithm.SINGLE_COLUMN;
-                        loadWithOverviewMode = true;
-                        useWideViewPort = true;
-                    }
+                            loadWithOverviewMode = true;
+                            layoutAlgorithm = WebSettings.LayoutAlgorithm.NORMAL;
+                            loadWithOverviewMode = true;
+                            useWideViewPort = true;
+                            setSupportZoom(true)
+                            builtInZoomControls = true
+                        }
 
-                    onCreated(it)
-                },
-                client = client,
-                chromeClient = chromeClient,
-            )
+                        onCreated(it)
+                    },
+                    client = client,
+                    chromeClient = chromeClient,
+                )
+            }
         }
 
     }

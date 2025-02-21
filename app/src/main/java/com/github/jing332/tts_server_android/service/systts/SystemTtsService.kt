@@ -435,6 +435,7 @@ class SystemTtsService : TextToSpeechService(), IEventDispatcher {
             runCatching {
                 startForegroundCompat(SystemNotificationConst.ID_SYSTEM_TTS, notifi)
             }.onFailure {
+                logger.debug { "startForeground error, use notify" }
                 NotificationManagerCompat.from(this)
                     .notify(SystemNotificationConst.ID_SYSTEM_TTS, notifi)
             }
