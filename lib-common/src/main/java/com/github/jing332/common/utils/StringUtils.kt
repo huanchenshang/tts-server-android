@@ -137,8 +137,25 @@ fun String.toCountryFlagEmoji(): String {
     return String(Character.toChars(firstLetter)) + String(Character.toChars(secondLetter))
 }
 
-fun String.limitLength(max:Int): String{
+fun String.limitLength(max: Int): String {
     return if (this.length > max) this.substring(0, max) else this
+}
+
+fun String.fromCookie(): Map<String, String> {
+    val map = mutableMapOf<String, String>()
+    val cookies = this.split(";")
+
+    for (cookie in cookies) {
+        val parts = cookie.split("=")
+        if (parts.size == 2) {
+            map[parts[0].trim()] = parts[1].trim()
+        }
+        if (parts.size == 1) {
+            map[parts[0].trim()] = ""
+        }
+    }
+
+    return map
 }
 
 
