@@ -21,6 +21,8 @@ import com.github.jing332.database.entities.systts.SystemTtsV2
 import com.github.jing332.tts_server_android.App.Companion.context
 import com.github.jing332.tts_server_android.constant.AppConst
 import com.github.jing332.tts_server_android.model.hanlp.HanlpManager
+import com.petterp.floatingx.FloatingX
+import com.petterp.floatingx.compose.enableComposeSupport
 import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
@@ -60,6 +62,7 @@ class App : Application() {
                 .crossfade(true)
                 .build()
         )
+
 
         GlobalScope.launch {
             HanlpManager.initDir(

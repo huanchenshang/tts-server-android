@@ -36,6 +36,7 @@ apache-commons-text = "1.13.0"
 
 #noinspection GradleDependency
 recyclerview = "1.3.2"
+floatingx = "2.3.4"
 codeEditor = "0.23.5"
 markwon = "4.6.2"
 androidsgv = "1.4"
@@ -76,7 +77,7 @@ accompanist-webview = { module = "com.google.accompanist:accompanist-webview", v
 accompanist-permissions = { module = "com.google.accompanist:accompanist-permissions", version.ref = "accompanist" }
 
 immersionbar = { group = "com.geyifeng.immersionbar", name = "immersionbar", version.ref = "immersionbar" }
-immersionbar-ktx = { group = "com.geyifeng.immersionbar",name = "immersionbar-ktx",  version.ref = "immersionbar" }
+immersionbar-ktx = { group = "com.geyifeng.immersionbar", name = "immersionbar-ktx", version.ref = "immersionbar" }
 material = { module = "com.google.android.material:material", version.ref = "material" }
 recyclerview = { module = "androidx.recyclerview:recyclerview", version.ref = "recyclerview" }
 
@@ -124,7 +125,10 @@ ktor-server-content-negotiation = { module = "io.ktor:ktor-server-content-negoti
 ktor-server-serialization-json = { module = "io.ktor:ktor-serialization-kotlinx-json", version.ref = "ktor-server" }
 ktor-server-cors = { module = "io.ktor:ktor-server-cors", version.ref = "ktor-server" }
 ktor-server-status-pages = { module = "io.ktor:ktor-server-status-pages", version.ref = "ktor-server" }
-apache-commons-text = { group='org.apache.commons', name="commons-text", version.ref="apache-commons-text"}
+apache-commons-text = { group = 'org.apache.commons', name = "commons-text", version.ref = "apache-commons-text" }
+
+floatingx = { module = "io.github.petterpx:floatingx", version.ref = "floatingx" }
+floatingx-compsoe = { module = "io.github.petterpx:floatingx-compose", version.ref = "floatingx" }
 
 code-editor = { module = "io.github.Rosemoe.sora-editor:editor", version.ref = "codeEditor" }
 code-editor-textmate = { module = "io.github.Rosemoe.sora-editor:language-textmate", version.ref = "codeEditor" }
@@ -164,6 +168,7 @@ compose = [
     "activity-compose", "constraintlayout-compose", "navigation-compose",
     "compose-reorderable", "compose-datasaver", "compose-sheet"
 ]
+compose-floatingx = ["floatingx", "floatingx-compsoe"]
 compose-material3 = ["compose-material-icons-core", "compose-material-icons-extended", "compose-material3-winsize", "compose-material3-core"]
 about = ["about", "about-compose"]
 network = ["okio", "okhttp", "net"]

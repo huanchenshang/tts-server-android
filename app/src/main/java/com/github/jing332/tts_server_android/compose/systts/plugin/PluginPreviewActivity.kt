@@ -33,7 +33,9 @@ import com.github.jing332.database.entities.systts.SystemTtsV2
 import com.github.jing332.database.entities.systts.TtsConfigurationDTO
 import com.github.jing332.database.entities.systts.source.PluginTtsSource
 import com.github.jing332.tts_server_android.AppLocale
+import com.github.jing332.tts_server_android.JsConsoleManager
 import com.github.jing332.tts_server_android.R
+import com.github.jing332.tts_server_android.compose.LoggerFloatingManager
 import com.github.jing332.tts_server_android.compose.systts.list.ui.PluginTtsUI
 import com.github.jing332.tts_server_android.compose.theme.AppTheme
 import com.github.jing332.tts_server_android.constant.AppConst
@@ -88,6 +90,8 @@ class PluginPreviewActivity : AppCompatActivity() {
             payload = mapOf("source" to source, "plugin" to plugin)
         }
 
+
+        LoggerFloatingManager.show(this, JsConsoleManager.ui)
         setContent {
             AppTheme {
                 var systts by rememberSaveable {

@@ -12,12 +12,13 @@ import com.drake.net.utils.withIO
 import com.drake.net.utils.withMain
 import com.github.jing332.database.dbm
 import com.github.jing332.database.entities.plugin.Plugin
-import com.github.jing332.database.entities.systts.source.TextToSpeechSource
 import com.github.jing332.database.entities.systts.source.PluginTtsSource
+import com.github.jing332.database.entities.systts.source.TextToSpeechSource
 import com.github.jing332.tts.speech.TextToSpeechProvider
 import com.github.jing332.tts.speech.plugin.PluginTtsProvider
 import com.github.jing332.tts.speech.plugin.TtsPluginEngineManager
 import com.github.jing332.tts.speech.plugin.engine.TtsPluginUiEngineV2
+import com.github.jing332.tts_server_android.JsConsoleManager
 import com.github.jing332.tts_server_android.app
 import io.github.oshai.kotlinlogging.KotlinLogging
 
@@ -43,6 +44,7 @@ class PluginTtsViewModel(app: Application) : AndroidViewModel(app) {
             TtsPluginEngineManager.get(app, getPluginFromDB(source.pluginId))
         else TtsPluginUiEngineV2(app, plugin).apply { eval() }
 
+        engine.console = JsConsoleManager.ui
         engine.source = source
     }
 

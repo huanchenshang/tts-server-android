@@ -137,6 +137,10 @@ fun String.toCountryFlagEmoji(): String {
     return String(Character.toChars(firstLetter)) + String(Character.toChars(secondLetter))
 }
 
+fun String.limitLength(max:Int): String{
+    return if (this.length > max) this.substring(0, max) else this
+}
+
 
 fun Int.sizeToReadable(locale: Locale = Locale.getDefault()): String =
     this.toLong().sizeToReadable(locale)

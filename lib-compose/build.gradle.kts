@@ -57,6 +57,7 @@ dependencies {
     api(composeBom)
     androidTestApi(composeBom)
     api(libs.bundles.compose)
+    api(libs.bundles.compose.floatingx)
     api(libs.bundles.compose.material3)
 
     androidTestApi("androidx.compose.ui:ui-test-junit4")

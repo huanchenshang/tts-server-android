@@ -14,11 +14,11 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
-import com.github.jing332.tts_server_android.compose.LocalNavController
-import com.github.jing332.tts_server_android.compose.theme.AppTheme
 import com.github.jing332.database.dbm
 import com.github.jing332.database.entities.plugin.Plugin
+import com.github.jing332.tts_server_android.compose.LocalNavController
 import com.github.jing332.tts_server_android.compose.SharedViewModel
+import com.github.jing332.tts_server_android.compose.theme.AppTheme
 
 class PluginManagerActivity : AppCompatActivity() {
     private var jsCode by mutableStateOf("")
