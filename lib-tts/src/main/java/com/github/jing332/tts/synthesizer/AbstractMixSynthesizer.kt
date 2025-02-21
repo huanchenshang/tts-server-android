@@ -73,18 +73,16 @@ abstract class AbstractMixSynthesizer() : Synthesizer {
     private suspend fun textProcess(
         params: SystemParams,
         presetConfigId: Long?,
-    ): List<TextSegment>? {
+    ): Result<List<TextSegment>, SynthesisError> {
         textProcessor
             .process(params.text, presetConfigId)
-            .onSuccess { list -> return list.filterNot { StringUtils.isSilent(it.text) } }
+            .onSuccess { list -> return Ok(list.filterNot { StringUtils.isSilent(it.text) }) }
             .onFailure { err: TextProcessorError ->
                 event(ErrorEvent.TextProcessor(err))
-                if (err is TextProcessorError.MissingConfig && err.type == ConfigType.PRESET)
-                    return null
-
+                return Err(SynthesisError.TextHandle(err))
             }
 
-        return emptyList()
+        return Ok(emptyList())
     }
 
     /**
@@ -192,12 +190,19 @@ abstract class AbstractMixSynthesizer() : Synthesizer {
         val channel =
             produce<ChannelPayload>(CoroutineName("Synthesis producer"), PROCUDE_CAPACITY) {
                 val sendChannel = this.channel
-                val list = textProcess(params, presetConfigId)
-                if (list == null)
-                    channel.send(ChannelPayload.NotFoundPresetConfig)
-                else
-                    for (segment in list) {
-                        requestAndProcess(channel, params.copy(text = segment.text), segment.tts)
+                textProcess(params, presetConfigId)
+                    .onSuccess { list ->
+                        for (segment in list) {
+                            requestAndProcess(
+                                channel,
+                                params.copy(text = segment.text),
+                                segment.tts
+                            )
+                        }
+
+                    }
+                    .onFailure {
+                        channel.send(ChannelPayload.Error(it))
                     }
             }
 
@@ -217,8 +222,8 @@ abstract class AbstractMixSynthesizer() : Synthesizer {
                         logger.debug { "direct play done" }
                     }
 
-                    is ChannelPayload.NotFoundPresetConfig -> {
-                        return@coroutineScope Err(SynthesisError.NotFoundPresetConfig)
+                    is ChannelPayload.Error -> {
+                        return@coroutineScope Err(payload.err)
                     }
 
                     else -> logger.error { "unknown data: $payload" }
@@ -320,6 +325,6 @@ abstract class AbstractMixSynthesizer() : Synthesizer {
             val callback: ITtsRequester.ISyncPlayCallback,
         ) : ChannelPayload
 
-        data object NotFoundPresetConfig : ChannelPayload
+        data class Error(val err: SynthesisError) : ChannelPayload
     }
 }

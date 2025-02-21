@@ -335,16 +335,17 @@ class SystemTtsService : TextToSpeechService(), IEventDispatcher {
                         logger.debug { "done" }
                         callback.done()
                     }?.onFailure {
-                        logE("error: $it")
                         when (it) {
                             SynthesisError.ConfigEmpty -> {
                                 callback.error(TextToSpeech.ERROR_SYNTHESIS)
                             }
 
-                            SynthesisError.NotFoundPresetConfig -> {
-                                longToast(getString(R.string.tts_config_not_exist))
+                            is SynthesisError.TextHandle -> {
+                                // eventListener already handled
+                                // handleTextProcessorError(it.err)
                                 callback.error(TextToSpeech.ERROR_INVALID_REQUEST)
                             }
+
                         }
                     } ?: callback.error(TextToSpeech.ERROR_SYNTHESIS)
                 }
@@ -671,7 +672,9 @@ class SystemTtsService : TextToSpeechService(), IEventDispatcher {
         when (err) {
             is TextProcessorError.HandleText -> logE(R.string.systts_log_text_handle_failed, err.error)
             is TextProcessorError.MissingConfig -> {
-                logE(getString(R.string.missing_config, err.type.toLocaleString()))
+                val str = getString(R.string.missing_config,err.type.toLocaleString() )
+                longToast(str)
+                logE(str)
             }
 
             is TextProcessorError.MissingRule -> logE(getString(R.string.missing_speech_rule, err.id))
