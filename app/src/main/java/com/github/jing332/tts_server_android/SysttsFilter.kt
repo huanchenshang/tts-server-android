@@ -32,6 +32,6 @@ class SysttsFilter : Filter<ILoggingEvent>() {
             )
 
             FilterReply.ACCEPT
-        } else FilterReply.DENY
+        } else FilterReply.NEUTRAL
     }
 }
