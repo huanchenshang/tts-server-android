@@ -4,6 +4,7 @@ import android.content.Context
 import com.github.jing332.database.entities.plugin.Plugin
 import com.github.jing332.database.entities.systts.source.PluginTtsSource
 import com.github.jing332.script.engine.RhinoScriptEngine
+import com.github.jing332.script.ensureArgumentsLength
 import com.github.jing332.script.runtime.console.Console
 import com.github.jing332.script.runtime.NativeResponse
 import com.github.jing332.script.simple.CompatScriptRuntime
@@ -15,6 +16,9 @@ import com.github.jing332.tts.speech.plugin.engine.TtsPluginEngineV2.Companion.F
 import com.github.jing332.tts.speech.plugin.engine.TtsPluginEngineV2.Companion.FUNC_ON_STOP
 import kotlinx.coroutines.runInterruptible
 import kotlinx.coroutines.sync.Mutex
+import org.mozilla.javascript.Callable
+import org.mozilla.javascript.ScriptRuntime.newObject
+import org.mozilla.javascript.Scriptable
 import org.mozilla.javascript.ScriptableObject
 import org.mozilla.javascript.Undefined
 import org.mozilla.javascript.typedarrays.NativeInt8Array
@@ -55,7 +59,7 @@ open class TtsPluginEngineV2(val context: Context, var plugin: Plugin) {
 
     protected val pluginJsObj: ScriptableObject
         get() = (engine.get(OBJ_PLUGIN_JS) as? ScriptableObject)
-            ?: throw IllegalStateException("Object $OBJ_PLUGIN_JS not found")
+            ?: throw IllegalStateException("Object `$OBJ_PLUGIN_JS` not found")
 
 
     protected var engine: RhinoScriptEngine = RhinoScriptEngine(runtime)
@@ -127,12 +131,55 @@ open class TtsPluginEngineV2(val context: Context, var plugin: Plugin) {
     }
 
     private val mMutex by lazy { Mutex() } // stream lock
+    private suspend fun newCallback(ins: JsBridgeInputStream): Scriptable {
+        val callback = ins.getCallback(mMutex)
+        return org.mozilla.javascript.Context.enter().use { cx ->
+            cx.newObject(engine.scope ?: engine.globalScope)
+                .apply {
+                    put("write", this, object : Callable {
+                        override fun call(
+                            cx: org.mozilla.javascript.Context,
+                            scope: Scriptable,
+                            thisObj: Scriptable,
+                            args: Array<out Any?>,
+                        ): Any = ensureArgumentsLength(args, 1) {
+                            callback.write(args[0])
+                            Undefined.instance
+                        }
+                    })
+                    put("close", this, object : Callable {
+                        override fun call(
+                            cx: org.mozilla.javascript.Context?,
+                            scope: Scriptable?,
+                            thisObj: Scriptable?,
+                            args: Array<out Any?>?,
+                        ): Any {
+                            callback.close()
+                            return Undefined.instance
+                        }
+
+                    })
+                    put("error", this, object : Callable {
+                        override fun call(
+                            cx: org.mozilla.javascript.Context,
+                            scope: Scriptable,
+                            thisObj: Scriptable,
+                            args: Array<out Any?>,
+                        ): Any = ensureArgumentsLength(args, 1) {
+                            callback.error(args[0])
+                            Undefined.instance
+                        }
+
+                    })
+                }
+        }
+    }
+
     private suspend fun getAudioV2(request: Map<String, Any>): InputStream {
         val ins = JsBridgeInputStream()
-        val callback = ins.getCallback(mMutex)
-
+        val jsObj = newCallback(ins)
         val result = runInterruptible {
-            engine.invokeMethod(pluginJsObj, FUNC_GET_AUDIO_V2, request, callback)
+            engine.invokeMethod(pluginJsObj, FUNC_GET_AUDIO_V2, request, jsObj)
                 ?: throw NoSuchMethodException("getAudioV2() not found")
         }
         return handleAudioResult(result) ?: ins

@@ -1,8 +1,8 @@
 package com.github.jing332.tts.speech.plugin.engine
 
-import android.util.Log
 import androidx.annotation.Keep
 import com.github.jing332.script.exception.ScriptException
+import io.github.oshai.kotlinlogging.KotlinLogging
 import kotlinx.coroutines.sync.Mutex
 import org.mozilla.javascript.Context
 import org.mozilla.javascript.typedarrays.NativeArrayBuffer
@@ -15,6 +15,7 @@ import java.io.PipedOutputStream
 class JsBridgeInputStream : InputStream() {
     companion object {
         private const val TAG = "JsBridgeInputStream"
+        private val logger = KotlinLogging.logger(TAG)
     }
 
     private val pis: PipedInputStream = PipedInputStream()
@@ -92,7 +93,7 @@ class JsBridgeInputStream : InputStream() {
      */
     @Keep
     interface Callback {
-        fun write(data: Any)
+        fun write(data: Any?)
         fun close()
         fun error(data: Any?)
     }
@@ -100,8 +101,11 @@ class JsBridgeInputStream : InputStream() {
     suspend fun getCallback(mutex: Mutex): Callback {
         mutex.lock()
         return object : Callback {
+            private var length = 0
             private fun writeBytes(data: ByteArray) {
-                Log.v(TAG, "${this}.write(${data.size})")
+                length += data.size
+                logger.debug { "write(${data.size}) byteWritten: $length" }
+
                 if (isClosed || hasError) return
 
                 try {
@@ -116,8 +120,8 @@ class JsBridgeInputStream : InputStream() {
                 }
             }
 
-            override fun write(data: Any) {
-                when (data){
+            override fun write(data: Any?) {
+                when (data) {
                     is ByteArray -> writeBytes(data)
                     is String -> writeBytes(data.toByteArray())
                     is NativeUint8Array -> write(data.buffer.buffer)
@@ -127,8 +131,11 @@ class JsBridgeInputStream : InputStream() {
             }
 
             override fun close() {
-                Log.d(TAG, "${this}.close")
+                logger.debug { "close" }
+
                 try {
+                    if (length <= 0) errorCause = IOException("No data written")
+
                     this@JsBridgeInputStream.close()
                 } catch (e: IOException) {
                     errorCause = e
@@ -138,7 +145,8 @@ class JsBridgeInputStream : InputStream() {
             }
 
             override fun error(data: Any?) {
-                Log.d(TAG, "${this}.error(${data})")
+                logger.debug { "error(${data})" }
+
                 errorCause = Context.reportRuntimeError(data.toString()).run {
                     ScriptException(
                         sourceName = sourceName(),
