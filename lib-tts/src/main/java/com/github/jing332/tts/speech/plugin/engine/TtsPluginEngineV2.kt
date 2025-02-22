@@ -1,6 +1,7 @@
 package com.github.jing332.tts.speech.plugin.engine
 
 import android.content.Context
+import com.drake.net.Net
 import com.github.jing332.database.entities.plugin.Plugin
 import com.github.jing332.database.entities.systts.source.PluginTtsSource
 import com.github.jing332.script.engine.RhinoScriptEngine
@@ -16,7 +17,9 @@ import com.github.jing332.tts.speech.plugin.engine.TtsPluginEngineV2.Companion.F
 import com.github.jing332.tts.speech.plugin.engine.TtsPluginEngineV2.Companion.FUNC_ON_STOP
 import kotlinx.coroutines.runInterruptible
 import kotlinx.coroutines.sync.Mutex
+import okhttp3.Response
 import org.mozilla.javascript.Callable
+import org.mozilla.javascript.ScriptRuntime
 import org.mozilla.javascript.ScriptRuntime.newObject
 import org.mozilla.javascript.Scriptable
 import org.mozilla.javascript.ScriptableObject
@@ -123,10 +126,19 @@ open class TtsPluginEngineV2(val context: Context, var plugin: Plugin) {
             }
 
             is NativeResponse -> result.rawResponse?.body?.byteStream()
+            is CharSequence -> {
+                val str = result.toString()
+
+                if (str.startsWith("http://") || str.startsWith("https://")) {
+                    val resp: Response = Net.get(str).execute()
+                    return resp.body?.byteStream()
+                } else
+                    throw org.mozilla.javascript.Context.reportRuntimeError(str)
+            }
 
             is Undefined -> null
 
-            else -> throw IllegalArgumentException("getAudio() return type not support: ${result.javaClass.name}")
+            else -> throw org.mozilla.javascript.Context.reportRuntimeError("getAudio() return type not support: ${result.javaClass.name}")
         }
     }
 
