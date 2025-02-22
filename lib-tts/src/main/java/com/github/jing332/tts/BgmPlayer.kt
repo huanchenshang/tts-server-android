@@ -86,7 +86,7 @@ class BgmPlayer(val context: SynthesizerContext) : IBgmPlayer {
     }
 
     fun updateVolume(volume: Float) {
-        exoPlayer?.volume = volume.pow(1.5f)
+        exoPlayer?.volume = volume.pow(1.6f)
     }
 
     @MainThread
@@ -110,22 +110,22 @@ class BgmPlayer(val context: SynthesizerContext) : IBgmPlayer {
                 val allFiles = FileUtils.getAllFilesInFolder(file)
                     .run { if (context.cfg.bgmShuffleEnabled()) this.shuffled() else this }
                 for (subFile in allFiles) {
-                    if (!addMediaItem(source.volume, subFile)) continue
+                    if (!addMediaItem(source, subFile)) continue
                 }
             } else if (file.isFile) {
-                addMediaItem(source.volume, file)
+                addMediaItem(source, file)
             }
         }
         exoPlayer?.prepare()
     }
 
-    private fun addMediaItem(volume: Float, file: File): Boolean {
+    private fun addMediaItem(source: BgmSource, file: File): Boolean {
         val mime = file.mimeType
         // 非audio或未知则跳过
         if (mime == null || !mime.startsWith("audio")) return false
 
         val item =
-            MediaItem.Builder().setTag(volume).setUri(file.absolutePath).build()
+            MediaItem.Builder().setTag(source).setUri(file.absolutePath).build()
         exoPlayer?.addMediaItem(item)
 
         return true
