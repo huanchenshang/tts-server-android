@@ -1,12 +1,12 @@
 package com.github.jing332.tts_server_android.compose.systts.list
 
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.Input
+import androidx.compose.material.icons.automirrored.filled.ManageSearch
+import androidx.compose.material.icons.automirrored.filled.MenuBook
 import androidx.compose.material.icons.filled.Audiotrack
 import androidx.compose.material.icons.filled.ContentCut
 import androidx.compose.material.icons.filled.Group
-import androidx.compose.material.icons.filled.Input
-import androidx.compose.material.icons.filled.ManageSearch
-import androidx.compose.material.icons.filled.MenuBook
 import androidx.compose.material.icons.filled.Output
 import androidx.compose.material.icons.filled.Speed
 import androidx.compose.material3.DropdownMenu
@@ -109,7 +109,7 @@ internal fun MenuMoreOptions(
                 context.startActivity(SpeechRuleManagerActivity::class.java)
             },
             leadingIcon = {
-                Icon(Icons.Default.MenuBook, null)
+                Icon(Icons.AutoMirrored.Default.MenuBook, null)
             }
         )
 
@@ -135,7 +135,7 @@ internal fun MenuMoreOptions(
                 SystemTtsConfig.isReplaceEnabled.value = it
             },
             leadingIcon = {
-                Icon(Icons.Default.ManageSearch, null)
+                Icon(Icons.AutoMirrored.Default.ManageSearch, null)
             }
         )
 
@@ -146,7 +146,7 @@ internal fun MenuMoreOptions(
             onDismissRequest()
             showImportSheet = true },
             leadingIcon = {
-                Icon(Icons.Default.Input, null)
+                Icon(Icons.AutoMirrored.Default.Input, null)
             }
         )
 

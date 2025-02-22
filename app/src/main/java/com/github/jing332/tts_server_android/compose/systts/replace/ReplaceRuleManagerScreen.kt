@@ -1,7 +1,6 @@
 package com.github.jing332.tts_server_android.compose.systts.replace
 
 import android.content.Intent
-import android.os.Bundle
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Row
@@ -64,7 +63,7 @@ import org.burnoutcrew.reorderable.reorderable
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
 @Composable
-internal fun ManagerScreen(sharedVM: SharedViewModel, vm: ReplaceRuleManagerViewModel = viewModel(), finish: () -> Unit) {
+internal fun ReplaceRuleManagerScreen(sharedVM: SharedViewModel, vm: ReplaceRuleManagerViewModel = viewModel(), finish: () -> Unit) {
     val context = LocalContext.current
     val navController = LocalNavController.current
 

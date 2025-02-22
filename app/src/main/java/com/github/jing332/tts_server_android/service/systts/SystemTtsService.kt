@@ -126,7 +126,9 @@ class SystemTtsService : TextToSpeechService(), IEventDispatcher {
 
         AppConst.localBroadcast.registerReceiver(
             mLocalReceiver,
-            IntentFilter(ACTION_UPDATE_CONFIG)
+            IntentFilter(ACTION_UPDATE_CONFIG).apply {
+                addAction(ACTION_UPDATE_REPLACER)
+            }
         )
 
         if (SysTtsConfig.isWakeLockEnabled)

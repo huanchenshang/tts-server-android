@@ -300,13 +300,6 @@ internal fun ListManagerScreen(
                             )
                         }
 
-//                        MenuItem(
-//                            icon = { Icon(Icons.Default.Http, null) },
-//                            title = R.string.systts_add_custom_tts
-//                        ) {
-////                                startTtsEditor(HttpTtsEditActivity::class.java)
-//                        }
-
                         MenuItem(
                             icon = { Icon(Icons.Default.Javascript, null) },
                             title = R.string.systts_add_plugin_tts

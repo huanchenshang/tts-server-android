@@ -16,6 +16,7 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.selection.SelectionContainer
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Abc
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Headset
@@ -129,7 +130,7 @@ fun RuleEditScreen(
             navigationIcon = {
                 IconButton(onClick = { navController.popBackStack() }) {
                     Icon(
-                        imageVector = Icons.Filled.ArrowBack,
+                        imageVector = Icons.AutoMirrored.Default.ArrowBack,
                         contentDescription = stringResource(id = R.string.nav_back)
                     )
                 }
@@ -223,7 +224,7 @@ private object InputFieldID {
  * 插入文本到当前光标前方
  */
 fun TextFieldValue.newValueOfInsertText(
-    text: String, cursorPosition: Int = selection.end
+    text: String, cursorPosition: Int = selection.end,
 ): TextFieldValue {
     val newText = StringBuilder(this.text).insert(cursorPosition, text).toString()
     return TextFieldValue(newText, TextRange(cursorPosition + text.length))
