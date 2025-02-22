@@ -28,19 +28,15 @@
 
     <appender name="Log" class="ch.qos.logback.core.rolling.RollingFileAppender">
         <file>${LOG_DIR}/debug.log</file>
-        <rollingPolicy class="ch.qos.logback.core.rolling.FixedWindowRollingPolicy">
-            <fileNamePattern>debug_%i.log</fileNamePattern>
-            <minIndex>1</minIndex>
-            <maxIndex>3</maxIndex>
-        </rollingPolicy>
-
-        <triggeringPolicy class="ch.qos.logback.core.rolling.SizeBasedTriggeringPolicy">
-            <maxFileSize>5MB</maxFileSize>
-        </triggeringPolicy>
-
         <encoder>
             <pattern>%d{MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n</pattern>
         </encoder>
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <!-- daily rollover period -->
+            <fileNamePattern>${LOG_DIR}/debug.%d.log</fileNamePattern>
+
+            <maxHistory>3</maxHistory>
+        </rollingPolicy>
     </appender>
 
     <appender name="SystemTTS" class="ch.qos.logback.core.FileAppender">
