@@ -55,15 +55,15 @@ class SonicAudioProcessor() : BaseAudioProcessor() {
         // Allocate a new output buffer with the same size as the input buffer.
         val buffer = ByteArray(size)
         // Copy the input buffer to the output buffer.
-        for (i in position until limit) {
-            buffer[i] = (inputBuffer[i])
+        for (i in 0 until size) {
+            buffer[i] = inputBuffer[position + i] // Corrected index
         }
 
         sonic.writeBytesToStream(buffer, size)
 
         val outSize = sonic.samplesAvailable()
         val outputBuffer = replaceOutputBuffer(outSize)
-        val ret = sonic.readBytesFromStream(outputBuffer, outSize)
+        sonic.readBytesFromStream(outputBuffer, outSize)
 
         // Update the positions and limits of the input and output buffers.
         inputBuffer.position(inputBuffer.limit())
