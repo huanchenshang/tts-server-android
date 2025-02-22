@@ -25,7 +25,6 @@ import com.drake.net.utils.withMain
 import com.github.jing332.common.audio.AudioPlayer
 import com.github.jing332.common.utils.messageChain
 import com.github.jing332.common.utils.sizeToReadable
-import com.github.jing332.common.utils.toast
 import com.github.jing332.compose.widgets.AppDialog
 import com.github.jing332.compose.widgets.LoadingContent
 import com.github.jing332.database.entities.systts.SystemTtsV2
@@ -70,15 +69,7 @@ fun AuditionDialog(
     }
 
     LaunchedEffect(systts) {
-        if (systts.config !is TtsConfigurationDTO) {
-            context.toast(R.string.not_support_audition)
-
-            onDismissRequest()
-            return@LaunchedEffect
-        }
-
         launch(Dispatchers.IO) {
-
             try {
                 val e = engine ?: CachedEngineManager.getEngine(appCtx, config.source)
                 ?: throw IllegalStateException("engine is null")

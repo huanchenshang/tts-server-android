@@ -40,6 +40,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.drake.net.utils.withIO
 import com.github.jing332.common.utils.longToast
+import com.github.jing332.common.utils.toast
 import com.github.jing332.compose.widgets.LazyListIndexStateSaver
 import com.github.jing332.compose.widgets.TextFieldDialog
 import com.github.jing332.database.dbm
@@ -84,7 +85,7 @@ import org.burnoutcrew.reorderable.reorderable
 @Composable
 internal fun ListManagerScreen(
     sharedVM: SharedViewModel,
-    vm: ListManagerViewModel = viewModel()
+    vm: ListManagerViewModel = viewModel(),
 ) {
     val navController = LocalNavController.current
     val scope = rememberCoroutineScope()
@@ -276,7 +277,7 @@ internal fun ListManagerScreen(
                         fun MenuItem(
                             icon: @Composable () -> Unit,
                             @StringRes title: Int,
-                            onClick: () -> Unit
+                            onClick: () -> Unit,
                         ) {
                             DropdownMenuItem(text = {
                                 Text(stringResource(id = title))
@@ -428,7 +429,12 @@ internal fun ListManagerScreen(
                                     },
                                     onDelete = { deleteTts = item },
                                     onEdit = { navigateToEdit(item) },
-                                    onAudition = { showAuditionDialog = item },
+                                    onAudition = {
+                                        if (item.config is TtsConfigurationDTO) {
+                                            showAuditionDialog = item
+                                        }else
+                                            context.toast(R.string.not_support_audition)
+                                    },
                                     onExport = {
                                         showExportSheet =
                                             listOf(item.copy(groupId = AbstractListGroup.DEFAULT_GROUP_ID))
