@@ -83,6 +83,7 @@ class SystemTtsService : TextToSpeechService(), IEventDispatcher {
         const val NOTIFICATION_CHAN_ID = "system_tts_service"
 
         const val DEFAULT_VOICE_NAME = "DEFAULT_默认"
+        const val PARAM_BGM_ENABLED = "bgm_enabled"
 
         /**
          * 更新配置
@@ -308,7 +309,8 @@ class SystemTtsService : TextToSpeechService(), IEventDispatcher {
             logger.debug { "Skip empty text request" }
             callback.start(16000, AudioFormat.ENCODING_PCM_16BIT, 1)
             callback.done()
-        } else
+        } else {
+            val enabledBgm = request.params.getBoolean("bgm_enabled", true)
             runBlocking {
                 // If the voiceName is not empty, get the configuration ID from the voiceName.
                 var cfgId: Long? = getConfigIdFromVoiceName(request.voiceName ?: "").onFailure {
@@ -355,6 +357,7 @@ class SystemTtsService : TextToSpeechService(), IEventDispatcher {
                 }
                 synthesizerJob?.join()
             }
+        }
 
 
         mNotificationJob = mScope.launch {

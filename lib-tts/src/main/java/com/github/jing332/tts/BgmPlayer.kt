@@ -48,6 +48,8 @@ class BgmPlayer(val context: SynthesizerContext) : IBgmPlayer {
     }
 
     override fun stop() {
+        if (!context.cfg.bgmEnabled()) return
+
         logger.debug { "bgm stop" }
         runOnUI { exoPlayer?.pause() }
     }
@@ -62,6 +64,8 @@ class BgmPlayer(val context: SynthesizerContext) : IBgmPlayer {
     }
 
     override fun play() {
+        if (!context.cfg.bgmEnabled()) return
+
         logger.debug { "bgm play" }
         runOnUI {
             if (exoPlayer?.isPlaying == false) exoPlayer?.play()

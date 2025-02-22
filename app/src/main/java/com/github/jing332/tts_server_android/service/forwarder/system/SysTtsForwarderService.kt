@@ -4,6 +4,7 @@ package com.github.jing332.tts_server_android.service.forwarder.system
 
 import android.speech.tts.TextToSpeech
 import com.github.jing332.database.entities.systts.AudioParams
+import com.github.jing332.database.entities.systts.source.LocalTtsParameter
 import com.github.jing332.database.entities.systts.source.LocalTtsSource
 import com.github.jing332.server.forwarder.Engine
 import com.github.jing332.server.forwarder.SystemTtsForwardServer
@@ -17,6 +18,7 @@ import com.github.jing332.tts_server_android.R
 import com.github.jing332.tts_server_android.conf.SystemTtsForwarderConfig
 import com.github.jing332.tts_server_android.help.LocalTtsEngineHelper
 import com.github.jing332.tts_server_android.service.forwarder.AbsForwarderService
+import com.github.jing332.tts_server_android.service.systts.SystemTtsService
 import com.github.michaelbull.result.onFailure
 import io.github.oshai.kotlinlogging.KotlinLogging
 import java.io.File
@@ -24,18 +26,17 @@ import java.io.File
 class SysTtsForwarderService(
     override val port: Int = SystemTtsForwarderConfig.port.value,
     override val isWakeLockEnabled: Boolean = SystemTtsForwarderConfig.isWakeLockEnabled.value,
-) :
-    AbsForwarderService(
-        "SysTtsForwarderService",
-        id = 1221,
-        actionLog = ACTION_ON_LOG,
-        actionStarting = ACTION_ON_STARTING,
-        actionClosed = ACTION_ON_CLOSED,
-        notificationChanId = "systts_forwarder_status",
-        notificationChanTitle = R.string.forwarder_systts,
-        notificationIcon = R.drawable.ic_baseline_compare_arrows_24,
-        notificationTitle = R.string.forwarder_systts,
-    ) {
+) : AbsForwarderService(
+    "SysTtsForwarderService",
+    id = 1221,
+    actionLog = ACTION_ON_LOG,
+    actionStarting = ACTION_ON_STARTING,
+    actionClosed = ACTION_ON_CLOSED,
+    notificationChanId = "systts_forwarder_status",
+    notificationChanTitle = R.string.forwarder_systts,
+    notificationIcon = R.drawable.ic_baseline_compare_arrows_24,
+    notificationTitle = R.string.forwarder_systts,
+) {
     companion object {
         const val TAG = "SysTtsServerService"
         const val ACTION_ON_CLOSED = "ACTION_ON_CLOSED"
@@ -90,6 +91,13 @@ class SysTtsForwarderService(
                     params.text,
                     params.locale,
                     voice = params.voice,
+                    extraParams = listOf(
+                        LocalTtsParameter(
+                            type = LocalTtsParameter.TYPE_BOOL,
+                            key = SystemTtsService.PARAM_BGM_ENABLED,
+                            value = false.toString()
+                        )
+                    ),
                     params = AudioParams(speed = speed, pitch = pitch)
                 )
 
