@@ -56,9 +56,11 @@ internal fun PluginVarsBottomSheet(
             val key = it.key
             val hint = it.value["hint"] ?: ""
             val label = it.value["label"] ?: ""
+
             val binding = it.value["binding"] ?: ""
             val loginUrl = it.value["loginUrl"] ?: ""
             val loginDesc = it.value["loginDesc"] ?: ""
+            val ua = it.value["ua"] ?: ""
             val value = plugin.userVars.getOrDefault(key, "")
 
             @Composable
@@ -68,7 +70,14 @@ internal fun PluginVarsBottomSheet(
                     {
                         IconButton(onClick = {
                             currentLoginKey = key
-                            loginLauncher.launch(LoginData(loginUrl, binding, loginDesc))
+                            loginLauncher.launch(
+                                LoginData(
+                                    url = loginUrl,
+                                    binding = binding,
+                                    description = loginDesc,
+                                    ua = ua
+                                )
+                            )
                         }) {
                             Icon(Icons.AutoMirrored.Default.Login, stringResource(R.string.login))
                         }
@@ -80,6 +89,7 @@ internal fun PluginVarsBottomSheet(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(bottom = 4.dp, start = 8.dp, end = 8.dp),
+                maxLines = 10,
                 value = value,
                 onValueChange = {
                     onPluginChange(

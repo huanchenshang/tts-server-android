@@ -79,6 +79,8 @@ class PluginEditorViewModel(app: Application) : AndroidViewModel(app) {
                 engine.plugin
             } catch (e: Exception) {
                 writeErrorLog(e)
+                console.info("\n" + "==========\nEND")
+                return@launch
             }
             console.debug(plugin.toString().replace(", ", "\n"))
 

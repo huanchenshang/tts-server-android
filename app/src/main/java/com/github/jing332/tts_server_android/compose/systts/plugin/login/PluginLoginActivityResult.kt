@@ -4,7 +4,7 @@ import android.content.Context
 import android.content.Intent
 import androidx.activity.result.contract.ActivityResultContract
 
-data class LoginData(val url: String, val binding: String, val description: String)
+data class LoginData(val url: String, val binding: String, val description: String, val ua: String)
 
 object PluginLoginActivityResult : ActivityResultContract<LoginData, String>() {
     override fun createIntent(
@@ -14,6 +14,7 @@ object PluginLoginActivityResult : ActivityResultContract<LoginData, String>() {
         putExtra(PluginLoginActivity.ARG_LOGIN_URL, input.url)
         putExtra(PluginLoginActivity.ARG_BINDING, input.binding)
         putExtra(PluginLoginActivity.ARG_DESC, input.description)
+        putExtra(PluginLoginActivity.ARG_UA, input.ua)
     }
 
     override fun parseResult(

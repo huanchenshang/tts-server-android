@@ -4,6 +4,7 @@ import android.annotation.SuppressLint
 import android.content.Intent
 import android.graphics.Bitmap
 import android.os.Bundle
+import android.webkit.CookieManager
 import android.webkit.JsResult
 import android.webkit.ValueCallback
 import android.webkit.WebResourceRequest
@@ -72,11 +73,17 @@ class PluginLoginActivity : AppCompatActivity() {
         const val ARG_LOGIN_URL = "PluginLoginActivity.login_url"
         const val ARG_BINDING = "PluginLoginActivity.binding"
         const val ARG_DESC = "PluginLoginActivity.description"
+        const val ARG_UA = "PluginLoginActivity.ua"
+
         const val RESULT = "PluginLoginActivity.result"
         const val OK: Int = 1
+
+        private const val UA_PC =
+            "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/133.0.0.0 Safari/537.36 Edg/133.0.0.0"
     }
 
     private var binding = ""
+    private var loginUrl = ""
 
     private suspend fun WebView.evaluateJavascript(script: String): String = coroutineScope {
         val mutex = Mutex(true)
@@ -98,18 +105,16 @@ class PluginLoginActivity : AppCompatActivity() {
 
     private suspend fun parseBinding(webView: WebView, binding: String): String = withIO {
         val split = binding.trim().split('.')
-        if (split.size != 2) {
-            logger.error { "binding is invalid: $binding" }
-            return@withIO ""
-        }
 
         val start = split[0]
-        val end = split[1]
+        val end: String = split.getOrElse(1) { "" }
+        val all = end.isBlank()
 
         when (start) {
             "cookies" -> {
-                val cookies = webView.evaluateJavascript("document.cookie").fromCookie()
-                cookies[end] ?: ""
+                val cookies = CookieManager.getInstance().getCookie(loginUrl)
+//                val cookies = webView.evaluateJavascript("document.cookie") // Deprecated; incomplete cookie.”
+                if (all) cookies else cookies.fromCookie()[end] ?: ""
             }
 
             "locals" -> {
@@ -142,14 +147,24 @@ class PluginLoginActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
+        loginUrl = intent.getStringExtra(ARG_LOGIN_URL) ?: ""
         binding = intent.getStringExtra(ARG_BINDING) ?: ""
-        val loginUrl = intent.getStringExtra(ARG_LOGIN_URL)
         val description = intent.getStringExtra(ARG_DESC) ?: ""
-        if (loginUrl.isNullOrBlank() || binding.isBlank()) {
-            logger.error { "loginUrl or binding is null" }
+        val ua = intent.getStringExtra(ARG_UA) ?: ""
+
+        val userAgent = when (ua.lowercase()) {
+            "pc", "" -> UA_PC
+            "mobile" -> ""
+            "android" -> ""
+            else -> ua
+        }
+
+        if (loginUrl.isBlank() || binding.isBlank()) {
+            longToast("loginUrl or binding is null")
             finish()
             return
         }
+        logger.debug { "loginUrl: $loginUrl, binding: $binding, ua: $ua, userAgent: ${userAgent} desc: $description" }
 
         var webview: WebView? = null
 
@@ -201,7 +216,8 @@ class PluginLoginActivity : AppCompatActivity() {
                 }) { padding ->
                     LoginScreen(
                         modifier = Modifier.padding(padding),
-                        loginUrl,
+                        loginUrl = loginUrl,
+                        userAgent = userAgent,
                         onTitleUpdate = { title = it },
                         onIconUpdate = { icon = it },
                         onCreated = { webview = it }
@@ -217,14 +233,14 @@ class PluginLoginActivity : AppCompatActivity() {
     fun LoginScreen(
         modifier: Modifier = Modifier,
         loginUrl: String,
-        userAgent: String = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/133.0.0.0 Safari/537.36 Edg/133.0.0.0",
+        userAgent: String = "",
         onTitleUpdate: (String) -> Unit,
         onIconUpdate: (Bitmap) -> Unit,
         onCreated: (WebView) -> Unit,
     ) {
         val state = rememberWebViewState(
             loginUrl,
-            mapOf("User-Agent" to userAgent)
+            if (userAgent.isBlank()) emptyMap() else mapOf("User-Agent" to userAgent)
         )
         val navigator = rememberWebViewNavigator()
 
@@ -263,10 +279,13 @@ class PluginLoginActivity : AppCompatActivity() {
                 }
 
                 override fun onPageFinished(view: WebView, url: String?) {
-                    view.evaluateJavascript(
-                        """document.querySelector('meta[name="viewport"]').setAttribute('content', 'width=1024px, height=1024px,initial-scale=' + (document.documentElement.clientWidth / 1024));""",
-                        null
-                    );
+                    val regex = Regex("android|mobile", RegexOption.IGNORE_CASE)
+                    val isMobile = userAgent.isBlank() || regex.containsMatchIn(userAgent)
+                    if (!isMobile)
+                        view.evaluateJavascript(
+                            """document.querySelector('meta[name="viewport"]').setAttribute('content', 'width=1024px, height=auto, initial-scale=' + (document.documentElement.clientWidth / 1024));""",
+                            null
+                        );
 
                     super.onPageFinished(view, url)
 
