@@ -1,5 +1,3 @@
-@file:Suppress("unused")
-/* https://github.com/gedoor/legado/blob/master/app/src/main/java/io/legado/app/utils/HandlerUtils.kt */
 package com.github.jing332.common.utils
 
 import android.os.Handler
@@ -9,14 +7,13 @@ import kotlinx.coroutines.Dispatchers.IO
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 
-/** This main looper cache avoids synchronization overhead when accessed repeatedly. */
-private val mainLooper: Looper = Looper.getMainLooper()
+private val mainLooper: Looper
+    get() = Looper.getMainLooper()
 
-private val mainThread: Thread = mainLooper.thread
+private val mainThread: Thread
+    get() = mainLooper.thread
 
 private val isMainThread: Boolean inline get() = mainThread === Thread.currentThread()
-
-
 
 private val mainHandler by lazy { Handler(mainLooper) }
 

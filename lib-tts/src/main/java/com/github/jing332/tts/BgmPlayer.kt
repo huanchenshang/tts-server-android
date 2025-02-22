@@ -1,12 +1,14 @@
 package com.github.jing332.tts
 
+import androidx.annotation.MainThread
+import androidx.annotation.OptIn
 import androidx.media3.common.MediaItem
 import androidx.media3.common.PlaybackException
 import androidx.media3.common.Player
+import androidx.media3.common.util.UnstableApi
 import androidx.media3.exoplayer.ExoPlayer
 import com.github.jing332.common.utils.FileUtils
 import com.github.jing332.common.utils.FileUtils.mimeType
-import com.github.jing332.common.utils.runOnUI
 import com.github.jing332.tts.synthesizer.BgmSource
 import com.github.jing332.tts.synthesizer.IBgmPlayer
 import io.github.oshai.kotlinlogging.KotlinLogging
@@ -23,64 +25,78 @@ class BgmPlayer(val context: SynthesizerContext) : IBgmPlayer {
     private var exoPlayer: ExoPlayer? = null
     private val currentPlayList = mutableListOf<BgmSource>()
 
+    @OptIn(UnstableApi::class)
+    @MainThread
     override fun init() {
-        exoPlayer = ExoPlayer.Builder(context.androidContext).build().apply {
-            addListener(object : Player.Listener {
-                override fun onMediaItemTransition(mediaItem: MediaItem?, reason: Int) {
-                    super.onMediaItemTransition(mediaItem, reason)
-                    val volume = mediaItem?.localConfiguration?.tag
-                    if (volume != null && volume is Float && volume != this@apply.volume)
-                        this@apply.volume = volume.pow(1.5f)
-                }
+        logger.debug { "bgm init" }
 
-                override fun onPlayerError(error: PlaybackException) {
-                    super.onPlayerError(error)
+        exoPlayer = ExoPlayer.Builder(context.androidContext)
+            .build().apply {
+                addListener(object : Player.Listener {
+                    override fun onMediaItemTransition(mediaItem: MediaItem?, reason: Int) {
+                        super.onMediaItemTransition(mediaItem, reason)
+                        val volume = mediaItem?.localConfiguration?.tag
+                        if (volume != null && volume is Float && volume != this@apply.volume)
+                            this@apply.volume = volume.pow(1.5f)
+                    }
 
-                    logger.error(error) { "bgm error, skip current media" }
-                    removeMediaItem(currentMediaItemIndex)
-                    seekToNextMediaItem()
-                    prepare()
-                }
-            })
-            repeatMode = Player.REPEAT_MODE_ALL
-            shuffleModeEnabled = context.cfg.bgmShuffleEnabled()
-        }
+                    override fun onPlayerError(error: PlaybackException) {
+                        super.onPlayerError(error)
+
+                        logger.error(error) { "bgm error, skip current media" }
+                        removeMediaItem(currentMediaItemIndex)
+                        seekToNextMediaItem()
+                        prepare()
+                    }
+
+                    override fun onEvents(player: Player, events: Player.Events) {
+                        logger.info { events.toString() }
+                        super.onEvents(player, events)
+                    }
+
+                    override fun onVolumeChanged(volume: Float) {
+                        super.onVolumeChanged(volume)
+                        logger.debug { "bgm volume changed: $volume" }
+                    }
+                })
+                repeatMode = Player.REPEAT_MODE_ALL
+                shuffleModeEnabled = context.cfg.bgmShuffleEnabled()
+            }
     }
 
+    @MainThread
     override fun stop() {
-        if (!context.cfg.bgmEnabled()) return
-
         logger.debug { "bgm stop" }
-        runOnUI { exoPlayer?.pause() }
+        exoPlayer?.pause()
     }
 
-
+    @MainThread
     override fun destroy() {
         logger.debug { "bgm destroy" }
-        runOnUI {
-            exoPlayer?.stop()
-            exoPlayer?.release()
-        }
+
+        currentPlayList.clear()
+        exoPlayer!!.release()
+        exoPlayer = null
     }
 
+    @MainThread
     override fun play() {
         if (!context.cfg.bgmEnabled()) return
 
         logger.debug { "bgm play" }
-        runOnUI {
-            if (exoPlayer?.isPlaying == false) exoPlayer?.play()
-        }
+        exoPlayer!!.play()
     }
 
+    @MainThread
     override fun setPlayList(
         list: List<BgmSource>,
-    ) = runOnUI {
+    ) {
         logger.atDebug {
             message = "bgm setPlayList"
             payload = mapOf("list" to list)
         }
 
-        if (list == currentPlayList) return@runOnUI
+        if (list == currentPlayList) return
         currentPlayList.clear()
         currentPlayList.addAll(list)
 

@@ -1,18 +1,17 @@
 package com.github.jing332.tts.synthesizer
 
+import androidx.annotation.MainThread
 import com.drake.net.utils.withMain
 import com.github.jing332.common.utils.StringUtils
-import com.github.jing332.common.utils.runOnUI
 import com.github.jing332.common.utils.toByteArray
-import com.github.jing332.tts.ConfigType
 import com.github.jing332.tts.SynthesizerContext
 import com.github.jing332.tts.error.RequesterError
 import com.github.jing332.tts.error.SynthesisError
 import com.github.jing332.tts.error.TextProcessorError
+import com.github.jing332.tts.speech.EmptyInputStream
 import com.github.jing332.tts.synthesizer.event.ErrorEvent
 import com.github.jing332.tts.synthesizer.event.Event
 import com.github.jing332.tts.synthesizer.event.NormalEvent
-import com.github.jing332.tts.speech.EmptyInputStream
 import com.github.michaelbull.result.Err
 import com.github.michaelbull.result.Ok
 import com.github.michaelbull.result.Result
@@ -22,6 +21,7 @@ import io.github.oshai.kotlinlogging.KLogger
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineName
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.NonCancellable
 import kotlinx.coroutines.TimeoutCancellationException
 import kotlinx.coroutines.channels.SendChannel
 import kotlinx.coroutines.channels.produce
@@ -30,9 +30,9 @@ import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
+import kotlinx.coroutines.withContext
 import kotlinx.coroutines.withTimeout
 import java.io.InputStream
-import kotlin.math.pow
 
 abstract class AbstractMixSynthesizer() : Synthesizer {
     companion object {
@@ -259,12 +259,14 @@ abstract class AbstractMixSynthesizer() : Synthesizer {
             return@withLock Err(it)
         }
 
-        runOnUI { bgmPlayer.play() }
+        withMain { bgmPlayer.play() }
         try {
             executeSynthesis(params, callback, forceConfigId)
         } finally {
             logger.debug { "synthesize done" }
-            runOnUI { bgmPlayer.stop() }
+            withContext(NonCancellable) {
+                withMain { bgmPlayer.stop() }
+            }
         }
     }
 
@@ -310,6 +312,7 @@ abstract class AbstractMixSynthesizer() : Synthesizer {
     }
 
 
+    @MainThread
     override suspend fun destroy() = mutex.withLock {
         isInitialized = false
         repo.destroy()

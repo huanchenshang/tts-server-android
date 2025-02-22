@@ -32,9 +32,8 @@ import com.github.jing332.database.dbm
 import com.github.jing332.database.entities.systts.AudioParams
 import com.github.jing332.database.entities.systts.TtsConfigurationDTO
 import com.github.jing332.tts.ConfigType
-
-import com.github.jing332.tts.SynthesizerConfig
 import com.github.jing332.tts.MixSynthesizer
+import com.github.jing332.tts.SynthesizerConfig
 import com.github.jing332.tts.error.StreamProcessorError
 import com.github.jing332.tts.error.SynthesisError
 import com.github.jing332.tts.error.TextProcessorError
@@ -59,10 +58,12 @@ import com.github.michaelbull.result.onSuccess
 import com.github.michaelbull.result.runCatching
 import io.github.oshai.kotlinlogging.KotlinLogging
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
+import splitties.init.appCtx
 import java.nio.ByteBuffer
 import java.util.Locale
 import kotlin.jvm.Throws
@@ -106,7 +107,7 @@ class SystemTtsService : TextToSpeechService(), IEventDispatcher {
     private val mNotificationReceiver: NotificationReceiver by lazy { NotificationReceiver() }
     private val mLocalReceiver: LocalReceiver by lazy { LocalReceiver() }
 
-    private val mScope = CoroutineScope(Job())
+    private lateinit var mScope: CoroutineScope
 
 
     // WIFI 锁
@@ -120,6 +121,7 @@ class SystemTtsService : TextToSpeechService(), IEventDispatcher {
 
     override fun onCreate() {
         super.onCreate()
+        mScope = CoroutineScope(Dispatchers.IO)
 
         registerGlobalReceiver(
             listOf(ACTION_NOTIFY_KILL_PROCESS, ACTION_NOTIFY_CANCEL), mNotificationReceiver
@@ -148,7 +150,7 @@ class SystemTtsService : TextToSpeechService(), IEventDispatcher {
         logger.info { "initialize or load configruation" }
         mScope.launch {
             mTtsManager = mTtsManager ?: MixSynthesizer.global.apply {
-                context.androidContext = this@SystemTtsService.applicationContext
+                context.androidContext = appCtx
                 context.event = this@SystemTtsService
                 context.cfg = SynthesizerConfig(
                     requestTimeout = SysTtsConfig::requestTimeout,
@@ -176,14 +178,14 @@ class SystemTtsService : TextToSpeechService(), IEventDispatcher {
         mTextProcessor.loadReplacer()
     }
 
-
     override fun onDestroy() {
         logger.debug { "service destroy" }
         super.onDestroy()
 
-        mScope.launch {
+        mScope.launch(Dispatchers.Main) {
             mTtsManager?.destroy()
             mTtsManager = null
+            logger.debug { "destoryed" }
         }
         unregisterReceiver(mNotificationReceiver)
         AppConst.localBroadcast.unregisterReceiver(mLocalReceiver)
@@ -298,65 +300,67 @@ class SystemTtsService : TextToSpeechService(), IEventDispatcher {
         request: SynthesisRequest,
         callback: android.speech.tts.SynthesisCallback,
     ) {
-        mNotificationJob?.cancel()
-        reNewWakeLock()
-        startForegroundService()
         val text = request.charSequenceText.toString().trim()
-        mCurrentText = text
-        updateNotification(getString(R.string.systts_state_synthesizing), text)
-
         if (text.isBlank()) {
             logger.debug { "Skip empty text request" }
             callback.start(16000, AudioFormat.ENCODING_PCM_16BIT, 1)
             callback.done()
-        } else {
-            val enabledBgm = request.params.getBoolean("bgm_enabled", true)
-            runBlocking {
-                // If the voiceName is not empty, get the configuration ID from the voiceName.
-                var cfgId: Long? = getConfigIdFromVoiceName(request.voiceName ?: "").onFailure {
-                    longToast(R.string.voice_name_bad_format)
-                    callback.error(TextToSpeech.ERROR_INVALID_REQUEST)
-                    return@runBlocking
-                }.value
-                synthesizerJob = mScope.launch {
-                    mTtsManager?.synthesize(
-                        params = SystemParams(text = request.charSequenceText.toString()),
-                        forceConfigId = cfgId,
-                        callback = object :
-                            com.github.jing332.tts.synthesizer.SynthesisCallback {
-                            override fun onSynthesizeStart(sampleRate: Int) {
-                                callback.start(
-                                    /* sampleRateInHz = */ sampleRate,
-                                    /* audioFormat = */ AudioFormat.ENCODING_PCM_16BIT,
-                                    /* channelCount = */ 1
-                                )
-                            }
+            return
+        }
 
-                            override fun onSynthesizeAvailable(audio: ByteArray) {
-                                writeToCallBack(callback, audio)
-                            }
+        mNotificationJob?.cancel()
+        reNewWakeLock()
+        startForegroundService()
+        mCurrentText = text
+        updateNotification(getString(R.string.systts_state_synthesizing), text)
 
+        val enabledBgm = request.params.getBoolean("bgm_enabled", true)
+        runBlocking {
+            // If the voiceName is not empty, get the configuration ID from the voiceName.
+            var cfgId: Long? = getConfigIdFromVoiceName(request.voiceName ?: "").onFailure {
+                longToast(R.string.voice_name_bad_format)
+                callback.error(TextToSpeech.ERROR_INVALID_REQUEST)
+                return@runBlocking
+            }.value
+            synthesizerJob = mScope.launch {
+                mTtsManager?.synthesize(
+                    params = SystemParams(text = request.charSequenceText.toString()),
+                    forceConfigId = cfgId,
+                    callback = object :
+                        com.github.jing332.tts.synthesizer.SynthesisCallback {
+                        override fun onSynthesizeStart(sampleRate: Int) {
+                            callback.start(
+                                /* sampleRateInHz = */ sampleRate,
+                                /* audioFormat = */ AudioFormat.ENCODING_PCM_16BIT,
+                                /* channelCount = */ 1
+                            )
                         }
-                    )?.onSuccess {
-                        logger.debug { "done" }
-                        callback.done()
-                    }?.onFailure {
-                        when (it) {
-                            SynthesisError.ConfigEmpty -> {
-                                callback.error(TextToSpeech.ERROR_SYNTHESIS)
-                            }
 
-                            is SynthesisError.TextHandle -> {
-                                // eventListener already handled
-                                // handleTextProcessorError(it.err)
-                                callback.error(TextToSpeech.ERROR_INVALID_REQUEST)
-                            }
-
+                        override fun onSynthesizeAvailable(audio: ByteArray) {
+                            writeToCallBack(callback, audio)
                         }
-                    } ?: callback.error(TextToSpeech.ERROR_SYNTHESIS)
-                }
-                synthesizerJob?.join()
+
+                    }
+                )?.onSuccess {
+                    logger.debug { "done" }
+                    callback.done()
+                }?.onFailure {
+                    when (it) {
+                        SynthesisError.ConfigEmpty -> {
+                            callback.error(TextToSpeech.ERROR_SYNTHESIS)
+                        }
+
+                        is SynthesisError.TextHandle -> {
+                            // eventListener already handled
+                            // handleTextProcessorError(it.err)
+                            callback.error(TextToSpeech.ERROR_INVALID_REQUEST)
+                        }
+
+                    }
+                } ?: callback.error(TextToSpeech.ERROR_SYNTHESIS)
             }
+            synthesizerJob?.join()
+
         }
 
 
