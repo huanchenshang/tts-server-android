@@ -24,20 +24,28 @@ class BgmPlayer(val context: SynthesizerContext) : IBgmPlayer {
 
     private var exoPlayer: ExoPlayer? = null
     private val currentPlayList = mutableListOf<BgmSource>()
+    private var currentSource: BgmSource? = null
 
     @OptIn(UnstableApi::class)
     @MainThread
     override fun init() {
         logger.debug { "bgm init" }
 
-        exoPlayer = ExoPlayer.Builder(context.androidContext)
+        exoPlayer = exoPlayer ?: ExoPlayer.Builder(context.androidContext)
             .build().apply {
                 addListener(object : Player.Listener {
                     override fun onMediaItemTransition(mediaItem: MediaItem?, reason: Int) {
                         super.onMediaItemTransition(mediaItem, reason)
-                        val volume = mediaItem?.localConfiguration?.tag
-                        if (volume != null && volume is Float && volume != this@apply.volume)
-                            this@apply.volume = volume.pow(1.5f)
+                        mediaItem?.localConfiguration?.tag?.let { source ->
+                            if (source is BgmSource) {
+                                currentSource = source
+
+                                if (source.volume != volume) {
+                                    updateVolume(source.volume)
+                                }
+                            }
+                        }
+
                     }
 
                     override fun onPlayerError(error: PlaybackException) {
@@ -47,16 +55,6 @@ class BgmPlayer(val context: SynthesizerContext) : IBgmPlayer {
                         removeMediaItem(currentMediaItemIndex)
                         seekToNextMediaItem()
                         prepare()
-                    }
-
-                    override fun onEvents(player: Player, events: Player.Events) {
-                        logger.info { events.toString() }
-                        super.onEvents(player, events)
-                    }
-
-                    override fun onVolumeChanged(volume: Float) {
-                        super.onVolumeChanged(volume)
-                        logger.debug { "bgm volume changed: $volume" }
                     }
                 })
                 repeatMode = Player.REPEAT_MODE_ALL
@@ -85,6 +83,10 @@ class BgmPlayer(val context: SynthesizerContext) : IBgmPlayer {
 
         logger.debug { "bgm play" }
         exoPlayer!!.play()
+    }
+
+    fun updateVolume(volume: Float) {
+        exoPlayer?.volume = volume.pow(1.5f)
     }
 
     @MainThread
@@ -122,10 +124,6 @@ class BgmPlayer(val context: SynthesizerContext) : IBgmPlayer {
         // 非audio或未知则跳过
         if (mime == null || !mime.startsWith("audio")) return false
 
-        logger.atTrace {
-            message = "bgm addMediaItem"
-            payload = mapOf("file" to file)
-        }
         val item =
             MediaItem.Builder().setTag(volume).setUri(file.absolutePath).build()
         exoPlayer?.addMediaItem(item)

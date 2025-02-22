@@ -29,6 +29,8 @@ open class PluginTtsProvider(
         val volume = if (source.volume == 0f) params.volume else source.volume
         val pitch = if (source.pitch == 0f) params.pitch else source.pitch
 
+        // source.data mapping to ttsrv.tts.data for javascript
+        mEngine?.source = source
         return mEngine?.getAudio(
             text = params.text,
             locale = source.locale,
