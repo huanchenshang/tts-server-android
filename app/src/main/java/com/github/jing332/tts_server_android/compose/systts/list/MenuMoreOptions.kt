@@ -78,6 +78,7 @@ internal fun MenuMoreOptions(
             checked = isMultiVoice,
             onClick = {
                 isMultiVoice = it
+                SystemTtsService.notifyUpdateConfig()
             },
             leadingIcon = {
                 Icon(Icons.Default.Group, null)
