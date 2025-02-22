@@ -88,7 +88,8 @@ class SysTtsForwarderService(
                 logger.debug { "android tts get file..." }
                 val file = androidTts.getFile(
                     params.text,
-                    params.voice,
+                    params.locale,
+                    voice = params.voice,
                     params = AudioParams(speed = speed, pitch = pitch)
                 )
 
