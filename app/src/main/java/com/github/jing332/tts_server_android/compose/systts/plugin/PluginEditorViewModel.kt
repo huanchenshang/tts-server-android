@@ -133,7 +133,9 @@ class PluginEditorViewModel(app: Application) : AndroidViewModel(app) {
 
     override fun onCleared() {
         super.onCleared()
-        mEngine?.onStop()
+        runCatching {
+            mEngine?.onStop()
+        }
     }
 
 }
