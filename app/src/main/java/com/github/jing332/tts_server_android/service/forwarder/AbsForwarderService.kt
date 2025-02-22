@@ -26,9 +26,9 @@ import com.github.jing332.common.utils.registerGlobalReceiver
 import com.github.jing332.common.utils.startForegroundCompat
 import com.github.jing332.common.utils.toast
 import com.github.jing332.tts_server_android.R
+import com.github.jing332.tts_server_android.compose.MainActivity
 import com.github.jing332.tts_server_android.constant.AppConst
- import com.github.jing332.tts_server_android.constant.KeyConst
-import com.github.jing332.tts_server_android.ui.ImportConfigActivity
+import com.github.jing332.tts_server_android.constant.KeyConst
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -147,7 +147,7 @@ abstract class AbsForwarderService(
             PendingIntent.getActivity(
                 this, 0, Intent(
                     this,
-                    ImportConfigActivity::class.java
+                    MainActivity::class.java
                 ).apply {
 //                    putExtra(
 //                        ImportConfigActivity.KEY_FRAGMENT_INDEX,

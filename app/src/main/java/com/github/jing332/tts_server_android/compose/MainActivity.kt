@@ -156,14 +156,7 @@ class MainActivity : AppCompatActivity() {
                             notificationPermission.launchPermissionRequest()
                         }
                     }
-                }/* else {
-                    val enabled = NotificationManagerCompat.from(this).areNotificationsEnabled()
-                    if (!enabled) {
-                        LaunchedEffect(Unit) {
-                            gotoNotificationManager(this@MainActivity)
-                        }
-                    }
-                }*/
+                }
 
                 LaunchedEffect(Unit) {
                     showAutoCheckUpdaterDialog = AppConfig.isAutoCheckUpdateEnabled.value
@@ -187,27 +180,6 @@ class MainActivity : AppCompatActivity() {
         }
     }
 }
-
-//private fun gotoNotificationManager(context: Context) {
-//    try {
-//        val intent = Intent()
-//        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) { //A8.0
-//            intent.setAction(Settings.ACTION_APP_NOTIFICATION_SETTINGS)
-//            intent.putExtra(Settings.EXTRA_APP_PACKAGE, context.packageName)
-//            intent.putExtra(Settings.EXTRA_CHANNEL_ID, context.applicationInfo.uid)
-//        }
-//        intent.putExtra("app_package", context.packageName)
-//        intent.putExtra("app_uid", context.applicationInfo.uid)
-//        context.startActivity(intent)
-//    } catch (e: Exception) {
-//        e.printStackTrace()
-//        val intent = Intent()
-//        intent.setAction(Settings.ACTION_APPLICATION_DETAILS_SETTINGS)
-//        val uri = Uri.fromParts("package", context.packageName, null)
-//        intent.setData(uri)
-//        context.startActivity(intent)
-//    }
-//}
 
 @Composable
 private fun MainScreen(finish: () -> Unit) {
