@@ -53,7 +53,7 @@ import com.github.jing332.database.dbm
 import com.github.jing332.database.entities.SpeechRule
 import com.github.jing332.tts_server_android.R
 import com.github.jing332.tts_server_android.compose.LocalNavController
-import com.github.jing332.tts_server_android.compose.ShadowReorderableItem
+import com.github.jing332.tts_server_android.compose.ShadowedDraggableItem
 import com.github.jing332.tts_server_android.compose.SharedViewModel
 import com.github.jing332.tts_server_android.compose.systts.ConfigDeleteDialog
 import com.github.jing332.tts_server_android.utils.MyTools
@@ -195,7 +195,7 @@ fun SpeechRuleManagerScreen(sharedVM: SharedViewModel, finish: () -> Unit) {
             state = reorderState.listState,
         ) {
             itemsIndexed(cache.list, key = { _, v -> v.id }) { index, item ->
-                ShadowReorderableItem(reorderableState = reorderState, key = item.id) {
+                ShadowedDraggableItem(reorderableState = reorderState, key = item.id) {
                     Item(
                         modifier = Modifier
                             .fillMaxWidth()

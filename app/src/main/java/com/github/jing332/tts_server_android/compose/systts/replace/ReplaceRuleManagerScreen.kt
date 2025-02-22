@@ -45,7 +45,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.github.jing332.tts_server_android.R
 import com.github.jing332.tts_server_android.compose.LocalNavController
-import com.github.jing332.tts_server_android.compose.ShadowReorderableItem
+import com.github.jing332.tts_server_android.compose.ShadowedDraggableItem
 import com.github.jing332.tts_server_android.compose.systts.sizeToToggleableState
 import com.github.jing332.compose.widgets.LazyListIndexStateSaver
 import com.github.jing332.compose.widgets.TextFieldDialog
@@ -275,7 +275,7 @@ internal fun ReplaceRuleManagerScreen(sharedVM: SharedViewModel, vm: ReplaceRule
                     )
                 val key = "g_${g.id}"
                 stickyHeader(key = key) {
-                    ShadowReorderableItem(reorderableState = reorderState, key = key) {
+                    ShadowedDraggableItem(reorderableState = reorderState, key = key) {
                         Group(
                             modifier = Modifier
                                 .fillMaxWidth()
@@ -304,7 +304,7 @@ internal fun ReplaceRuleManagerScreen(sharedVM: SharedViewModel, vm: ReplaceRule
 
                 if (g.isExpanded) {
                     items(groupWithRules.list, key = { it.id }) { rule ->
-                        ShadowReorderableItem(reorderableState = reorderState, key = rule.id) { _ ->
+                        ShadowedDraggableItem(reorderableState = reorderState, key = rule.id) { _ ->
                             Item(
                                 name = rule.name,
                                 modifier = Modifier

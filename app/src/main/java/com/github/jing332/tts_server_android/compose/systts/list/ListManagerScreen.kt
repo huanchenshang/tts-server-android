@@ -55,7 +55,7 @@ import com.github.jing332.tts_server_android.AppLocale
 import com.github.jing332.tts_server_android.R
 import com.github.jing332.tts_server_android.compose.LocalDrawerState
 import com.github.jing332.tts_server_android.compose.LocalNavController
-import com.github.jing332.tts_server_android.compose.ShadowReorderableItem
+import com.github.jing332.tts_server_android.compose.ShadowedDraggableItem
 import com.github.jing332.tts_server_android.compose.SharedViewModel
 import com.github.jing332.tts_server_android.compose.nav.NavRoutes
 import com.github.jing332.tts_server_android.compose.nav.NavTopAppBar
@@ -349,7 +349,7 @@ internal fun ListManagerScreen(
                         )
                     val key = "g_${g.id}"
                     stickyHeader(key = key) {
-                        ShadowReorderableItem(reorderableState = reorderState, key = key) {
+                        ShadowedDraggableItem(reorderableState = reorderState, key = key) {
                             Group(modifier = Modifier.detectReorderAfterLongPress(reorderState),
                                 name = g.name,
                                 isExpanded = g.isExpanded,
@@ -401,7 +401,7 @@ internal fun ListManagerScreen(
                             key = { _, v -> "${g.id}_${v.id}" }) { _, item ->
                             if (g.id == 1L) println(item.displayName + ", " + item.order)
 
-                            ShadowReorderableItem(
+                            ShadowedDraggableItem(
                                 reorderableState = reorderState,
                                 key = "${g.id}_${item.id}"
                             ) {
@@ -410,7 +410,7 @@ internal fun ListManagerScreen(
                                 }
                                 Item(reorderState = reorderState,
                                     modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
-                                    name = item.displayName ?: "",
+                                    name = item.displayName,
                                     tagName = descriptor.tagName,
                                     type = descriptor.type,
                                     standby = descriptor.standby,

@@ -10,7 +10,6 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.material.icons.Icons
@@ -43,7 +42,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
@@ -54,16 +52,13 @@ import androidx.compose.ui.semantics.stateDescription
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import coil3.compose.SubcomposeAsyncImage
 import com.github.jing332.common.utils.longToast
 import com.github.jing332.compose.rememberLazyListReorderCache
-import com.github.jing332.compose.widgets.CenterTextImage
 import com.github.jing332.database.dbm
 import com.github.jing332.database.entities.plugin.Plugin
-import com.github.jing332.tts_server_android.App.Companion.context
 import com.github.jing332.tts_server_android.R
 import com.github.jing332.tts_server_android.compose.LocalNavController
-import com.github.jing332.tts_server_android.compose.ShadowReorderableItem
+import com.github.jing332.tts_server_android.compose.ShadowedDraggableItem
 import com.github.jing332.tts_server_android.compose.SharedViewModel
 import com.github.jing332.tts_server_android.compose.systts.ConfigDeleteDialog
 import com.github.jing332.tts_server_android.constant.AppConst
@@ -216,7 +211,7 @@ fun PluginManagerScreen(sharedVM: SharedViewModel, onFinishActivity: () -> Unit)
         ) {
             itemsIndexed(cache.list, key = { _, item -> item.id }) { _, item ->
                 val desc = remember { "${item.author} - v${item.version}" }
-                ShadowReorderableItem(reorderableState = reorderState, key = item.id) {
+                ShadowedDraggableItem(reorderableState = reorderState, key = item.id) {
                     Modifier
                         .fillMaxWidth()
                         .padding(vertical = 4.dp, horizontal = 8.dp)
