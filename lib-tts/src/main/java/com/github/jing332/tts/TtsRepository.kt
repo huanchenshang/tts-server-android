@@ -1,5 +1,6 @@
 package com.github.jing332.tts
 
+import android.R.attr.tag
 import com.github.jing332.database.dbm
 import com.github.jing332.database.entities.systts.AudioParams
 import com.github.jing332.database.entities.systts.BgmConfiguration
@@ -29,7 +30,7 @@ internal class TtsRepository(
                 .filter { it.isEnabled && (it.config as? TtsConfigurationDTO)?.speechRule?.isStandby == true }
                 .map {
                     val config = it.config as TtsConfigurationDTO
-                    config.toVO()
+                    config.toVO().copy(tag = it)
                 }
         for (group in groupWithTts) {
             val gp = group.group.audioParams.copyIfFollow(tp)
@@ -48,7 +49,8 @@ internal class TtsRepository(
                     audioParams = c.audioParams.copyIfFollow(gp),
                     audioFormat = c.audioFormat,
                     source = c.source,
-                    standbyConfig = standby
+                    standbyConfig = standby,
+                    tag = tts
                 )
             }
         }

@@ -22,14 +22,17 @@ import android.util.Log
 import androidx.annotation.StringRes
 import androidx.core.app.NotificationManagerCompat
 import androidx.core.content.ContextCompat
+import com.github.jing332.common.utils.limitLength
 import com.github.jing332.common.utils.longToast
 import com.github.jing332.common.utils.registerGlobalReceiver
 import com.github.jing332.common.utils.runOnUI
 import com.github.jing332.common.utils.sizeToReadable
 import com.github.jing332.common.utils.startForegroundCompat
 import com.github.jing332.common.utils.toHtmlBold
+import com.github.jing332.common.utils.toHtmlSmall
 import com.github.jing332.database.dbm
 import com.github.jing332.database.entities.systts.AudioParams
+import com.github.jing332.database.entities.systts.SystemTtsV2
 import com.github.jing332.database.entities.systts.TtsConfigurationDTO
 import com.github.jing332.tts.ConfigType
 import com.github.jing332.tts.MixSynthesizer
@@ -38,7 +41,6 @@ import com.github.jing332.tts.error.StreamProcessorError
 import com.github.jing332.tts.error.SynthesisError
 import com.github.jing332.tts.error.TextProcessorError
 import com.github.jing332.tts.synthesizer.RequestPayload
-import com.github.jing332.tts.synthesizer.Synthesizer
 import com.github.jing332.tts.synthesizer.SystemParams
 import com.github.jing332.tts.synthesizer.event.ErrorEvent
 import com.github.jing332.tts.synthesizer.event.Event
@@ -147,7 +149,7 @@ class SystemTtsService : TextToSpeechService(), IEventDispatcher {
     }
 
     fun initManager() {
-        logger.info { "initialize or load configruation" }
+        logger.debug { "initialize or load configruation" }
         mScope.launch {
             mTtsManager = mTtsManager ?: MixSynthesizer.global.apply {
                 context.androidContext = appCtx
@@ -315,8 +317,8 @@ class SystemTtsService : TextToSpeechService(), IEventDispatcher {
         updateNotification(getString(R.string.systts_state_synthesizing), text)
 
         val enabledBgm = request.params.getBoolean(PARAM_BGM_ENABLED, true)
-        logD("PARAM_BGM_ENABLED: ${enabledBgm}")
         mTtsManager?.context?.cfg?.bgmEnabled = { enabledBgm }
+
         runBlocking {
             // If the voiceName is not empty, get the configuration ID from the voiceName.
             var cfgId: Long? = getConfigIdFromVoiceName(request.voiceName ?: "").onFailure {
@@ -579,7 +581,16 @@ class SystemTtsService : TextToSpeechService(), IEventDispatcher {
     }
 
     private fun RequestPayload.text(): String {
-        return text.toHtmlBold() + "<br>" + config.source
+        val tag = config.tag
+        val standbyTag = config.standbyConfig?.tag
+        val standbyInfo = if (standbyTag is SystemTtsV2) {
+            "<br>${getString(R.string.systts_standby)} " + standbyTag.displayName
+        } else ""
+
+        val config = if (tag is SystemTtsV2) {
+            tag.displayName + ", ${config.source.voice}, ${config.speechInfo.tagName}" + standbyInfo.toHtmlSmall()
+        } else ""
+        return text.toHtmlBold() + "<br>" + config
     }
 
     private fun normalEvent(e: NormalEvent) {
@@ -618,7 +629,7 @@ class SystemTtsService : TextToSpeechService(), IEventDispatcher {
                 logI(
                     getString(
                         R.string.loading_audio_stream,
-                        e.request.text()
+                        e.request.text.limitLength(10)
                     )
                 )
 

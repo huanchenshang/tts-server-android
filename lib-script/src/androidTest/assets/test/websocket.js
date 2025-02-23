@@ -6,7 +6,7 @@ ws.on('close', function(code, reason){ // Int, String
    latch.countDown()
 })
 
-ws.on('error', function(err, response){ // String, okio.Response
+ws.on('error', function(err, response){ // String, NativeResponse
     println("error: " + err + ", code: " + response.status + ", message: " + response.statusText)
     latch.countDown()
 })

@@ -73,7 +73,7 @@ class BgmPlayer(val context: SynthesizerContext) : IBgmPlayer {
         logger.debug { "bgm destroy" }
 
         currentPlayList.clear()
-        exoPlayer!!.release()
+        exoPlayer?.release()
         exoPlayer = null
     }
 
@@ -82,7 +82,7 @@ class BgmPlayer(val context: SynthesizerContext) : IBgmPlayer {
         if (!context.cfg.bgmEnabled()) return
 
         logger.debug { "bgm play" }
-        exoPlayer!!.play()
+        exoPlayer?.play()
     }
 
     fun updateVolume(volume: Float) {

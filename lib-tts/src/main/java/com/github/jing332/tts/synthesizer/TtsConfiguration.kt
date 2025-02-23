@@ -11,6 +11,7 @@ data class TtsConfiguration(
     val audioParams: AudioParams = AudioParams(),
     val audioFormat: BasicAudioFormat = BasicAudioFormat(),
     val source: TextToSpeechSource,
+    val tag: Any? = null,
 
     val standbyConfig: TtsConfiguration? = null,
 ) {
