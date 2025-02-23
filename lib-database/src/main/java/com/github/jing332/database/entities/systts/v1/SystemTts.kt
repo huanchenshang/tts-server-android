@@ -5,6 +5,7 @@ import androidx.room.*
 import com.github.jing332.database.entities.AbstractListGroup
 import com.github.jing332.database.entities.systts.SpeechRuleInfo
 import com.github.jing332.database.entities.systts.v1.tts.ITextToSpeechEngine
+import com.github.jing332.database.entities.systts.v1.tts.LocalTTS
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.encodeToString
@@ -85,7 +86,7 @@ data class SystemTts(
 
         @TypeConverter
         fun stringToTts(json: String?): ITextToSpeechEngine {
-            return decodeFromString<ITextToSpeechEngine>(json).run { this!! }
+            return decodeFromString<ITextToSpeechEngine>(json).run { LocalTTS() }
         }
     }
 }
