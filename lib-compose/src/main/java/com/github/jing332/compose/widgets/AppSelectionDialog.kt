@@ -53,8 +53,6 @@ import com.github.jing332.compose.ComposeExtensions.clickableRipple
 import com.github.jing332.compose.R
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.isActive
-import my.nanihadesuka.compose.LazyColumnScrollbar
-import my.nanihadesuka.compose.ScrollbarSettings
 
 @Composable
 fun AppSelectionDialog(
@@ -182,12 +180,8 @@ fun AppSelectionDialog(
                     modifier = Modifier.padding(vertical = 16.dp),
                     isLoading = isLoading
                 ) {
-                    LazyColumnScrollbar(
-                        state,
-                        settings = ScrollbarSettings(
-                            thumbSelectedColor = MaterialTheme.colorScheme.primary,
-                            thumbUnselectedColor = MaterialTheme.colorScheme.secondary,
-                        )
+                    AppLazyColumnScrollbar(
+                        state
                     ) {
                         LazyColumn(state = state) {
                             itemsIndexed(entries) { i, entry ->

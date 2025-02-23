@@ -52,8 +52,10 @@ import androidx.compose.ui.semantics.stateDescription
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import cn.hutool.core.lang.Assert.state
 import com.github.jing332.common.utils.longToast
 import com.github.jing332.compose.rememberLazyListReorderCache
+import com.github.jing332.compose.widgets.AppLazyColumnScrollbar
 import com.github.jing332.database.dbm
 import com.github.jing332.database.entities.plugin.Plugin
 import com.github.jing332.tts_server_android.R
@@ -202,42 +204,45 @@ fun PluginManagerScreen(sharedVM: SharedViewModel, onFinishActivity: () -> Unit)
             }
         })
 
-        LazyColumn(
-            state = reorderState.listState,
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(paddingValues)
-                .reorderable(reorderState)
-        ) {
-            itemsIndexed(cache.list, key = { _, item -> item.id }) { _, item ->
-                val desc = remember { "${item.author} - v${item.version}" }
-                ShadowedDraggableItem(reorderableState = reorderState, key = item.id) {
-                    Modifier
-                        .fillMaxWidth()
-                        .padding(vertical = 4.dp, horizontal = 8.dp)
-                        .detectReorderAfterLongPress(reorderState)
-                    Item(
-                        modifier = Modifier
-                            .padding(horizontal = 8.dp, vertical = 4.dp)
-                            .detectReorderAfterLongPress(reorderState),
-                        hasDefVars = item.defVars.isNotEmpty(),
-                        needSetVars = item.defVars.isNotEmpty() && item.userVars.isEmpty(),
-                        name = item.name,
-                        desc = desc,
-                        iconUrl = item.iconUrl,
-                        isEnabled = item.isEnabled,
-                        onEnabledChange = {
-                            dbm.pluginDao.update(item.copy(isEnabled = it))
-                        },
-                        onEdit = { onEdit(item) },
-                        onSetVars = { showVarsSettings = item },
-                        onDelete = { showDeleteDialog = item },
-                        onClear = {
-                            PluginManager(item).clearCache()
-                            context.longToast(R.string.clear_cache_ok)
-                        },
-                        onExport = { showExportConfig = listOf(item) }
-                    )
+        AppLazyColumnScrollbar(reorderState.listState) {
+
+            LazyColumn(
+                state = reorderState.listState,
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(paddingValues)
+                    .reorderable(reorderState)
+            ) {
+                itemsIndexed(cache.list, key = { _, item -> item.id }) { _, item ->
+                    val desc = remember { "${item.author} - v${item.version}" }
+                    ShadowedDraggableItem(reorderableState = reorderState, key = item.id) {
+                        Modifier
+                            .fillMaxWidth()
+                            .padding(vertical = 4.dp, horizontal = 8.dp)
+                            .detectReorderAfterLongPress(reorderState)
+                        Item(
+                            modifier = Modifier
+                                .padding(horizontal = 8.dp, vertical = 4.dp)
+                                .detectReorderAfterLongPress(reorderState),
+                            hasDefVars = item.defVars.isNotEmpty(),
+                            needSetVars = item.defVars.isNotEmpty() && item.userVars.isEmpty(),
+                            name = item.name,
+                            desc = desc,
+                            iconUrl = item.iconUrl,
+                            isEnabled = item.isEnabled,
+                            onEnabledChange = {
+                                dbm.pluginDao.update(item.copy(isEnabled = it))
+                            },
+                            onEdit = { onEdit(item) },
+                            onSetVars = { showVarsSettings = item },
+                            onDelete = { showDeleteDialog = item },
+                            onClear = {
+                                PluginManager(item).clearCache()
+                                context.longToast(R.string.clear_cache_ok)
+                            },
+                            onExport = { showExportConfig = listOf(item) }
+                        )
+                    }
                 }
             }
         }

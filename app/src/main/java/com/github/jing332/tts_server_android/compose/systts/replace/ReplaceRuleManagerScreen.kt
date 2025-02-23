@@ -43,6 +43,8 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
+import cn.hutool.core.lang.Assert.state
+import com.github.jing332.compose.widgets.AppLazyColumnScrollbar
 import com.github.jing332.tts_server_android.R
 import com.github.jing332.tts_server_android.compose.LocalNavController
 import com.github.jing332.tts_server_android.compose.ShadowedDraggableItem
@@ -63,7 +65,11 @@ import org.burnoutcrew.reorderable.reorderable
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
 @Composable
-internal fun ReplaceRuleManagerScreen(sharedVM: SharedViewModel, vm: ReplaceRuleManagerViewModel = viewModel(), finish: () -> Unit) {
+internal fun ReplaceRuleManagerScreen(
+    sharedVM: SharedViewModel,
+    vm: ReplaceRuleManagerViewModel = viewModel(),
+    finish: () -> Unit,
+) {
     val context = LocalContext.current
     val navController = LocalNavController.current
 
@@ -260,76 +266,84 @@ internal fun ReplaceRuleManagerScreen(sharedVM: SharedViewModel, vm: ReplaceRule
                     )
                 }
             })
-        LazyColumn(
-            Modifier
-                .fillMaxSize()
-                .padding(paddingValues)
-                .reorderable(reorderState),
-            state = listState,
-        ) {
-            models.forEachIndexed { _, groupWithRules ->
-                val g = groupWithRules.group
-                val toggleableState =
-                    groupWithRules.list.filter { it.isEnabled }.size.sizeToToggleableState(
-                        groupWithRules.list.size
-                    )
-                val key = "g_${g.id}"
-                stickyHeader(key = key) {
-                    ShadowedDraggableItem(reorderableState = reorderState, key = key) {
-                        Group(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .detectReorderAfterLongPress(reorderState),
-                            name = g.name,
-                            isExpanded = g.isExpanded,
-                            toggleableState = toggleableState,
-                            onToggleableStateChange = { enabled ->
-                                groupWithRules.list.map {
-                                    if (it.isEnabled != enabled)
-                                        dbm.replaceRuleDao.update(it.copy(isEnabled = enabled))
-                                }
-                            },
-                            onClick = { dbm.replaceRuleDao.updateGroup(g.copy(isExpanded = !g.isExpanded)) },
-                            onEdit = { showGroupEditDialog = g },
-                            onDelete = {
-                                vm.deleteGroup(groupWithRules)
-                                if (groupWithRules.list.find { it.isEnabled } != null)
-                                    SystemTtsService.notifyUpdateConfig(isOnlyReplacer = true)
-                            },
-                            onExport = { showExportSheet = listOf(groupWithRules) },
-                            onSort = { showSortDialog = groupWithRules.list }
-                        )
-                    }
-                }
+        AppLazyColumnScrollbar(listState) {
 
-                if (g.isExpanded) {
-                    items(groupWithRules.list, key = { it.id }) { rule ->
-                        ShadowedDraggableItem(reorderableState = reorderState, key = rule.id) { _ ->
-                            Item(
-                                name = rule.name,
+            LazyColumn(
+                Modifier
+                    .fillMaxSize()
+                    .padding(paddingValues)
+                    .reorderable(reorderState),
+                state = listState,
+            ) {
+                models.forEachIndexed { _, groupWithRules ->
+                    val g = groupWithRules.group
+                    val toggleableState =
+                        groupWithRules.list.filter { it.isEnabled }.size.sizeToToggleableState(
+                            groupWithRules.list.size
+                        )
+                    val key = "g_${g.id}"
+                    stickyHeader(key = key) {
+                        ShadowedDraggableItem(reorderableState = reorderState, key = key) {
+                            Group(
                                 modifier = Modifier
                                     .fillMaxWidth()
-                                    .padding(horizontal = 8.dp, vertical = 4.dp)
                                     .detectReorderAfterLongPress(reorderState),
-                                isEnabled = rule.isEnabled,
-                                onCheckedChange = { enabled ->
-                                    dbm.replaceRuleDao.update(rule.copy(isEnabled = enabled))
-                                    if (enabled) SystemTtsService.notifyUpdateConfig(isOnlyReplacer = true)
+                                name = g.name,
+                                isExpanded = g.isExpanded,
+                                toggleableState = toggleableState,
+                                onToggleableStateChange = { enabled ->
+                                    groupWithRules.list.map {
+                                        if (it.isEnabled != enabled)
+                                            dbm.replaceRuleDao.update(it.copy(isEnabled = enabled))
+                                    }
                                 },
-                                onClick = { },
-                                onEdit = { navigateToEdit(rule) },
+                                onClick = { dbm.replaceRuleDao.updateGroup(g.copy(isExpanded = !g.isExpanded)) },
+                                onEdit = { showGroupEditDialog = g },
                                 onDelete = {
-                                    vm.deleteRule(rule)
-                                    if (rule.isEnabled)
+                                    vm.deleteGroup(groupWithRules)
+                                    if (groupWithRules.list.find { it.isEnabled } != null)
                                         SystemTtsService.notifyUpdateConfig(isOnlyReplacer = true)
                                 },
-                                onMoveTop = { vm.moveTop(rule) },
-                                onMoveBottom = { vm.moveBottom(rule) }
+                                onExport = { showExportSheet = listOf(groupWithRules) },
+                                onSort = { showSortDialog = groupWithRules.list }
                             )
                         }
                     }
-                }
 
+                    if (g.isExpanded) {
+                        items(groupWithRules.list, key = { it.id }) { rule ->
+                            ShadowedDraggableItem(
+                                reorderableState = reorderState,
+                                key = rule.id
+                            ) { _ ->
+                                Item(
+                                    name = rule.name,
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .padding(horizontal = 8.dp, vertical = 4.dp)
+                                        .detectReorderAfterLongPress(reorderState),
+                                    isEnabled = rule.isEnabled,
+                                    onCheckedChange = { enabled ->
+                                        dbm.replaceRuleDao.update(rule.copy(isEnabled = enabled))
+                                        if (enabled) SystemTtsService.notifyUpdateConfig(
+                                            isOnlyReplacer = true
+                                        )
+                                    },
+                                    onClick = { },
+                                    onEdit = { navigateToEdit(rule) },
+                                    onDelete = {
+                                        vm.deleteRule(rule)
+                                        if (rule.isEnabled)
+                                            SystemTtsService.notifyUpdateConfig(isOnlyReplacer = true)
+                                    },
+                                    onMoveTop = { vm.moveTop(rule) },
+                                    onMoveBottom = { vm.moveBottom(rule) }
+                                )
+                            }
+                        }
+                    }
+
+                }
             }
         }
     }

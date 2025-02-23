@@ -41,6 +41,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.drake.net.utils.withIO
 import com.github.jing332.common.utils.longToast
 import com.github.jing332.common.utils.toast
+import com.github.jing332.compose.widgets.AppLazyColumnScrollbar
 import com.github.jing332.compose.widgets.LazyListIndexStateSaver
 import com.github.jing332.compose.widgets.TextFieldDialog
 import com.github.jing332.database.dbm
@@ -336,117 +337,122 @@ internal fun ListManagerScreen(
         },
     ) { paddingValues ->
         Box(Modifier.padding(top = paddingValues.calculateTopPadding())) {
-            LazyColumn(
-                Modifier
-                    .fillMaxSize()
-                    .reorderable(state = reorderState),
-                state = listState
-            ) {
-                models.forEachIndexed { _, groupWithSystemTts ->
-                    val g = groupWithSystemTts.group
-                    val checkState =
-                        groupWithSystemTts.list.filter { it.isEnabled }.size.sizeToToggleableState(
-                            groupWithSystemTts.list.size
-                        )
-                    val key = "g_${g.id}"
-                    stickyHeader(key = key) {
-                        ShadowedDraggableItem(reorderableState = reorderState, key = key) {
-                            Group(modifier = Modifier.detectReorderAfterLongPress(reorderState),
-                                name = g.name,
-                                isExpanded = g.isExpanded,
-                                toggleableState = checkState,
-                                onToggleableStateChange = {
-                                    vm.updateGroupEnable(groupWithSystemTts, it)
-                                },
-                                onClick = {
-                                    dbm.systemTtsV2.updateGroup(g.copy(isExpanded = !g.isExpanded))
-                                },
-                                onDelete = {
-                                    dbm.systemTtsV2.delete(*groupWithSystemTts.list.toTypedArray())
-                                    dbm.systemTtsV2.deleteGroup(g)
-                                },
-                                onRename = {
-                                    dbm.systemTtsV2.updateGroup(g.copy(name = it))
-                                },
-                                onCopy = {
-                                    scope.launch {
-                                        val group = g.copy(id = System.currentTimeMillis(),
-                                            name = it.ifBlank { context.getString(R.string.unnamed) })
-                                        dbm.systemTtsV2.insertGroup(group)
-                                        dbm.systemTtsV2.getByGroup(g.id)
-                                            .forEachIndexed { index, tts ->
-                                                dbm.systemTtsV2.insert(
-                                                    tts.copy(
-                                                        id = System.currentTimeMillis() + index,
-                                                        groupId = group.id
-                                                    )
-                                                )
-                                            }
-                                    }
-                                },
-                                onEditAudioParams = {
-                                    groupAudioParamsDialog = g
-                                },
-                                onExport = {
-                                    showGroupExportSheet = listOf(groupWithSystemTts)
-                                },
-                                onSort = {
-                                    showSortDialog = groupWithSystemTts.list
-                                }
+            AppLazyColumnScrollbar(listState) {
+                LazyColumn(
+                    Modifier
+                        .fillMaxSize()
+                        .reorderable(state = reorderState),
+                    state = listState
+                ) {
+                    models.forEachIndexed { _, groupWithSystemTts ->
+                        val g = groupWithSystemTts.group
+                        val checkState =
+                            groupWithSystemTts.list.filter { it.isEnabled }.size.sizeToToggleableState(
+                                groupWithSystemTts.list.size
                             )
-                        }
-                    }
-
-                    if (g.isExpanded) {
-                        itemsIndexed(groupWithSystemTts.list.sortedBy { it.order },
-                            key = { _, v -> "${g.id}_${v.id}" }) { _, item ->
-                            if (g.id == 1L) println(item.displayName + ", " + item.order)
-
-                            ShadowedDraggableItem(
-                                reorderableState = reorderState,
-                                key = "${g.id}_${item.id}"
-                            ) {
-                                val descriptor = remember(item) {
-                                    ItemDescriptorFactory.from(context, item)
-                                }
-                                Item(reorderState = reorderState,
-                                    modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
-                                    name = item.displayName,
-                                    tagName = descriptor.tagName,
-                                    type = descriptor.type,
-                                    standby = descriptor.standby,
-                                    enabled = item.isEnabled,
-                                    onEnabledChange = {
-                                        vm.updateTtsEnabled(item, it)
-                                        if (it) SystemTtsService.notifyUpdateConfig()
+                        val key = "g_${g.id}"
+                        stickyHeader(key = key) {
+                            ShadowedDraggableItem(reorderableState = reorderState, key = key) {
+                                Group(modifier = Modifier.detectReorderAfterLongPress(reorderState),
+                                    name = g.name,
+                                    isExpanded = g.isExpanded,
+                                    toggleableState = checkState,
+                                    onToggleableStateChange = {
+                                        vm.updateGroupEnable(groupWithSystemTts, it)
                                     },
-                                    desc = descriptor.desc,
-                                    params = descriptor.bottom,
-                                    onClick = { showQuickEdit = item },
-                                    onLongClick = { switchSpeechTarget(item) },
+                                    onClick = {
+                                        dbm.systemTtsV2.updateGroup(g.copy(isExpanded = !g.isExpanded))
+                                    },
+                                    onDelete = {
+                                        dbm.systemTtsV2.delete(*groupWithSystemTts.list.toTypedArray())
+                                        dbm.systemTtsV2.deleteGroup(g)
+                                    },
+                                    onRename = {
+                                        dbm.systemTtsV2.updateGroup(g.copy(name = it))
+                                    },
                                     onCopy = {
-                                        navigateToEdit(item.copy(id = System.currentTimeMillis()))
+                                        scope.launch {
+                                            val group = g.copy(id = System.currentTimeMillis(),
+                                                name = it.ifBlank { context.getString(R.string.unnamed) })
+                                            dbm.systemTtsV2.insertGroup(group)
+                                            dbm.systemTtsV2.getByGroup(g.id)
+                                                .forEachIndexed { index, tts ->
+                                                    dbm.systemTtsV2.insert(
+                                                        tts.copy(
+                                                            id = System.currentTimeMillis() + index,
+                                                            groupId = group.id
+                                                        )
+                                                    )
+                                                }
+                                        }
                                     },
-                                    onDelete = { deleteTts = item },
-                                    onEdit = { navigateToEdit(item) },
-                                    onAudition = {
-                                        if (item.config is TtsConfigurationDTO) {
-                                            showAuditionDialog = item
-                                        }else
-                                            context.toast(R.string.not_support_audition)
+                                    onEditAudioParams = {
+                                        groupAudioParamsDialog = g
                                     },
                                     onExport = {
-                                        showExportSheet =
-                                            listOf(item.copy(groupId = AbstractListGroup.DEFAULT_GROUP_ID))
+                                        showGroupExportSheet = listOf(groupWithSystemTts)
+                                    },
+                                    onSort = {
+                                        showSortDialog = groupWithSystemTts.list
                                     }
                                 )
                             }
                         }
-                    }
-                }
 
-                item {
-                    Spacer(Modifier.height(60.dp))
+                        if (g.isExpanded) {
+                            itemsIndexed(groupWithSystemTts.list.sortedBy { it.order },
+                                key = { _, v -> "${g.id}_${v.id}" }) { _, item ->
+                                if (g.id == 1L) println(item.displayName + ", " + item.order)
+
+                                ShadowedDraggableItem(
+                                    reorderableState = reorderState,
+                                    key = "${g.id}_${item.id}"
+                                ) {
+                                    val descriptor = remember(item) {
+                                        ItemDescriptorFactory.from(context, item)
+                                    }
+                                    Item(reorderState = reorderState,
+                                        modifier = Modifier.padding(
+                                            horizontal = 8.dp,
+                                            vertical = 4.dp
+                                        ),
+                                        name = item.displayName,
+                                        tagName = descriptor.tagName,
+                                        type = descriptor.type,
+                                        standby = descriptor.standby,
+                                        enabled = item.isEnabled,
+                                        onEnabledChange = {
+                                            vm.updateTtsEnabled(item, it)
+                                            if (it) SystemTtsService.notifyUpdateConfig()
+                                        },
+                                        desc = descriptor.desc,
+                                        params = descriptor.bottom,
+                                        onClick = { showQuickEdit = item },
+                                        onLongClick = { switchSpeechTarget(item) },
+                                        onCopy = {
+                                            navigateToEdit(item.copy(id = System.currentTimeMillis()))
+                                        },
+                                        onDelete = { deleteTts = item },
+                                        onEdit = { navigateToEdit(item) },
+                                        onAudition = {
+                                            if (item.config is TtsConfigurationDTO) {
+                                                showAuditionDialog = item
+                                            } else
+                                                context.toast(R.string.not_support_audition)
+                                        },
+                                        onExport = {
+                                            showExportSheet =
+                                                listOf(item.copy(groupId = AbstractListGroup.DEFAULT_GROUP_ID))
+                                        }
+                                    )
+                                }
+                            }
+                        }
+                    }
+
+                    item {
+                        Spacer(Modifier.height(60.dp))
+                    }
                 }
             }
 

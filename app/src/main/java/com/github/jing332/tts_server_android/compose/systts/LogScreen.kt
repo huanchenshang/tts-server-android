@@ -1,6 +1,10 @@
 package com.github.jing332.tts_server_android.compose.systts
 
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.expandIn
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.shrinkOut
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Box
@@ -39,6 +43,7 @@ import com.github.jing332.common.LogEntry
 import com.github.jing332.common.toArgb
 import com.github.jing332.common.toLogLevelChar
 import com.github.jing332.compose.ComposeExtensions.toAnnotatedString
+import com.github.jing332.compose.widgets.AppLazyColumnScrollbar
 import com.github.jing332.tts_server_android.R
 import kotlinx.coroutines.launch
 
@@ -47,7 +52,7 @@ import kotlinx.coroutines.launch
 fun LogScreen(
     modifier: Modifier,
     list: List<LogEntry>,
-    lazyListState: LazyListState = rememberLazyListState()
+    lazyListState: LazyListState = rememberLazyListState(),
 ) {
     val scope = rememberCoroutineScope()
     val view = LocalView.current
@@ -83,30 +88,33 @@ fun LogScreen(
 
         val darkTheme = isSystemInDarkTheme()
         SelectionContainer {
-            LazyColumn(Modifier.fillMaxSize(), state = lazyListState) {
-                itemsIndexed(list, key = { index, _ -> index }) { index, log ->
-                    val style = MaterialTheme.typography.bodyMedium
-                    val spanned = remember {
-                        HtmlCompat.fromHtml(log.message, HtmlCompat.FROM_HTML_MODE_COMPACT)
-                            .toAnnotatedString()
-                    }
+            AppLazyColumnScrollbar(lazyListState) {
 
-                    Column(modifier = Modifier.padding(horizontal = 4.dp, vertical = 2.dp)) {
-                        Row(verticalAlignment = Alignment.CenterVertically) {
-                            Text(text = log.time, style = MaterialTheme.typography.bodySmall)
-                            Text(
-                                text = "\t${log.level.toLogLevelChar()}",
-                                style = MaterialTheme.typography.bodySmall
-                            )
+                LazyColumn(Modifier.fillMaxSize(), state = lazyListState) {
+                    itemsIndexed(list, key = { index, _ -> index }) { index, log ->
+                        val style = MaterialTheme.typography.bodyMedium
+                        val spanned = remember {
+                            HtmlCompat.fromHtml(log.message, HtmlCompat.FROM_HTML_MODE_COMPACT)
+                                .toAnnotatedString()
                         }
-                        Text(
-                            text = spanned,
-                            color = Color(log.level.toArgb(isDarkTheme = darkTheme)),
-                            style = style,
-                            lineHeight = style.lineHeight * 0.75f,
-                        )
-                        if (index < list.size - 1)
-                            HorizontalDivider(thickness = 0.3.dp)
+
+                        Column(modifier = Modifier.padding(horizontal = 4.dp, vertical = 2.dp)) {
+                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                Text(text = log.time, style = MaterialTheme.typography.bodySmall)
+                                Text(
+                                    text = "\t${log.level.toLogLevelChar()}",
+                                    style = MaterialTheme.typography.bodySmall
+                                )
+                            }
+                            Text(
+                                text = spanned,
+                                color = Color(log.level.toArgb(isDarkTheme = darkTheme)),
+                                style = style,
+                                lineHeight = style.lineHeight * 0.75f,
+                            )
+                            if (index < list.size - 1)
+                                HorizontalDivider(thickness = 0.3.dp)
+                        }
                     }
                 }
             }
@@ -115,9 +123,13 @@ fun LogScreen(
         AnimatedVisibility(
             modifier = Modifier
                 .align(Alignment.BottomCenter)
-                .padding(48.dp), visible = !isAtBottom
+                .padding(48.dp),
+            visible = !isAtBottom,
+            enter = fadeIn() + expandIn(expandFrom = Alignment.BottomCenter),
+            exit = shrinkOut(shrinkTowards = Alignment.BottomCenter) + fadeOut(),
         ) {
             FloatingActionButton(
+                modifier = Modifier.padding(8.dp),
                 shape = CircleShape,
                 onClick = {
                     scope.launch {
