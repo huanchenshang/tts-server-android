@@ -640,6 +640,10 @@ class SystemTtsService : TextToSpeechService(), IEventDispatcher {
             )
 
             NormalEvent.RequestCountEnded -> logW(getString(R.string.reach_retry_limit))
+            is NormalEvent.BgmCurrentPlaying -> {
+                val name = e.source.path.split("/").lastOrNull() ?: e.source.path
+                logI(getString(R.string.current_playing_bgm, "${e.source.volume}, ${name}"))
+            }
         }
     }
 

@@ -44,13 +44,11 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
-import com.github.jing332.common.utils.toast
 import com.github.jing332.compose.ComposeExtensions.clickableRipple
 import com.github.jing332.compose.R
 import kotlinx.coroutines.delay
@@ -72,14 +70,7 @@ fun AppSelectionDialog(
         val context = LocalContext.current
         if (icon != null)
             AsyncCircleImage(
-                modifier = Modifier
-                    .size(32.dp)
-                    .clickableRipple(onLongClick = {
-                        if (icon is CharSequence) {
-                            clip.setText(buildAnnotatedString { append(icon.toString()) })
-                            context.toast(R.string.copied)
-                        }
-                    }, onClick = {}),
+                modifier = Modifier.size(32.dp),
                 model = icon,
                 contentDescription = null
             )

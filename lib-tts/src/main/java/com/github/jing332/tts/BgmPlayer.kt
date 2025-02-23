@@ -11,6 +11,7 @@ import com.github.jing332.common.utils.FileUtils
 import com.github.jing332.common.utils.FileUtils.mimeType
 import com.github.jing332.tts.synthesizer.BgmSource
 import com.github.jing332.tts.synthesizer.IBgmPlayer
+import com.github.jing332.tts.synthesizer.event.NormalEvent
 import io.github.oshai.kotlinlogging.KotlinLogging
 import java.io.File
 import kotlin.math.pow
@@ -38,7 +39,9 @@ class BgmPlayer(val context: SynthesizerContext) : IBgmPlayer {
                         super.onMediaItemTransition(mediaItem, reason)
                         mediaItem?.localConfiguration?.tag?.let { source ->
                             if (source is BgmSource) {
+                                mediaItem?.mediaId
                                 currentSource = source
+                                context.event?.dispatch(NormalEvent.BgmCurrentPlaying(source))
 
                                 if (source.volume != volume) {
                                     updateVolume(source.volume)
