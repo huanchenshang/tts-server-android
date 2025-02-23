@@ -26,6 +26,7 @@ constraintlayoutCompose = "1.1.0"
 navigationCompose = "2.8.6"
 dataSaver = "v1.1.5"
 sheet = "0.5.4"
+scrollbar = "2.2.0"
 
 okio = "3.6.0"
 okhttp = "4.12.0"
@@ -109,6 +110,7 @@ navigation-compose = { module = "androidx.navigation:navigation-compose", versio
 compose-reorderable = { module = "org.burnoutcrew.composereorderable:reorderable", version.ref = "reorderable" }
 compose-datasaver = { module = "com.github.FunnySaltyFish.ComposeDataSaver:data-saver", version.ref = "dataSaver" }
 compose-sheet = { module = "io.github.dokar3:sheets-m3", version.ref = "sheet" }
+compose-scrollbar = { module = "com.github.nanihadesuka:LazyColumnScrollbar", version.ref = "scrollbar" }
 
 about = { module = "com.mikepenz:aboutlibraries-core", version.ref = "about" }
 about-compose = { module = "com.mikepenz:aboutlibraries-compose", version.ref = "about" }

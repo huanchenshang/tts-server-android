@@ -59,6 +59,7 @@ dependencies {
     api(libs.bundles.compose)
     api(libs.bundles.compose.floatingx)
     api(libs.bundles.compose.material3)
+    api(libs.compose.scrollbar)
 
     androidTestApi("androidx.compose.ui:ui-test-junit4")
     debugApi("androidx.compose.ui:ui-test-manifest")

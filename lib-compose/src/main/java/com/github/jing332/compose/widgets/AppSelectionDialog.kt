@@ -53,6 +53,8 @@ import com.github.jing332.compose.ComposeExtensions.clickableRipple
 import com.github.jing332.compose.R
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.isActive
+import my.nanihadesuka.compose.LazyColumnScrollbar
+import my.nanihadesuka.compose.ScrollbarSettings
 
 @Composable
 fun AppSelectionDialog(
@@ -180,29 +182,37 @@ fun AppSelectionDialog(
                     modifier = Modifier.padding(vertical = 16.dp),
                     isLoading = isLoading
                 ) {
-                    LazyColumn(state = state) {
-                        itemsIndexed(entries) { i, entry ->
-                            if (searchEnabled && searchText.isNotBlank() &&
-                                !entry.contains(searchText, ignoreCase = true)
-                            ) return@itemsIndexed
+                    LazyColumnScrollbar(
+                        state,
+                        settings = ScrollbarSettings(
+                            thumbSelectedColor = MaterialTheme.colorScheme.primary,
+                            thumbUnselectedColor = MaterialTheme.colorScheme.secondary,
+                        )
+                    ) {
+                        LazyColumn(state = state) {
+                            itemsIndexed(entries) { i, entry ->
+                                if (searchEnabled && searchText.isNotBlank() &&
+                                    !entry.contains(searchText, ignoreCase = true)
+                                ) return@itemsIndexed
 
-                            val icon = icons?.getOrNull(i)
-                            val current = values[i]
-                            val isSelected = onValueSame(value, current)
-                            Row(
-                                Modifier
-                                    .fillMaxWidth()
-                                    .clip(MaterialTheme.shapes.medium)
-                                    .background(if (isSelected) MaterialTheme.colorScheme.primaryContainer else Color.Unspecified)
-                                    .clickableRipple(
-                                        onClick = { onClick(current, entry) }
-                                    )
-                                    .minimumInteractiveComponentSize(),
-                                verticalAlignment = Alignment.CenterVertically
-                            ) {
-                                itemContent(isSelected, entry, icon, value)
+                                val icon = icons?.getOrNull(i)
+                                val current = values[i]
+                                val isSelected = onValueSame(value, current)
+                                Row(
+                                    Modifier
+                                        .fillMaxWidth()
+                                        .clip(MaterialTheme.shapes.medium)
+                                        .background(if (isSelected) MaterialTheme.colorScheme.primaryContainer else Color.Unspecified)
+                                        .clickableRipple(
+                                            onClick = { onClick(current, entry) }
+                                        )
+                                        .minimumInteractiveComponentSize(),
+                                    verticalAlignment = Alignment.CenterVertically
+                                ) {
+                                    itemContent(isSelected, entry, icon, value)
+                                }
+
                             }
-
                         }
                     }
                 }
