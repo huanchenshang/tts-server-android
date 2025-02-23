@@ -6,25 +6,20 @@ import com.github.jing332.database.entities.plugin.Plugin
 import com.github.jing332.database.entities.systts.source.PluginTtsSource
 import com.github.jing332.script.engine.RhinoScriptEngine
 import com.github.jing332.script.ensureArgumentsLength
-import com.github.jing332.script.runtime.console.Console
 import com.github.jing332.script.runtime.NativeResponse
+import com.github.jing332.script.runtime.console.Console
 import com.github.jing332.script.simple.CompatScriptRuntime
 import com.github.jing332.script.source.toScriptSource
 import com.github.jing332.tts.speech.EmptyInputStream
-import com.github.jing332.tts.speech.plugin.engine.TtsPluginEngineV2.Companion.FUNC_GET_AUDIO
-import com.github.jing332.tts.speech.plugin.engine.TtsPluginEngineV2.Companion.FUNC_GET_AUDIO_V2
-import com.github.jing332.tts.speech.plugin.engine.TtsPluginEngineV2.Companion.FUNC_ON_LOAD
-import com.github.jing332.tts.speech.plugin.engine.TtsPluginEngineV2.Companion.FUNC_ON_STOP
 import kotlinx.coroutines.runInterruptible
 import kotlinx.coroutines.sync.Mutex
 import okhttp3.Response
 import org.mozilla.javascript.Callable
-import org.mozilla.javascript.ScriptRuntime
-import org.mozilla.javascript.ScriptRuntime.newObject
 import org.mozilla.javascript.Scriptable
 import org.mozilla.javascript.ScriptableObject
 import org.mozilla.javascript.Undefined
-import org.mozilla.javascript.typedarrays.NativeInt8Array
+import org.mozilla.javascript.typedarrays.NativeArrayBuffer
+import org.mozilla.javascript.typedarrays.NativeTypedArrayView
 import java.io.ByteArrayInputStream
 import java.io.InputStream
 import java.io.PipedInputStream
@@ -116,7 +111,8 @@ open class TtsPluginEngineV2(val context: Context, var plugin: Plugin) {
     private fun handleAudioResult(result: Any?): InputStream? {
         if (result == null) return null
         return when (result) {
-            is NativeInt8Array -> ByteArrayInputStream(result.toByteArray())
+            is NativeArrayBuffer -> ByteArrayInputStream(result.buffer)
+            is NativeTypedArrayView<*> -> ByteArrayInputStream(result.buffer.buffer)
 
             is InputStream -> result
             is ByteArray -> result.inputStream()

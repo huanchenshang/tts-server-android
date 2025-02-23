@@ -233,7 +233,6 @@ fun PluginManagerScreen(sharedVM: SharedViewModel, onFinishActivity: () -> Unit)
                         onSetVars = { showVarsSettings = item },
                         onDelete = { showDeleteDialog = item },
                         onClear = {
-
                             PluginManager(item).clearCache()
                             context.longToast(R.string.clear_cache_ok)
                         },

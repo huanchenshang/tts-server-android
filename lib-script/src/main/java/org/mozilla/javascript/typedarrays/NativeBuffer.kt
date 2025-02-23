@@ -1,6 +1,7 @@
 package org.mozilla.javascript.typedarrays;
 
 
+import cn.hutool.core.util.HexUtil
 import com.github.jing332.script.exception.runScriptCatching
 import com.github.jing332.script.toNativeArrayBuffer
 import org.mozilla.javascript.Context
@@ -14,8 +15,8 @@ import java.nio.charset.StandardCharsets
 import java.util.Base64
 import java.util.Locale
 
-class NativeBufferLoader{
-    companion object{
+class NativeBufferLoader {
+    companion object {
         @JvmStatic
         fun init(cx: Context, scope: Scriptable, sealed: Boolean) {
             NativeBuffer.init2(cx, scope, sealed)
@@ -112,22 +113,13 @@ class NativeBuffer @JvmOverloads constructor(
             val bytes = when (encoding) {
                 "utf8", "utf-8" -> input.toByteArray(StandardCharsets.UTF_8)
                 "base64" -> Base64.getDecoder().decode(input)
-                "hex" -> hexStringToByteArray(input)
+                "hex" -> HexUtil.decodeHex(input)
                 else -> throw Context.reportRuntimeError("Unsupported encoding: $encoding")
             }
 
             return NativeBuffer.of(cx, scope, bytes.toNativeArrayBuffer())
         }
 
-        private fun hexStringToByteArray(s: String): ByteArray {
-            if (s.length % 2 != 0) throw Context.reportRuntimeError("Hex string must have even length")
-
-            return s.chunked(2).map {
-                val byte = it.toInt(16).toByte()
-                if (byte < 0) throw Context.reportRuntimeError("Invalid hex characters: $it")
-                byte
-            }.toByteArray()
-        }
     }
 
     private val data: ByteArray

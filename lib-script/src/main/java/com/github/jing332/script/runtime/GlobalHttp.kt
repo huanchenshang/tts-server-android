@@ -3,6 +3,7 @@ package com.github.jing332.script.runtime
 import com.drake.net.Net
 import com.github.jing332.script.ensureArgumentsLength
 import com.github.jing332.script.exception.runScriptCatching
+import io.github.oshai.kotlinlogging.KotlinLogging
 import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.MultipartBody
 import okhttp3.RequestBody.Companion.asRequestBody
@@ -16,6 +17,9 @@ import java.io.File
 class GlobalHttp : ScriptableObject() {
     companion object {
         const val NAME = "http"
+        private val TAG = "GlobalHttp"
+        private val logger = KotlinLogging.logger(TAG)
+
 
         @JvmStatic
         fun init(cx: Context, scope: Scriptable, sealed: Boolean) {
@@ -107,6 +111,10 @@ class GlobalHttp : ScriptableObject() {
             val url = args[0] as CharSequence
             val body = args.getOrNull(1)
             val headers = args.getOrNull(2) as? Map<CharSequence, CharSequence>
+            val contentType = headers?.get("Content-Type")?.toString()?.toMediaType()
+            logger.debug {
+                "POST $url, $body, $headers"
+            }
 
             runScriptCatching {
                 val resp: Response = Net.post(url.toString()) {
@@ -114,7 +122,7 @@ class GlobalHttp : ScriptableObject() {
                         setHeader(it.key.toString(), it.value.toString())
                     }
                     if (body is CharSequence)
-                        this.body = body.toString().toRequestBody()
+                        this.body = body.toString().toRequestBody(contentType)
                     else if (body is Map<*, *>)
                         this.body = postMultipart(
                             "multipart/form-data",
