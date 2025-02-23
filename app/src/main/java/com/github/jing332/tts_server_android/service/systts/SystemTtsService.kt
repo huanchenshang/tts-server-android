@@ -101,7 +101,7 @@ class SystemTtsService : TextToSpeechService(), IEventDispatcher {
 
 
     private val mTextProcessor = TextProcessor()
-    private var mTtsManager: Synthesizer? = null
+    private var mTtsManager: MixSynthesizer? = null
 
 
     private val mNotificationReceiver: NotificationReceiver by lazy { NotificationReceiver() }
@@ -314,7 +314,9 @@ class SystemTtsService : TextToSpeechService(), IEventDispatcher {
         mCurrentText = text
         updateNotification(getString(R.string.systts_state_synthesizing), text)
 
-        val enabledBgm = request.params.getBoolean("bgm_enabled", true)
+        val enabledBgm = request.params.getBoolean(PARAM_BGM_ENABLED, true)
+        logD("PARAM_BGM_ENABLED: ${enabledBgm}")
+        mTtsManager?.context?.cfg?.bgmEnabled = { enabledBgm }
         runBlocking {
             // If the voiceName is not empty, get the configuration ID from the voiceName.
             var cfgId: Long? = getConfigIdFromVoiceName(request.voiceName ?: "").onFailure {
