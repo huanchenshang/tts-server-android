@@ -55,11 +55,13 @@ abstract class AbstractMixSynthesizer() : Synthesizer {
         private set
 
     private var maxSampleRate: Int = 16000
-    private var mAllTts: Map<Long, TtsConfiguration> = mapOf()
+
+    // All enabled configs
+    private var mConfigs: Map<Long, TtsConfiguration> = mapOf()
         set(value) {
             field = value
             maxSampleRate =
-                mAllTts.values.maxByOrNull { it.audioFormat.sampleRate }?.audioFormat?.sampleRate
+                mConfigs.values.maxByOrNull { it.audioFormat.sampleRate }?.audioFormat?.sampleRate
                     ?: 16000
         }
 
@@ -74,8 +76,12 @@ abstract class AbstractMixSynthesizer() : Synthesizer {
         params: SystemParams,
         presetConfigId: Long?,
     ): Result<List<TextSegment>, SynthesisError> {
+        val presetConfig: TtsConfiguration? = presetConfigId?.run { repo.getTts(this) }
+        if (presetConfigId != null && presetConfig == null){
+            return  Err(SynthesisError.PresetMissing(presetConfigId))
+        }
         textProcessor
-            .process(params.text, presetConfigId)
+            .process(params.text, presetConfig)
             .onSuccess { list -> return Ok(list.filterNot { StringUtils.isSilent(it.text) }) }
             .onFailure { err: TextProcessorError ->
                 event(ErrorEvent.TextProcessor(err))
@@ -182,7 +188,7 @@ abstract class AbstractMixSynthesizer() : Synthesizer {
     private suspend fun executeSynthesis(
         params: SystemParams, callback: SynthesisCallback, presetConfigId: Long?,
     ): Result<Unit, SynthesisError> = coroutineScope {
-        if (mAllTts.isEmpty()) return@coroutineScope Err(SynthesisError.ConfigEmpty)
+        if (mConfigs.isEmpty()) return@coroutineScope Err(SynthesisError.ConfigEmpty)
 
         logger.debug { "onSynthesizeStart: sampleRate=${maxSampleRate}" }
         callback.onSynthesizeStart(maxSampleRate)
@@ -278,13 +284,13 @@ abstract class AbstractMixSynthesizer() : Synthesizer {
             return@withLock
         }
 
-        mAllTts = repo.getAllTts()
-        if (mAllTts.isEmpty()) {
+        mConfigs = repo.getAllTts()
+        if (mConfigs.isEmpty()) {
             event(ErrorEvent.ConfigEmpty)
             return@withLock
         }
 
-        textProcessor.init(context.androidContext, mAllTts).onFailure {
+        textProcessor.init(context.androidContext, mConfigs).onFailure {
             event(ErrorEvent.TextProcessor(it))
             return@withLock
         }

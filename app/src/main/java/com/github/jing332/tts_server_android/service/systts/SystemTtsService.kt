@@ -360,6 +360,11 @@ class SystemTtsService : TextToSpeechService(), IEventDispatcher {
                             callback.error(TextToSpeech.ERROR_INVALID_REQUEST)
                         }
 
+                        is SynthesisError.PresetMissing -> {
+                            logE(R.string.tts_config_not_exist)
+                            longToast(R.string.tts_config_not_exist)
+                            callback.error(TextToSpeech.ERROR_INVALID_REQUEST)
+                        }
                     }
                 } ?: callback.error(TextToSpeech.ERROR_SYNTHESIS)
             }
@@ -372,31 +377,6 @@ class SystemTtsService : TextToSpeechService(), IEventDispatcher {
             delay(5000)
             stopForeground(true)
             mNotificationDisplayed = false
-        }
-    }
-
-    fun android.speech.tts.SynthesisCallback.write(pcmData: ByteBuffer) {
-        try {
-            val buffer = ByteArray(pcmData.remaining())
-            pcmData.get(buffer)
-            writeToCallBack(this, buffer)
-
-//            val maxBufferSize: Int = this.maxBufferSize
-//            var offset = pcmData.position() // Start from the current position
-
-//            while (pcmData.hasRemaining() && mTtsManager.isSynthesizing) {
-//                val arr = pcmData.array()
-//                val bytesToWrite = maxBufferSize.coerceAtMost(pcmData.limit() - pcmData.position());
-//
-//                // Use the ByteBuffer's internal array and offset
-//                this.audioAvailable(arr, pcmData.arrayOffset(), bytesToWrite);
-//
-////                offset += bytesToWrite;
-////                pcmData.position(offset); // Update ByteBuffer's position
-//            }
-
-        } catch (e: Exception) {
-            logE("write: ${e.toString()}", e);
         }
     }
 
@@ -699,7 +679,6 @@ class SystemTtsService : TextToSpeechService(), IEventDispatcher {
     }
 
     fun ConfigType.toLocaleString() = when (this) {
-        ConfigType.PRESET -> getString(R.string.preset)
         ConfigType.SINGLE_VOICE -> getString(R.string.single_voice)
         ConfigType.TAG -> getString(R.string.tag)
     }

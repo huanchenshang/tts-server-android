@@ -21,7 +21,7 @@ internal class TextProcessor(val context: SynthesizerContext) : ITextProcessor {
 
     override fun process(
         text: String,
-        forceConfigId: Long?
+        forceConfigId: TtsConfiguration?
     ): Result<List<TextSegment>, TextProcessorError> {
         return StringUtils.splitSentences(text).map {
             TextSegment(text = it, tts = configs.values.random())

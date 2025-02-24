@@ -1,8 +1,6 @@
 package com.github.jing332.tts
 
-import android.R.attr.tag
 import com.github.jing332.database.dbm
-import com.github.jing332.database.entities.systts.AudioParams
 import com.github.jing332.database.entities.systts.BgmConfiguration
 import com.github.jing332.database.entities.systts.TtsConfigurationDTO
 import com.github.jing332.tts.synthesizer.ITtsRepository
@@ -18,6 +16,14 @@ internal class TtsRepository(
     }
 
     override fun destroy() {
+    }
+
+    override fun getTts(id: Long): TtsConfiguration? {
+        val systts = dbm.systemTtsV2.get(id)
+        return if (systts.config is TtsConfigurationDTO)
+            (systts.config as TtsConfigurationDTO).toVO().copy(tag = systts)
+        else
+            null
     }
 
 

@@ -94,7 +94,7 @@ class TextProcessor : ITextProcessor {
 
     override fun process(
         text: String,
-        presetConfigId: Long?,
+        presetConfig: TtsConfiguration?,
     ): Result<List<TextSegment>, TextProcessorError> {
         val resultList = mutableListOf<TextSegment>()
         val replacedText = replace(text, ReplaceExecution.BEFORE)
@@ -113,17 +113,8 @@ class TextProcessor : ITextProcessor {
             }
         }
 
-        if (presetConfigId != null) {
-            val config = configs.find { it.speechInfo.configId == presetConfigId }
-            if (config == null) {
-                return Err(
-                    TextProcessorError.MissingConfig(
-                        ConfigType.PRESET,
-                        presetConfigId.toString()
-                    )
-                )
-            } else
-                splitAndAdd(text, config)
+        if (presetConfig != null) {
+            splitAndAdd(text, presetConfig)
         } else if (isMultiVoice) {
             val fragments = try {
                 engine.handleText(replacedText, speechRules)

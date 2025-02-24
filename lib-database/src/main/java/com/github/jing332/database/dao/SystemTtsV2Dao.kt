@@ -13,7 +13,6 @@ import com.github.jing332.database.entities.systts.GroupWithSystemTts
 import com.github.jing332.database.entities.systts.SystemTtsGroup
 import com.github.jing332.database.entities.systts.SystemTtsV2
 import com.github.jing332.database.entities.systts.TtsConfigurationDTO
-import com.github.jing332.database.entities.systts.v1.SystemTts
 import kotlinx.coroutines.flow.Flow
 
 @Dao
@@ -29,6 +28,9 @@ interface SystemTtsV2Dao {
 
     @get:Query("SELECT * FROM SystemTtsGroup")
     val allGroup: List<SystemTtsGroup>
+
+    @Query("SELECT * FROM system_tts_v2 WHERE id = :id")
+    fun get(id: Long): SystemTtsV2
 
     @Query("SELECT * FROM system_tts_v2 WHERE isEnabled = '1' AND  groupId = :groupId")
     fun getEnabledListByGroupId(groupId: Long): List<SystemTtsV2>
