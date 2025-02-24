@@ -8,6 +8,7 @@ import com.github.jing332.script.toNativeArrayBuffer
 import okhttp3.Response
 import org.mozilla.javascript.Context
 import org.mozilla.javascript.LambdaConstructor
+import org.mozilla.javascript.ScriptRuntime
 import org.mozilla.javascript.Scriptable
 import org.mozilla.javascript.ScriptableObject
 import org.mozilla.javascript.Undefined
@@ -55,13 +56,32 @@ class NativeResponse private constructor(val rawResponse: Response? = null) :
             )
 
             constructor.definePrototypeMethod<NativeResponse>(
-                scope, "json", 0, { cx, scope, thisObj, args -> thisObj.js_json() }
+                scope, "json", 0, { cx, scope, thisObj, args ->
+                    thisObj.js_json(ScriptRuntime.toBoolean(args.getOrNull(0)))
+                }
             )
             constructor.definePrototypeMethod<NativeResponse>(
-                scope, "text", 0, { cx, scope, thisObj, args -> thisObj.js_text() }
+                scope,
+                "text",
+                0,
+                { cx, scope, thisObj, args ->
+                    thisObj.js_text(
+                        ScriptRuntime.toBoolean(
+                            args.getOrNull(0)
+                        )
+                    )
+                }
             )
             constructor.definePrototypeMethod<NativeResponse>(
-                scope, "bytes", 0, { cx, scope, thisObj, args -> thisObj.js_bytes(cx, scope) }
+                scope,
+                "bytes",
+                0,
+                { cx, scope, thisObj, args ->
+                    thisObj.js_bytes(
+                        cx, scope,
+                        ScriptRuntime.toBoolean(args.getOrNull(0))
+                    )
+                }
             )
 
             defineProperty(scope, CLASS_NAME, constructor, DONTENUM)
@@ -79,30 +99,32 @@ class NativeResponse private constructor(val rawResponse: Response? = null) :
             return obj
         }
 
-        private fun NativeResponse.checkResponse(): Response {
-            rawResponse ?: throw IllegalStateException("rawResponse is null")
-            if (rawResponse.isSuccessful == true)
-                return rawResponse
+        private fun NativeResponse.checkResponse(force: Boolean): Response {
+            val resp = rawResponse ?: throw IllegalStateException("rawResponse is null")
+            if (force) return resp
+            if (resp.isSuccessful == true)
+                return resp
             else
-                throw Exception("Response failed: code=${rawResponse?.code}, message=${rawResponse?.message}")
+                throw Exception("Response failed: code=${resp.code}, message=${resp.message}")
         }
 
-        private fun NativeResponse.js_json(): Any  =runScriptCatching {
-            val resp = checkResponse()
+        private fun NativeResponse.js_json(force: Boolean): Any = runScriptCatching {
+            val resp = checkResponse(force)
             val str = resp.body?.string() ?: return@runScriptCatching ""
-              JsonParser(Context.getCurrentContext(), this).parseValue(str)
+            JsonParser(Context.getCurrentContext(), this).parseValue(str)
         }
 
-        private fun NativeResponse.js_text(): Any = runScriptCatching {
-            val resp = checkResponse()
-              resp.body?.string() ?: ""
+        private fun NativeResponse.js_text(force: Boolean): Any = runScriptCatching {
+            val resp = checkResponse(force)
+            resp.body?.string() ?: ""
         }
 
-        private fun NativeResponse.js_bytes(cx: Context, scope: Scriptable): Any = runScriptCatching {
-            val bytes = checkResponse().body?.bytes() ?: ByteArray(0)
-            val buffer = bytes.toNativeArrayBuffer()
+        private fun NativeResponse.js_bytes(cx: Context, scope: Scriptable, force: Boolean): Any =
+            runScriptCatching {
+                val bytes = checkResponse(force).body?.bytes() ?: ByteArray(0)
+                val buffer = bytes.toNativeArrayBuffer()
 
-            cx.newObject(scope, "Uint8Array", arrayOf(buffer, 0, buffer.length))
-        }
+                cx.newObject(scope, "Uint8Array", arrayOf(buffer, 0, buffer.length))
+            }
     }
 }
