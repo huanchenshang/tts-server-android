@@ -25,7 +25,7 @@ reorderable = "0.9.6"
 constraintlayoutCompose = "1.1.0"
 navigationCompose = "2.8.6"
 dataSaver = "v1.1.5"
-sheet = "0.5.4"
+sheet = "0.6.0-alpha05"
 scrollbar = "2.2.0"
 
 okio = "3.6.0"

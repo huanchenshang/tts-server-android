@@ -176,36 +176,36 @@ fun AppSelectionDialog(
                         style = MaterialTheme.typography.titleMedium
                     )
 
+
                 LoadingContent(
                     modifier = Modifier.padding(vertical = 16.dp),
                     isLoading = isLoading
                 ) {
-                    AppLazyColumnScrollbar(
-                        state
+
+                    LazyColumn(
+                        state = state,
+                        modifier = Modifier
                     ) {
-                        LazyColumn(state = state) {
-                            itemsIndexed(entries) { i, entry ->
-                                if (searchEnabled && searchText.isNotBlank() &&
-                                    !entry.contains(searchText, ignoreCase = true)
-                                ) return@itemsIndexed
+                        itemsIndexed(entries) { i, entry ->
+                            if (searchEnabled && searchText.isNotBlank() &&
+                                !entry.contains(searchText, ignoreCase = true)
+                            ) return@itemsIndexed
 
-                                val icon = icons?.getOrNull(i)
-                                val current = values[i]
-                                val isSelected = onValueSame(value, current)
-                                Row(
-                                    Modifier
-                                        .fillMaxWidth()
-                                        .clip(MaterialTheme.shapes.medium)
-                                        .background(if (isSelected) MaterialTheme.colorScheme.primaryContainer else Color.Unspecified)
-                                        .clickableRipple(
-                                            onClick = { onClick(current, entry) }
-                                        )
-                                        .minimumInteractiveComponentSize(),
-                                    verticalAlignment = Alignment.CenterVertically
-                                ) {
-                                    itemContent(isSelected, entry, icon, value)
-                                }
-
+                            val icon = icons.getOrNull(i)
+                            val current = values[i]
+                            val isSelected = onValueSame(value, current)
+                            Row(
+                                Modifier
+                                    .fillMaxWidth()
+                                    .clip(MaterialTheme.shapes.medium)
+                                    .background(if (isSelected) MaterialTheme.colorScheme.primaryContainer else Color.Unspecified)
+                                    .clickableRipple(
+                                        onClick = { onClick(current, entry) }
+                                    )
+                                    .minimumInteractiveComponentSize(),
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                itemContent(isSelected, entry, icon, value)
                             }
                         }
                     }
