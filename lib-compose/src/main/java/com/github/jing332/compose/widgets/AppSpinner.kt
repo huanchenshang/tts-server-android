@@ -136,7 +136,7 @@ fun AppSpinner(
     }
 
     val index = remember(value, values) { values.indexOf(value) }
-    val icon = remember(icons) { icons.getOrNull(index) }
+    val icon = remember(icons, index) { icons.getOrNull(index) }
 
     // Non-null causes placeholder issues
     @Composable

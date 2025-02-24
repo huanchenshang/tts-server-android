@@ -44,7 +44,6 @@ class JTextInput(context: Context, val hint: CharSequence? = null) : FrameLayout
         compose.setContent {
             Content()
         }
-
     }
 
     val text: Editable by lazy { MyEditable() }
@@ -65,7 +64,11 @@ class JTextInput(context: Context, val hint: CharSequence? = null) : FrameLayout
             onValueChange = {
                 mText = it
                 for (listener in listeners) {
-                    listener.onChanged(it)
+                    runCatching {
+                        listener.onChanged(it)
+                    }.onFailure {
+                        it.printStackTrace()
+                    }
                 }
             },
             maxLines = mMaxLines,
@@ -139,7 +142,7 @@ class JTextInput(context: Context, val hint: CharSequence? = null) : FrameLayout
             en: Int,
             source: CharSequence?,
             start: Int,
-            end: Int
+            end: Int,
         ): Editable {
             TODO("Not yet implemented")
         }

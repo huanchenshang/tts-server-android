@@ -43,7 +43,6 @@ import com.github.jing332.common.LogEntry
 import com.github.jing332.common.toArgb
 import com.github.jing332.common.toLogLevelChar
 import com.github.jing332.compose.ComposeExtensions.toAnnotatedString
-import com.github.jing332.compose.widgets.AppLazyColumnScrollbar
 import com.github.jing332.tts_server_android.R
 import kotlinx.coroutines.launch
 
@@ -88,33 +87,30 @@ fun LogScreen(
 
         val darkTheme = isSystemInDarkTheme()
         SelectionContainer {
-            AppLazyColumnScrollbar(lazyListState) {
+            LazyColumn(Modifier.fillMaxSize(), state = lazyListState) {
+                itemsIndexed(list, key = { index, _ -> index }) { index, log ->
+                    val style = MaterialTheme.typography.bodyMedium
+                    val spanned = remember {
+                        HtmlCompat.fromHtml(log.message, HtmlCompat.FROM_HTML_MODE_COMPACT)
+                            .toAnnotatedString()
+                    }
 
-                LazyColumn(Modifier.fillMaxSize(), state = lazyListState) {
-                    itemsIndexed(list, key = { index, _ -> index }) { index, log ->
-                        val style = MaterialTheme.typography.bodyMedium
-                        val spanned = remember {
-                            HtmlCompat.fromHtml(log.message, HtmlCompat.FROM_HTML_MODE_COMPACT)
-                                .toAnnotatedString()
-                        }
-
-                        Column(modifier = Modifier.padding(horizontal = 4.dp, vertical = 2.dp)) {
-                            Row(verticalAlignment = Alignment.CenterVertically) {
-                                Text(text = log.time, style = MaterialTheme.typography.bodySmall)
-                                Text(
-                                    text = "\t${log.level.toLogLevelChar()}",
-                                    style = MaterialTheme.typography.bodySmall
-                                )
-                            }
+                    Column(modifier = Modifier.padding(horizontal = 4.dp, vertical = 2.dp)) {
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Text(text = log.time, style = MaterialTheme.typography.bodySmall)
                             Text(
-                                text = spanned,
-                                color = Color(log.level.toArgb(isDarkTheme = darkTheme)),
-                                style = style,
-                                lineHeight = style.lineHeight * 0.75f,
+                                text = "\t${log.level.toLogLevelChar()}",
+                                style = MaterialTheme.typography.bodySmall
                             )
-                            if (index < list.size - 1)
-                                HorizontalDivider(thickness = 0.3.dp)
                         }
+                        Text(
+                            text = spanned,
+                            color = Color(log.level.toArgb(isDarkTheme = darkTheme)),
+                            style = style,
+                            lineHeight = style.lineHeight * 0.75f,
+                        )
+                        if (index < list.size - 1)
+                            HorizontalDivider(thickness = 0.3.dp)
                     }
                 }
             }
