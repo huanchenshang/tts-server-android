@@ -1,4 +1,4 @@
-package com.github.jing332.tts_server_android.compose
+package com.github.jing332.compose.widgets
 
 import android.view.HapticFeedbackConstants
 import androidx.compose.animation.core.FastOutSlowInEasing
@@ -34,18 +34,19 @@ fun LazyItemScope.ShadowedDraggableItem(
         }
 
         val tweenSpec = tween<Dp>(
-            durationMillis = 500,
+            durationMillis = 250,
             easing = FastOutSlowInEasing
         )
 
         val elevation =
-            animateDpAsState(if (isDragging) 12.dp else 0.dp, label = "", animationSpec = tweenSpec)
+            animateDpAsState(if (isDragging) 24.dp else 0.dp, label = "", animationSpec = tweenSpec)
         Box(
             modifier = Modifier
                 .shadow(
                     elevation.value,
                     MaterialTheme.shapes.small,
-                    ambientColor = DefaultShadowColor.copy(alpha = 0.5f)
+                    ambientColor = DefaultShadowColor.copy(alpha = 1f),
+                    spotColor = DefaultShadowColor.copy(alpha = 0.3f),
                 )
         ) {
             content(isDragging)
