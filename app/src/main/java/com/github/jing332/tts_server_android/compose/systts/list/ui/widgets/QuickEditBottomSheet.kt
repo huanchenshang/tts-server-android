@@ -30,7 +30,7 @@ fun QuickEditBottomSheet(
     val ui = remember {
         com.github.jing332.tts_server_android.compose.systts.list.ui.ConfigUiFactory.from(
             systts.config
-        )!!
+        )?: throw IllegalArgumentException("Not supported config type: ${systts.config}")
     }
     val callbacks = rememberSaveCallBacks()
     val scope = rememberCoroutineScope()

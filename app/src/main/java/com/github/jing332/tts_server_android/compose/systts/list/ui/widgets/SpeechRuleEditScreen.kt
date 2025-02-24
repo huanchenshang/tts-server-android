@@ -112,28 +112,13 @@ fun SpeechRuleEditScreen(
             onDismissRequest = { showStandbyHelpDialog = false }
         )
 
-
-//    var showPlayerParamsDialog by remember { mutableStateOf(false) }
-//    if (showPlayerParamsDialog)
-//        InternalPlayerDialog(
-//            onDismissRequest = { showPlayerParamsDialog = false },
-//            params = systts.tts.audioPlayer,
-//            onParamsChange = {
-//                onSysttsChange(
-//                    systts.copy(
-//                        tts = systts.tts.clone<ITextToSpeechEngine>()!!.apply { audioPlayer = it }
-//                    )
-//                )
-//            }
-//        )
-
     var showParamsDialog by remember { mutableStateOf(false) }
     if (showParamsDialog) {
         val params = config.audioParams
         fun changeParams(
             speed: Float = params.speed,
             volume: Float = params.volume,
-            pitch: Float = params.pitch
+            pitch: Float = params.pitch,
         ) {
             onSysttsChange(
                 systts.copy(
@@ -155,226 +140,222 @@ fun SpeechRuleEditScreen(
         )
     }
 
-    Column(modifier) {
-        if (showSpeechTarget)
-            Column(Modifier.fillMaxWidth()) {
-                Row(
-                    Modifier
-                        .align(Alignment.CenterHorizontally)
-                        .horizontalScroll(rememberScrollState())
-                ) {
-                    TextButton(onClick = { showParamsDialog = true }) {
-                        Row {
-                            Icon(Icons.Default.Speed, null)
-                            Text(stringResource(id = R.string.audio_params))
-                        }
-                    }
-
-                    Row(
-                        Modifier
-                            .minimumInteractiveComponentSize()
-                            .clip(MaterialTheme.shapes.medium)
-                            .clickable(role = Role.Checkbox) {
-                                onSysttsChange(
-                                    systts.copy(
-                                        config = config.copy(
-                                            speechRule = config.speechRule.copy(isStandby = !config.speechRule.isStandby)
-                                        )
-                                    )
-                                )
-                            },
-                        verticalAlignment = Alignment.CenterVertically,
-                    ) {
-                        Checkbox(checked = config.speechRule.isStandby, onCheckedChange = null)
-                        Text(stringResource(id = R.string.as_standby))
-                        IconButton(onClick = { showStandbyHelpDialog = true }) {
-                            Icon(
-                                Icons.AutoMirrored.Filled.HelpOutline,
-                                stringResource(id = R.string.systts_as_standby_help)
-                            )
-                        }
+    if (showSpeechTarget)
+        Column(modifier.fillMaxWidth()) {
+            Row(
+                Modifier
+                    .align(Alignment.CenterHorizontally)
+                    .horizontalScroll(rememberScrollState())
+            ) {
+                TextButton(onClick = { showParamsDialog = true }) {
+                    Row {
+                        Icon(Icons.Default.Speed, null)
+                        Text(stringResource(id = R.string.audio_params))
                     }
                 }
 
-                var showTagClearDialog by remember { mutableStateOf(false) }
-                if (showTagClearDialog) {
-                    TagDataClearConfirmDialog(
-                        config.speechRule.tagData.toString(),
-                        onDismissRequest = { showTagClearDialog = false },
-                        onConfirm = {
+                Row(
+                    Modifier
+                        .minimumInteractiveComponentSize()
+                        .clip(MaterialTheme.shapes.medium)
+                        .clickable(role = Role.Checkbox) {
                             onSysttsChange(
                                 systts.copy(
                                     config = config.copy(
-                                        speechRule = config.speechRule.copy(
-                                            tagName = "",
-                                            target = SpeechTarget.ALL
-                                        ).apply { resetTag() }
+                                        speechRule = config.speechRule.copy(isStandby = !config.speechRule.isStandby)
                                     )
                                 )
                             )
-                            showTagClearDialog = false
-                        })
-                }
-                Column(
-                    modifier = Modifier
-                        .wrapContentWidth()
-                        .align(Alignment.CenterHorizontally),
-                ) {
-
-                    var showTagOptions by remember { mutableStateOf(false) }
-                    RowToggleButtonGroup(
-                        selectionIndex = if (config.speechRule.target == SpeechTarget.ALL) 0 else 1,
-                        buttonCount = 2,
-                        buttonIcons = arrayOf(
-                            painterResource(id = R.drawable.ic_baseline_select_all_24),
-                            painterResource(id = R.drawable.baseline_tag_24)
-                        ),
-                        buttonTexts = arrayOf(
-                            stringResource(id = R.string.ra_all),
-                            stringResource(id = R.string.tag)
-                        ),
-                        onButtonClick = { index ->
-                            if (index == 1) {
-                                if (config.speechRule.target == SpeechTarget.CUSTOM_TAG)
-                                    showTagOptions = true
-                                else
-                                    onSysttsChange(
-                                        systts.copy(
-                                            config = config.copy(
-                                                speechRule = config.speechRule.copy(target = SpeechTarget.CUSTOM_TAG)
-                                            )
-                                        )
-                                    )
-                            } else { // 朗读全部
-                                if (config.speechRule.isTagDataEmpty())
-                                    onSysttsChange(
-                                        systts.copy(
-                                            config = config.copy(
-                                                speechRule = config.speechRule.copy(
-                                                    tagName = "",
-                                                    target = SpeechTarget.ALL
-                                                ).apply { resetTag() }
-                                            )
-                                        )
-                                    )
-                                else
-                                    showTagClearDialog = true
-                            }
                         },
-                    )
-
-                    DropdownMenu(
-                        expanded = showTagOptions,
-                        onDismissRequest = { showTagOptions = false }) {
-                        Text(
-                            text = stringResource(R.string.tag_data),
-                            modifier = Modifier.align(Alignment.CenterHorizontally),
-                            style = MaterialTheme.typography.bodyLarge
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    Checkbox(checked = config.speechRule.isStandby, onCheckedChange = null)
+                    Text(stringResource(id = R.string.as_standby))
+                    IconButton(onClick = { showStandbyHelpDialog = true }) {
+                        Icon(
+                            Icons.AutoMirrored.Filled.HelpOutline,
+                            stringResource(id = R.string.systts_as_standby_help)
                         )
-                        HorizontalDivider()
-                        DropdownMenuItem(
-                            text = { Text(stringResource(id = R.string.copy)) },
-                            onClick = {
-                                showTagOptions = false
-                                val jStr = AppConst.jsonBuilder.encodeToString(config.speechRule)
-                                ClipboardUtils.copyText(jStr)
-                                context.toast(R.string.copied)
-                            })
-                        DropdownMenuItem(
-                            text = { Text(stringResource(id = R.string.paste)) },
-                            onClick = {
-                                showTagOptions = false
-                                val jStr = ClipboardUtils.text.toString()
-                                if (jStr.isBlank()) {
-                                    context.toast(R.string.format_error)
-                                    return@DropdownMenuItem
-                                }
-
-                                runCatching {
-                                    val info =
-                                        AppConst.jsonBuilder.decodeFromString<SpeechRuleInfo>(jStr)
-                                    onSysttsChange(systts.copy(config = config.copy(speechRule = info)))
-                                }.onSuccess {
-                                    context.longToast(R.string.save_success)
-                                }.onFailure {
-                                    context.displayErrorDialog(
-                                        it,
-                                        context.getString(R.string.format_error)
-                                    )
-                                }
-                            })
                     }
                 }
+            }
 
-                AnimatedVisibility(visible = config.speechRule.target == SpeechTarget.CUSTOM_TAG) {
-                    Row(Modifier.padding(top = 4.dp)) {
-                        AppSpinner(
-                            modifier = Modifier
-                                .weight(1f)
-                                .padding(end = 4.dp),
-                            label = { Text(stringResource(id = R.string.speech_rule_script)) },
-                            value = config.speechRule.tagRuleId,
-                            values = speechRules.map { it.ruleId },
-                            entries = speechRules.map { it.name },
-                            onSelectedChange = { k, v ->
-                                if (config.speechRule.target != SpeechTarget.CUSTOM_TAG) return@AppSpinner
+            var showTagClearDialog by remember { mutableStateOf(false) }
+            if (showTagClearDialog) {
+                TagDataClearConfirmDialog(
+                    config.speechRule.tagData.toString(),
+                    onDismissRequest = { showTagClearDialog = false },
+                    onConfirm = {
+                        onSysttsChange(
+                            systts.copy(
+                                config = config.copy(
+                                    speechRule = config.speechRule.copy(
+                                        tagName = "",
+                                        target = SpeechTarget.ALL
+                                    ).apply { resetTag() }
+                                )
+                            )
+                        )
+                        showTagClearDialog = false
+                    })
+            }
+            Column(
+                modifier = Modifier
+                    .wrapContentWidth()
+                    .align(Alignment.CenterHorizontally),
+            ) {
+
+                var showTagOptions by remember { mutableStateOf(false) }
+                RowToggleButtonGroup(
+                    selectionIndex = if (config.speechRule.target == SpeechTarget.ALL) 0 else 1,
+                    buttonCount = 2,
+                    buttonIcons = arrayOf(
+                        painterResource(id = R.drawable.ic_baseline_select_all_24),
+                        painterResource(id = R.drawable.baseline_tag_24)
+                    ),
+                    buttonTexts = arrayOf(
+                        stringResource(id = R.string.ra_all),
+                        stringResource(id = R.string.tag)
+                    ),
+                    onButtonClick = { index ->
+                        if (index == 1) {
+                            if (config.speechRule.target == SpeechTarget.CUSTOM_TAG)
+                                showTagOptions = true
+                            else
+                                onSysttsChange(
+                                    systts.copy(
+                                        config = config.copy(
+                                            speechRule = config.speechRule.copy(target = SpeechTarget.CUSTOM_TAG)
+                                        )
+                                    )
+                                )
+                        } else { // 朗读全部
+                            if (config.speechRule.isTagDataEmpty())
                                 onSysttsChange(
                                     systts.copy(
                                         config = config.copy(
                                             speechRule = config.speechRule.copy(
-                                                tagRuleId = k as String
-                                            )
+                                                tagName = "",
+                                                target = SpeechTarget.ALL
+                                            ).apply { resetTag() }
+                                        )
+                                    )
+                                )
+                            else
+                                showTagClearDialog = true
+                        }
+                    },
+                )
+
+                DropdownMenu(
+                    expanded = showTagOptions,
+                    onDismissRequest = { showTagOptions = false }) {
+                    Text(
+                        text = stringResource(R.string.tag_data),
+                        modifier = Modifier.align(Alignment.CenterHorizontally),
+                        style = MaterialTheme.typography.bodyLarge
+                    )
+                    HorizontalDivider()
+                    DropdownMenuItem(
+                        text = { Text(stringResource(id = R.string.copy)) },
+                        onClick = {
+                            showTagOptions = false
+                            val jStr = AppConst.jsonBuilder.encodeToString(config.speechRule)
+                            ClipboardUtils.copyText(jStr)
+                            context.toast(R.string.copied)
+                        })
+                    DropdownMenuItem(
+                        text = { Text(stringResource(id = R.string.paste)) },
+                        onClick = {
+                            showTagOptions = false
+                            val jStr = ClipboardUtils.text.toString()
+                            if (jStr.isBlank()) {
+                                context.toast(R.string.format_error)
+                                return@DropdownMenuItem
+                            }
+
+                            runCatching {
+                                val info =
+                                    AppConst.jsonBuilder.decodeFromString<SpeechRuleInfo>(jStr)
+                                onSysttsChange(systts.copy(config = config.copy(speechRule = info)))
+                            }.onSuccess {
+                                context.longToast(R.string.save_success)
+                            }.onFailure {
+                                context.displayErrorDialog(
+                                    it,
+                                    context.getString(R.string.format_error)
+                                )
+                            }
+                        })
+                }
+            }
+
+            AnimatedVisibility(visible = config.speechRule.target == SpeechTarget.CUSTOM_TAG) {
+                Row(Modifier.padding(top = 4.dp)) {
+                    AppSpinner(
+                        modifier = Modifier
+                            .weight(1f)
+                            .padding(end = 4.dp),
+                        label = { Text(stringResource(id = R.string.speech_rule_script)) },
+                        value = config.speechRule.tagRuleId,
+                        values = speechRules.map { it.ruleId },
+                        entries = speechRules.map { it.name },
+                        onSelectedChange = { k, v ->
+                            if (config.speechRule.target != SpeechTarget.CUSTOM_TAG) return@AppSpinner
+                            onSysttsChange(
+                                systts.copy(
+                                    config = config.copy(
+                                        speechRule = config.speechRule.copy(
+                                            tagRuleId = k as String
+                                        )
+                                    )
+                                )
+                            )
+                        }
+                    )
+
+                    speechRule?.let { speechRule ->
+                        AppSpinner(
+                            modifier = Modifier
+                                .weight(1f)
+                                .padding(start = 4.dp),
+                            label = { Text(stringResource(id = R.string.tag)) },
+                            value = config.speechRule.tag,
+                            values = speechRule.tags.keys.toList(),
+                            entries = speechRule.tags.values.toList(),
+                            onSelectedChange = { k, _ ->
+                                if (config.speechRule.target != SpeechTarget.CUSTOM_TAG) return@AppSpinner
+                                onSysttsChange(
+                                    systts.copy(
+                                        config = config.copy(
+                                            speechRule = config.speechRule.copy(tag = k as String)
                                         )
                                     )
                                 )
                             }
                         )
-
-                        speechRule?.let { speechRule ->
-                            AppSpinner(
-                                modifier = Modifier
-                                    .weight(1f)
-                                    .padding(start = 4.dp),
-                                label = { Text(stringResource(id = R.string.tag)) },
-                                value = config.speechRule.tag,
-                                values = speechRule.tags.keys.toList(),
-                                entries = speechRule.tags.values.toList(),
-                                onSelectedChange = { k, _ ->
-                                    if (config.speechRule.target != SpeechTarget.CUSTOM_TAG) return@AppSpinner
-                                    onSysttsChange(
-                                        systts.copy(
-                                            config = config.copy(
-                                                speechRule = config.speechRule.copy(tag = k as String)
-                                            )
-                                        )
-                                    )
-                                }
-                            )
-                        }
                     }
-                }
-
-                speechRule?.let {
-                    CustomTagScreen(
-                        systts = systts,
-                        onSysttsChange = {
-                            if (config.speechRule.target == SpeechTarget.CUSTOM_TAG)
-                                onSysttsChange(it)
-                        },
-                        speechRule = it
-                    )
                 }
             }
 
-
-    }
+            speechRule?.let {
+                CustomTagScreen(
+                    info = config.speechRule,
+                    onInfoChange = {
+                        if (config.speechRule.target == SpeechTarget.CUSTOM_TAG)
+                            onSysttsChange(systts.copy(config = config.copy(speechRule = it)))
+                    },
+                    speechRule = it
+                )
+            }
+        }
 }
 
 @Composable
 private fun CustomTagScreen(
-    systts: SystemTtsV2,
-    onSysttsChange: (SystemTtsV2) -> Unit,
-    speechRule: SpeechRule
+    info: SpeechRuleInfo,
+    onInfoChange: (SpeechRuleInfo) -> Unit,
+    speechRule: SpeechRule,
 ) {
     var showHelpDialog by remember { mutableStateOf("" to "") }
     if (showHelpDialog.first.isNotEmpty()) {
@@ -387,15 +368,14 @@ private fun CustomTagScreen(
         }, onDismissRequest = { showHelpDialog = "" to "" })
     }
 
-    val config = systts.config as TtsConfigurationDTO
     Column(Modifier.padding(vertical = 4.dp)) {
-        speechRule.tagsData[config.speechRule.tag]?.forEach { defTag ->
+        speechRule.tagsData[info.tag]?.forEach { defTag ->
             val key = defTag.key
             val label = defTag.value["label"] ?: ""
             val hint = defTag.value["hint"] ?: ""
 
             val items = defTag.value["items"]
-            val value by rememberUpdatedState(newValue = config.speechRule.tagData[key] ?: "")
+            val value by rememberUpdatedState(newValue = info.tagData[key] ?: "")
             if (items.isNullOrEmpty()) {
                 OutlinedTextField(
                     modifier = Modifier
@@ -413,15 +393,11 @@ private fun CustomTagScreen(
                     label = { Text(label) },
                     value = value,
                     onValueChange = {
-                        onSysttsChange(
-                            systts.copy(
-                                config = config.copy(
-                                    speechRule = config.speechRule.copy(
-                                        tagData = config.speechRule.tagData.toMutableMap().apply {
-                                            this[key] = it
-                                        }
-                                    )
-                                )
+                        onInfoChange(
+                            info.copy(
+                                tagData = info.tagData.toMutableMap().apply {
+                                    this[key] = it
+                                }
                             )
                         )
                     }
@@ -450,15 +426,11 @@ private fun CustomTagScreen(
                             }
                     },
                     onSelectedChange = { k, _ ->
-                        onSysttsChange(
-                            systts.copy(
-                                config = config.copy(
-                                    speechRule = config.speechRule.copy(
-                                        tagData = config.speechRule.mutableTagData.apply {
-                                            this[key] = k as String
-                                        }
-                                    )
-                                )
+                        onInfoChange(
+                            info.copy(
+                                tagData = info.tagData.toMutableMap().apply {
+                                    this[key] = k as String
+                                }
                             )
                         )
                     }
