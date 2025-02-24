@@ -48,13 +48,12 @@ import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.stateDescription
 import androidx.compose.ui.unit.dp
 import com.github.jing332.compose.rememberLazyListReorderCache
-import com.github.jing332.compose.widgets.AppLazyColumnScrollbar
 import com.github.jing332.compose.widgets.LazyListIndexStateSaver
+import com.github.jing332.compose.widgets.ShadowedDraggableItem
 import com.github.jing332.database.dbm
 import com.github.jing332.database.entities.SpeechRule
 import com.github.jing332.tts_server_android.R
 import com.github.jing332.tts_server_android.compose.LocalNavController
-import com.github.jing332.compose.widgets.ShadowedDraggableItem
 import com.github.jing332.tts_server_android.compose.SharedViewModel
 import com.github.jing332.tts_server_android.compose.systts.ConfigDeleteDialog
 import com.github.jing332.tts_server_android.utils.MyTools
@@ -188,37 +187,34 @@ fun SpeechRuleManagerScreen(sharedVM: SharedViewModel, finish: () -> Unit) {
             }
         )
 
-        AppLazyColumnScrollbar(reorderState.listState) {
+        LazyColumn(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(paddingValues)
+                .reorderable(reorderState),
+            state = reorderState.listState,
+        ) {
+            itemsIndexed(cache.list, key = { _, v -> v.id }) { index, item ->
+                ShadowedDraggableItem(reorderableState = reorderState, key = item.id) {
+                    Item(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 8.dp, vertical = 4.dp)
+                            .detectReorderAfterLongPress(reorderState),
+                        name = item.name,
+                        desc = "${item.author} - v${item.version}",
+                        isEnabled = item.isEnabled,
+                        onEnabledChange = { dbm.speechRuleDao.update(item.copy(isEnabled = it)) },
+                        onClick = {
 
-            LazyColumn(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(paddingValues)
-                    .reorderable(reorderState),
-                state = reorderState.listState,
-            ) {
-                itemsIndexed(cache.list, key = { _, v -> v.id }) { index, item ->
-                    ShadowedDraggableItem(reorderableState = reorderState, key = item.id) {
-                        Item(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(horizontal = 8.dp, vertical = 4.dp)
-                                .detectReorderAfterLongPress(reorderState),
-                            name = item.name,
-                            desc = "${item.author} - v${item.version}",
-                            isEnabled = item.isEnabled,
-                            onEnabledChange = { dbm.speechRuleDao.update(item.copy(isEnabled = it)) },
-                            onClick = {
-
-                            },
-                            onEdit = {
-                                sharedVM.put(NavRoutes.SpeechRuleEdit.KEY_DATA, item)
-                                navController.navigate(NavRoutes.SpeechRuleEdit.id)
-                            },
-                            onExport = { showExportSheet = listOf(item) },
-                            onDelete = { showDeleteDialog = item }
-                        )
-                    }
+                        },
+                        onEdit = {
+                            sharedVM.put(NavRoutes.SpeechRuleEdit.KEY_DATA, item)
+                            navController.navigate(NavRoutes.SpeechRuleEdit.id)
+                        },
+                        onExport = { showExportSheet = listOf(item) },
+                        onDelete = { showDeleteDialog = item }
+                    )
                 }
             }
         }
