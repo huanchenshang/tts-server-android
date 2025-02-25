@@ -1,7 +1,7 @@
 [versions]
-compileSdk = "34"
+compileSdk = "35"
 minSdk = "21"
-targetSdk = "34"
+targetSdk = "35"
 
 coreKtx = "1.13.1"
 appcompat = "1.7.0"
@@ -16,6 +16,7 @@ about = "10.9.2"
 coroutines = "1.9.0"
 serializationJson = "1.7.3"
 material = "1.12.0"
+material3 = "1.4.0-alpha08"
 
 immersionbar = "3.2.2"
 accompanist = "0.33.0-alpha"
@@ -94,7 +95,7 @@ compose-foundation = { module = "androidx.compose.foundation:foundation" }
 compose-ui = { module = "androidx.compose.ui:ui" }
 compose-ui-android = { module = "androidx.compose.ui:ui-android" }
 
-compose-material3-core = { module = "androidx.compose.material3:material3" }
+compose-material3-core = { module = "androidx.compose.material3:material3", version.ref = "material3"  }
 compose-material3-winsize = { module = "androidx.compose.material3:material3-window-size-class" }
 compose-material-icons-extended = { module = "androidx.compose.material:material-icons-extended" }
 compose-material-icons-core = { module = "androidx.compose.material:material-icons-core" }

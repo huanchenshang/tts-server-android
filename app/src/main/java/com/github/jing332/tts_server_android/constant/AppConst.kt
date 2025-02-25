@@ -51,7 +51,7 @@ object AppConst {
             PackageManager.GET_ACTIVITIES
         )
             ?.let {
-                appInfo.versionName = it.versionName
+                appInfo.versionName = it.versionName ?: ""
                 if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.P) {
                     appInfo.versionCode = it.longVersionCode
                 } else {
