@@ -67,6 +67,7 @@ class PluginPreviewActivity : AppCompatActivity() {
         super.onDestroy()
         AppConst.localBroadcast.unregisterReceiver(mReceiver)
         AppConst.localBroadcast.sendBroadcastSync(Intent(ErrorDialogActivity.ACTION_FINISH))
+        LoggerFloatingManager.hide()
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {

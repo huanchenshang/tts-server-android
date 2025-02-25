@@ -30,7 +30,6 @@ import com.petterp.floatingx.view.IFxInternalHelper
 object LoggerFloatingManager {
     const val TAG = "LoggerFloatingManager"
 
-
     fun show(context: Context, logListenerManager: LogListenerManager) {
         if (FloatingX.isInstalled(TAG))
             FloatingX.control(TAG).show()
@@ -51,7 +50,10 @@ object LoggerFloatingManager {
                         SmallFloatingActionButton(
                             modifier = Modifier.padding(8.dp),
                             onClick = { show.value = !show.value }) {
-                            Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.padding(8.dp)) {
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically,
+                                modifier = Modifier.padding(8.dp)
+                            ) {
                                 Text(stringResource(R.string.log))
                                 Icon(
                                     if (show.value) Icons.Default.KeyboardDoubleArrowDown else Icons.Default.KeyboardDoubleArrowRight,
