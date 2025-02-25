@@ -20,6 +20,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.text.selection.SelectionContainer
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.KeyboardDoubleArrowDown
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
@@ -44,22 +45,30 @@ import com.github.jing332.common.toArgb
 import com.github.jing332.common.toLogLevelChar
 import com.github.jing332.compose.ComposeExtensions.toAnnotatedString
 import com.github.jing332.tts_server_android.R
+import com.github.jing332.tts_server_android.compose.LocalBottomBarBehavior
 import kotlinx.coroutines.launch
 
-@OptIn(ExperimentalFoundationApi::class)
+@OptIn(ExperimentalFoundationApi::class, ExperimentalMaterial3Api::class)
 @Composable
 fun LogScreen(
     modifier: Modifier,
     list: List<LogEntry>,
-    lazyListState: LazyListState = rememberLazyListState(),
+    listState: LazyListState = rememberLazyListState(),
 ) {
+    val bottomBarBehavior = LocalBottomBarBehavior.current
+    LaunchedEffect(listState.canScrollBackward || listState.canScrollForward) {
+        if (!(listState.canScrollBackward || listState.canScrollForward)) {
+            bottomBarBehavior.state.heightOffset = 0f
+        }
+    }
+
     val scope = rememberCoroutineScope()
     val view = LocalView.current
     val context = LocalContext.current
     Box(modifier) {
         val isAtBottom by remember {
             derivedStateOf {
-                val layoutInfo = lazyListState.layoutInfo
+                val layoutInfo = listState.layoutInfo
                 val visibleItemsInfo = layoutInfo.visibleItemsInfo
                 if (layoutInfo.totalItemsCount <= 0) {
                     true
@@ -73,7 +82,7 @@ fun LogScreen(
         LaunchedEffect(list.size) {
             if (isAtBottom && list.isNotEmpty())
                 scope.launch {
-                    lazyListState.animateScrollToItem(list.size - 1)
+                    listState.animateScrollToItem(list.size - 1)
                 }
         }
 
@@ -87,7 +96,7 @@ fun LogScreen(
 
         val darkTheme = isSystemInDarkTheme()
         SelectionContainer {
-            LazyColumn(Modifier.fillMaxSize(), state = lazyListState) {
+            LazyColumn(Modifier.fillMaxSize(), state = listState) {
                 itemsIndexed(list, key = { index, _ -> index }) { index, log ->
                     val style = MaterialTheme.typography.bodyMedium
                     val spanned = remember {
@@ -130,7 +139,7 @@ fun LogScreen(
                 onClick = {
                     scope.launch {
                         kotlin.runCatching {
-                            lazyListState.scrollToItem(list.size - 1)
+                            listState.scrollToItem(list.size - 1)
                         }
                     }
                 }) {

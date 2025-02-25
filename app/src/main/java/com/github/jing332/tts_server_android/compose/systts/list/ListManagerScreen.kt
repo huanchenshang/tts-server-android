@@ -48,6 +48,7 @@ import com.github.jing332.database.entities.systts.source.LocalTtsSource
 import com.github.jing332.database.entities.systts.source.PluginTtsSource
 import com.github.jing332.tts_server_android.AppLocale
 import com.github.jing332.tts_server_android.R
+import com.github.jing332.tts_server_android.compose.LocalBottomBarBehavior
 import com.github.jing332.tts_server_android.compose.LocalDrawerState
 import com.github.jing332.tts_server_android.compose.LocalNavController
 import com.github.jing332.tts_server_android.compose.SharedViewModel
@@ -271,6 +272,13 @@ internal fun ListManagerScreen(
         },
     ) { paddingValues ->
         Box(Modifier.padding(top = paddingValues.calculateTopPadding())) {
+            val bottomBarBehavior = LocalBottomBarBehavior.current
+            LaunchedEffect(listState.canScrollBackward || listState.canScrollForward) {
+                if (!(listState.canScrollBackward || listState.canScrollForward)) {
+                    bottomBarBehavior.state.heightOffset = 0f
+                }
+            }
+
             LazyColumn(
                 Modifier
                     .fillMaxSize()

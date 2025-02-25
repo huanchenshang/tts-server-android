@@ -9,12 +9,15 @@ import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.material3.BottomAppBar
 import androidx.compose.material3.BottomAppBarDefaults
+import androidx.compose.material3.BottomAppBarScrollBehavior
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.NavigationBarDefaults
 import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.compositionLocalOf
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
@@ -27,6 +30,11 @@ import com.github.jing332.tts_server_android.compose.systts.MigrationTips
 import com.github.jing332.tts_server_android.compose.systts.TtsLogScreen
 import com.github.jing332.tts_server_android.compose.systts.list.ListManagerScreen
 import kotlinx.coroutines.launch
+
+
+@OptIn(ExperimentalMaterial3Api::class)
+val LocalBottomBarBehavior =
+    compositionLocalOf<BottomAppBarScrollBehavior>() { error("LocalBottomBarBehavior not initialized") }
 
 @OptIn(
     ExperimentalFoundationApi::class, ExperimentalLayoutApi::class,
@@ -83,11 +91,13 @@ fun MainPager(sharedVM: SharedViewModel) {
             state = pagerState,
             userScrollEnabled = false
         ) { index ->
-            when (index) {
-                PagerDestination.SystemTts.index -> ListManagerScreen(sharedVM)
-                PagerDestination.SystemTtsLog.index -> TtsLogScreen()
-                PagerDestination.Settings.index -> SettingsScreen()
-                PagerDestination.SystemTtsForwarder.index -> SystemTtsForwarderScreen()
+            CompositionLocalProvider(LocalBottomBarBehavior provides scrollBehavior) {
+                when (index) {
+                    PagerDestination.SystemTts.index -> ListManagerScreen(sharedVM)
+                    PagerDestination.SystemTtsLog.index -> TtsLogScreen()
+                    PagerDestination.Settings.index -> SettingsScreen()
+                    PagerDestination.SystemTtsForwarder.index -> SystemTtsForwarderScreen()
+                }
             }
         }
     }
