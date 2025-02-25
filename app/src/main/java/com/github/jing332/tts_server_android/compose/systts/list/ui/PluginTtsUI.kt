@@ -69,7 +69,7 @@ class PluginTtsUI : IConfigUI() {
                 onValueChange = {
                     onSystemTtsChange(systemTts.copySource(tts.copy(speed = it.toScale(2))))
                 },
-                valueRange = 0f..2f
+                valueRange = 0f..3f
             )
 
             val volumeStr =
@@ -84,7 +84,7 @@ class PluginTtsUI : IConfigUI() {
                             tts.copy(volume = it.toScale(2))
                         )
                     )
-                }, valueRange = 0f..2f
+                }, valueRange = 0f..3f
             )
 
             val pitchStr = stringResource(
@@ -98,7 +98,7 @@ class PluginTtsUI : IConfigUI() {
                             tts.copy(pitch = it.toScale(2))
                         )
                     )
-                }, valueRange = 0f..2f
+                }, valueRange = 0f..3f
             )
         }
     }

@@ -85,7 +85,7 @@ class LocalTtsUI() : IConfigUI() {
             )
             LabelSlider(text = rateStr, value = source.speed, onValueChange = {
                 onSystemTtsChange(systemTts.copySource(source.copy(speed = it.toScale(2))))
-            }, valueRange = 0f..2f)
+            }, valueRange = 0f..3f)
 
             val pitchStr = stringResource(
                 id = R.string.label_speech_pitch,
@@ -97,7 +97,7 @@ class LocalTtsUI() : IConfigUI() {
                         config = config.copy(source = source.copy(pitch = it.toScale(2)))
                     )
                 )
-            }, valueRange = 0f..2f, text = pitchStr)
+            }, valueRange = 0f..3f, text = pitchStr)
 
             val volumeStr = stringResource(
                 id = R.string.label_speech_volume,
@@ -109,7 +109,7 @@ class LocalTtsUI() : IConfigUI() {
                         config = config.copy(source = source.copy(volume = it.toScale(2)))
                     )
                 )
-            }, valueRange = 0f..2f, text = volumeStr)
+            }, valueRange = 0f..3f, text = volumeStr)
 
             Row {
                 var sampleRateStr by remember { mutableStateOf(config.audioFormat.sampleRate.toString()) }
