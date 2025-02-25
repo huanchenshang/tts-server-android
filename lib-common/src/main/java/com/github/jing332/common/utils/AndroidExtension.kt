@@ -1,6 +1,7 @@
 package com.github.jing332.common.utils
 
 import android.app.Activity
+import android.app.ForegroundServiceStartNotAllowedException
 import android.app.Notification
 import android.app.Service
 import android.content.BroadcastReceiver
@@ -24,21 +25,19 @@ import android.view.WindowInsets
 import androidx.activity.OnBackPressedCallback
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.LifecycleOwner
+import kotlin.jvm.Throws
 
+@Throws(ForegroundServiceStartNotAllowedException::class)
 fun Service.startForegroundCompat(
     notificationId: Int,
     notification: Notification,
 ) {
     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) { // A14
-        runCatching {
-            startForeground(
-                notificationId,
-                notification,
-                ServiceInfo.FOREGROUND_SERVICE_TYPE_MEDIA_PLAYBACK
-            )
-        }.onFailure {
-            longToast("Foreground service: \n$it")
-        }
+        startForeground(
+            notificationId,
+            notification,
+            ServiceInfo.FOREGROUND_SERVICE_TYPE_MEDIA_PLAYBACK
+        )
     } else {
         startForeground(notificationId, notification)
     }

@@ -15,19 +15,18 @@ import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.res.stringResource
 import com.github.jing332.compose.widgets.InitSystemNavigation
+import com.github.jing332.compose.widgets.rememberA11TouchEnabled
 import com.github.jing332.tts_server_android.compose.forwarder.systts.SystemTtsForwarderScreen
 import com.github.jing332.tts_server_android.compose.settings.SettingsScreen
 import com.github.jing332.tts_server_android.compose.systts.MigrationTips
 import com.github.jing332.tts_server_android.compose.systts.TtsLogScreen
 import com.github.jing332.tts_server_android.compose.systts.list.ListManagerScreen
 import kotlinx.coroutines.launch
-import splitties.systemservices.accessibilityManager
 
 @OptIn(
     ExperimentalFoundationApi::class, ExperimentalLayoutApi::class,
@@ -37,11 +36,12 @@ import splitties.systemservices.accessibilityManager
 fun MainPager(sharedVM: SharedViewModel) {
     val pagerState = rememberPagerState { PagerDestination.routes.size }
     val scope = rememberCoroutineScope()
-
     MigrationTips()
-    val allyEnabled = remember { accessibilityManager.isTouchExplorationEnabled }
+
+    val a11yTouchEnabled = rememberA11TouchEnabled()
+
     val scrollBehavior = BottomAppBarDefaults.exitAlwaysScrollBehavior(canScroll = {
-        !allyEnabled
+        !a11yTouchEnabled
     })
 
     Scaffold(
@@ -59,7 +59,7 @@ fun MainPager(sharedVM: SharedViewModel) {
                         val isSelected = pagerState.currentPage == destination.index
                         NavigationBarItem(
                             selected = isSelected,
-                            alwaysShowLabel = allyEnabled,
+                            alwaysShowLabel = a11yTouchEnabled,
                             onClick = {
                                 scope.launch {
                                     pagerState.animateScrollToPage(destination.index)

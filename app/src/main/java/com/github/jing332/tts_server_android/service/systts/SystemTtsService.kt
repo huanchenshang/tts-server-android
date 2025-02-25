@@ -1,9 +1,11 @@
 package com.github.jing332.tts_server_android.service.systts
 
+import android.app.ForegroundServiceStartNotAllowedException
 import android.app.Notification
 import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.app.PendingIntent
+import android.app.ServiceStartNotAllowedException
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
@@ -22,6 +24,7 @@ import android.util.Log
 import androidx.annotation.StringRes
 import androidx.compose.ui.res.stringResource
 import androidx.core.app.NotificationManagerCompat
+import androidx.core.app.ServiceCompat.stopForeground
 import androidx.core.content.ContextCompat
 import com.github.jing332.common.utils.limitLength
 import com.github.jing332.common.utils.longToast
@@ -52,6 +55,11 @@ import com.github.jing332.tts_server_android.compose.MainActivity
 import com.github.jing332.tts_server_android.conf.SysTtsConfig
 import com.github.jing332.tts_server_android.constant.AppConst
 import com.github.jing332.tts_server_android.constant.SystemNotificationConst
+import com.github.jing332.tts_server_android.service.systts.SystemTtsService.Companion.ACTION_NOTIFY_CANCEL
+import com.github.jing332.tts_server_android.service.systts.SystemTtsService.Companion.ACTION_NOTIFY_KILL_PROCESS
+import com.github.jing332.tts_server_android.service.systts.SystemTtsService.Companion.ACTION_UPDATE_CONFIG
+import com.github.jing332.tts_server_android.service.systts.SystemTtsService.Companion.ACTION_UPDATE_REPLACER
+import com.github.jing332.tts_server_android.service.systts.SystemTtsService.Companion.NOTIFICATION_CHAN_ID
 import com.github.jing332.tts_server_android.service.systts.help.TextProcessor
 import com.github.michaelbull.result.Err
 import com.github.michaelbull.result.Ok
@@ -428,9 +436,9 @@ class SystemTtsService : TextToSpeechService(), IEventDispatcher {
                 mNotificationManager.createNotificationChannel(chan)
             }
             val notifi = getNotification()
-            runCatching {
+            try {
                 startForegroundCompat(SystemNotificationConst.ID_SYSTEM_TTS, notifi)
-            }.onFailure {
+            } catch (e: ForegroundServiceStartNotAllowedException) {
                 logger.debug { "startForeground error, use notify" }
                 NotificationManagerCompat.from(this)
                     .notify(SystemNotificationConst.ID_SYSTEM_TTS, notifi)
