@@ -1,6 +1,7 @@
 package com.github.jing332.tts_server_android.compose.theme
 
 import android.content.Context
+import android.view.WindowManager
 import androidx.activity.ComponentActivity
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material3.ColorScheme
@@ -23,7 +24,7 @@ import com.gyf.immersionbar.ImmersionBar
 fun appTheme(
     themeType: AppTheme,
     darkTheme: Boolean = isSystemInDarkTheme(),
-    context: Context = LocalContext.current
+    context: Context = LocalContext.current,
 ): ColorScheme =
     when (themeType) {
         AppTheme.DEFAULT -> defaultTheme(darkTheme)
@@ -71,26 +72,28 @@ fun getAppTheme(): AppTheme = themeTypeState.value
 /**
  * 根Context
  */
+@Suppress("DEPRECATION")
 @Composable
 fun AppTheme(
     modifier: Modifier = Modifier,
     darkTheme: Boolean = isSystemInDarkTheme(),
-    content: @Composable () -> Unit
+    content: @Composable () -> Unit,
 ) {
     //初始化主题
     InitTheme()
 
     //获取当前主题
     val targetTheme = appTheme(themeType = themeTypeState.value)
+    val activity = LocalView.current.context as ComponentActivity
 
     //沉浸式状态栏
-    ImmersionBar.with(LocalView.current.context as ComponentActivity)
-//        .transparentStatusBar()
+    ImmersionBar.with(activity)
+        .transparentStatusBar()
 //        .transparentNavigationBar() // BottomSheet 会有问题 多padding了一个输入法的高度
         .statusBarDarkFont(!darkTheme)
         .navigationBarDarkIcon(!darkTheme)
         .keyboardEnable(true)
-//        .keyboardMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE)
+        .keyboardMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE)
         .init()
 
     SetupSystemBars()

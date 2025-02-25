@@ -15,21 +15,17 @@ import androidx.activity.compose.setContent
 import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.ExperimentalFoundationApi
-import androidx.compose.foundation.background
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.CornerSize
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowCircleUp
@@ -41,7 +37,6 @@ import androidx.compose.material3.DrawerValue
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.ModalNavigationDrawer
 import androidx.compose.material3.NavigationDrawerItem
 import androidx.compose.material3.NavigationDrawerItemDefaults
 import androidx.compose.material3.Text
@@ -85,10 +80,7 @@ import com.github.jing332.database.entities.systts.SystemTtsV2
 import com.github.jing332.tts_server_android.BuildConfig
 import com.github.jing332.tts_server_android.R
 import com.github.jing332.tts_server_android.ShortCuts
-import com.github.jing332.tts_server_android.compose.forwarder.systts.SystemTtsForwarderScreen
 import com.github.jing332.tts_server_android.compose.nav.NavRoutes
-import com.github.jing332.tts_server_android.compose.settings.SettingsScreen
-import com.github.jing332.tts_server_android.compose.systts.SystemTtsScreen
 import com.github.jing332.tts_server_android.compose.systts.list.ui.widgets.TtsEditContainerScreen
 import com.github.jing332.tts_server_android.compose.theme.AppTheme
 import com.github.jing332.tts_server_android.conf.AppConfig
@@ -188,10 +180,6 @@ private fun MainScreen(finish: () -> Unit) {
     val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
     val entryState by navController.currentBackStackEntryAsState()
 
-    val gesturesEnabled = remember(entryState) {
-        NavRoutes.routes.find { it.id == entryState?.destination?.route } != null
-    }
-
     var lastBackDownTime by remember { mutableLongStateOf(0L) }
     BackHandler(enabled = drawerState.isClosed) {
         val duration = 2000
@@ -208,68 +196,45 @@ private fun MainScreen(finish: () -> Unit) {
         LocalNavController provides navController,
         LocalDrawerState provides drawerState,
     ) {
-        ModalNavigationDrawer(
-            drawerState = drawerState,
-            gesturesEnabled = gesturesEnabled,
-            drawerContent = {
-                NavDrawerContent(
-                    Modifier
-                        .fillMaxHeight()
-                        .width(300.dp)
-                        .clip(
-                            MaterialTheme.shapes.large.copy(
-                                topStart = CornerSize(0.dp),
-                                bottomStart = CornerSize(0.dp)
-                            )
-                        )
-                        .background(MaterialTheme.colorScheme.background)
-                        .padding(12.dp),
-                    navController,
-                    drawerState,
-                )
-            }) {
+        val sharedVM: SharedViewModel = viewModel()
+        NavHost(
+            navController = navController,
+            startDestination = NavRoutes.MainPager.id
+        ) {
+            composable(NavRoutes.MainPager.id) { MainPager(sharedVM) }
+//            composable(NavRoutes.SystemTtsForwarder.id) {
+//                SystemTtsForwarderScreen()
+//            }
+//                composable(NavRoutes.Settings.id) { SettingsScreen(drawerState) }
 
-            val sharedVM: SharedViewModel = viewModel()
-            NavHost(
-                navController = navController,
-                startDestination = NavRoutes.SystemTTS.id
-            ) {
-                composable(NavRoutes.SystemTTS.id) { SystemTtsScreen(sharedVM) }
-                composable(NavRoutes.SystemTtsForwarder.id) {
-                    SystemTtsForwarderScreen()
-                }
-                composable(NavRoutes.Settings.id) { SettingsScreen(drawerState) }
-
-                composable(NavRoutes.TtsEdit.id) {
-                    var stateSystemTts by rememberSaveable {
-                        mutableStateOf(
-                            checkNotNull(sharedVM.getOnce<SystemTtsV2>(NavRoutes.TtsEdit.DATA)) {
-                                "Not found systemTts from sharedVM"
-                            }
-                        )
-                    }
-
-                    TtsEditContainerScreen(
-                        modifier = Modifier
-                            .fillMaxSize(),
-                        systts = stateSystemTts,
-                        onSysttsChange = {
-                            stateSystemTts = it
-                            println("UpdateSystemTTS: $it")
-                        },
-                        onSave = {
-                            navController.popBackStack()
-                            dbm.systemTtsV2.insert(stateSystemTts)
-                            if (stateSystemTts.isEnabled) SystemTtsService.notifyUpdateConfig()
-                        },
-                        onCancel = {
-                            navController.popBackStack()
+            composable(NavRoutes.TtsEdit.id) {
+                var stateSystemTts by rememberSaveable {
+                    mutableStateOf(
+                        checkNotNull(sharedVM.getOnce<SystemTtsV2>(NavRoutes.TtsEdit.DATA)) {
+                            "Not found systemTts from sharedVM"
                         }
                     )
                 }
+
+                TtsEditContainerScreen(
+                    modifier = Modifier
+                        .fillMaxSize(),
+                    systts = stateSystemTts,
+                    onSysttsChange = {
+                        stateSystemTts = it
+                        println("UpdateSystemTTS: $it")
+                    },
+                    onSave = {
+                        navController.popBackStack()
+                        dbm.systemTtsV2.insert(stateSystemTts)
+                        if (stateSystemTts.isEnabled) SystemTtsService.notifyUpdateConfig()
+                    },
+                    onCancel = {
+                        navController.popBackStack()
+                    }
+                )
             }
         }
-
     }
 }
 

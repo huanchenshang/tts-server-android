@@ -54,7 +54,7 @@ import com.github.jing332.tts_server_android.constant.FilePickerMode
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun SettingsScreen(drawerState: DrawerState) {
+fun SettingsScreen() {
     var showThemeDialog by remember { mutableStateOf(false) }
     if (showThemeDialog)
         ThemeSelectionDialog(
@@ -69,7 +69,6 @@ fun SettingsScreen(drawerState: DrawerState) {
         topBar = {
             NavTopAppBar(
                 title = { Text(stringResource(R.string.settings)) },
-                drawerState = drawerState
             )
         }
     ) { paddingValues ->
