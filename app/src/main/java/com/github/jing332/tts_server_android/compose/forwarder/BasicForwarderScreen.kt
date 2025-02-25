@@ -60,7 +60,7 @@ internal fun BasicForwarderScreen(
                 .padding(paddingValues)
                 .fillMaxSize(),
             state = state,
-            userScrollEnabled = false
+            userScrollEnabled = true
         ) {
             when (it) {
                 0 -> configScreen()

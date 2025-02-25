@@ -89,7 +89,7 @@ fun MainPager(sharedVM: SharedViewModel) {
                 .padding(bottom = paddingValues.calculateBottomPadding())
                 .fillMaxSize(),
             state = pagerState,
-            userScrollEnabled = false
+            userScrollEnabled = true
         ) { index ->
             CompositionLocalProvider(LocalBottomBarBehavior provides scrollBehavior) {
                 when (index) {
