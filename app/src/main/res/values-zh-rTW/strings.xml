@@ -453,4 +453,6 @@
     <string name="login">登录</string>
     <string name="reload">重新加载</string>
     <string name="current_playing_bgm">当前背景音乐：%1$s</string>
+    <string name="expended">已展开</string>
+    <string name="collapsed">已收起</string>
 </resources>

@@ -1,6 +1,5 @@
 package com.github.jing332.tts_server_android.compose.systts.list
 
-import androidx.annotation.StringRes
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Spacer
@@ -11,14 +10,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.AddCard
-import androidx.compose.material.icons.filled.Audiotrack
-import androidx.compose.material.icons.filled.Javascript
 import androidx.compose.material.icons.filled.MoreVert
-import androidx.compose.material.icons.filled.PhoneAndroid
-import androidx.compose.material3.DropdownMenu
-import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -32,6 +24,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
@@ -266,64 +259,6 @@ internal fun ListManagerScreen(
             NavTopAppBar(drawerState = drawerState, title = {
                 Text(stringResource(id = R.string.system_tts))
             }, actions = {
-                var showAddMenu by remember { mutableStateOf(false) }
-                IconButton(onClick = { showAddMenu = true }) {
-                    Icon(Icons.Default.Add, stringResource(id = R.string.add_config))
-
-                    DropdownMenu(expanded = showAddMenu,
-                        onDismissRequest = { showAddMenu = false }) {
-
-                        @Composable
-                        fun MenuItem(
-                            icon: @Composable () -> Unit,
-                            @StringRes title: Int,
-                            onClick: () -> Unit,
-                        ) {
-                            DropdownMenuItem(text = {
-                                Text(stringResource(id = title))
-                            }, onClick = {
-                                showAddMenu = false
-                                onClick()
-                            }, leadingIcon = icon)
-                        }
-
-
-                        MenuItem(
-                            icon = { Icon(Icons.Default.PhoneAndroid, null) },
-                            title = R.string.add_local_tts
-                        ) {
-                            navigateToEdit(
-                                SystemTtsV2(
-                                    config = TtsConfigurationDTO(
-                                        source = LocalTtsSource(locale = AppConst.localeCode)
-                                    )
-                                )
-                            )
-                        }
-
-                        MenuItem(
-                            icon = { Icon(Icons.Default.Javascript, null) },
-                            title = R.string.systts_add_plugin_tts
-                        ) {
-                            addPluginDialog = true
-                        }
-
-                        MenuItem(
-                            icon = { Icon(Icons.Default.Audiotrack, null) },
-                            title = R.string.add_bgm_tts
-                        ) {
-                            navigateToEdit(SystemTtsV2(config = BgmConfiguration()))
-                        }
-
-                        MenuItem(
-                            icon = { Icon(Icons.Default.AddCard, null) },
-                            title = R.string.add_group
-                        ) {
-                            addGroupDialog = true
-                        }
-                    }
-                }
-
                 IconButton(onClick = { showOptions = true }) {
                     Icon(Icons.Default.MoreVert, stringResource(id = R.string.more_options))
                     MenuMoreOptions(
@@ -336,7 +271,6 @@ internal fun ListManagerScreen(
         },
     ) { paddingValues ->
         Box(Modifier.padding(top = paddingValues.calculateTopPadding())) {
-
             LazyColumn(
                 Modifier
                     .fillMaxSize()
@@ -450,10 +384,34 @@ internal fun ListManagerScreen(
                 }
 
                 item {
-                    Spacer(Modifier.height(60.dp))
+                    Spacer(Modifier.height(100.dp))
                 }
             }
 
+            FloatingAddConfigButtonGroup(
+                modifier = Modifier
+                    .align(Alignment.BottomEnd)
+                    .padding(12.dp),
+                visible = true,
+                addBgm = {
+                    navigateToEdit(SystemTtsV2(config = BgmConfiguration()))
+                },
+                addLocal = {
+                    navigateToEdit(
+                        SystemTtsV2(
+                            config = TtsConfigurationDTO(
+                                source = LocalTtsSource(locale = AppConst.localeCode)
+                            )
+                        )
+                    )
+                },
+                addPlugin = {
+                    addPluginDialog = true
+                },
+                addGroup = {
+                    addGroupDialog = true
+                }
+            )
 
             LaunchedEffect(key1 = Unit) {
                 withIO {
