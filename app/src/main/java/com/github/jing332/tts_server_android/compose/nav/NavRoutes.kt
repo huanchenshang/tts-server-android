@@ -14,15 +14,7 @@ sealed class NavRoutes(
     @StringRes val strId: Int,
     val icon: @Composable () -> Unit = {},
 ) {
-    companion object {
-        val routes by lazy {
-            listOf(
-                MainPager,
-//                SystemTtsForwarder,
-//                Settings
-            )
-        }
-    }
+
 
     data object MainPager : NavRoutes("main", R.string.system_tts, icon = {
         Icon(
@@ -31,21 +23,6 @@ sealed class NavRoutes(
             contentDescription = null
         )
     })
-
-//    data object SystemTtsForwarder :
-//        NavRoutes("system_tts_forwarder", R.string.forwarder_systts, icon = {
-//            Icon(
-//                modifier = Modifier.size(24.dp),
-//                painter = painterResource(id = R.drawable.ic_tts),
-//                contentDescription = null
-//            )
-//        }
-//        )
-//
-//
-//    data object Settings : NavRoutes("settings", R.string.settings, icon = {
-//        Icon(Icons.Default.Settings, null)
-//    })
 
     // =============
     data object TtsEdit : NavRoutes("tts_edit", 0) {
