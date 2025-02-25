@@ -30,11 +30,15 @@ fun Service.startForegroundCompat(
     notification: Notification,
 ) {
     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) { // A14
-        startForeground(
-            notificationId,
-            notification,
-            ServiceInfo.FOREGROUND_SERVICE_TYPE_MEDIA_PLAYBACK
-        )
+        runCatching {
+            startForeground(
+                notificationId,
+                notification,
+                ServiceInfo.FOREGROUND_SERVICE_TYPE_MEDIA_PLAYBACK
+            )
+        }.onFailure {
+            longToast("Foreground service: \n$it")
+        }
     } else {
         startForeground(notificationId, notification)
     }

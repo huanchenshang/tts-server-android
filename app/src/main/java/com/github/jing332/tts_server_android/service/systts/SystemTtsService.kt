@@ -20,6 +20,7 @@ import android.speech.tts.TextToSpeechService
 import android.speech.tts.Voice
 import android.util.Log
 import androidx.annotation.StringRes
+import androidx.compose.ui.res.stringResource
 import androidx.core.app.NotificationManagerCompat
 import androidx.core.content.ContextCompat
 import com.github.jing332.common.utils.limitLength
@@ -123,6 +124,7 @@ class SystemTtsService : TextToSpeechService(), IEventDispatcher {
 
     override fun onCreate() {
         super.onCreate()
+        updateNotification(getString(R.string.systts_service), "")
         mScope = CoroutineScope(Dispatchers.IO)
 
         registerGlobalReceiver(
@@ -144,6 +146,7 @@ class SystemTtsService : TextToSpeechService(), IEventDispatcher {
 
         mWakeLock?.acquire(60 * 20 * 100)
         mWifiLock.acquire()
+
 
         initManager()
     }
