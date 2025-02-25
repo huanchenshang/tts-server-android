@@ -15,6 +15,7 @@ import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
@@ -26,6 +27,7 @@ import com.github.jing332.tts_server_android.compose.systts.MigrationTips
 import com.github.jing332.tts_server_android.compose.systts.TtsLogScreen
 import com.github.jing332.tts_server_android.compose.systts.list.ListManagerScreen
 import kotlinx.coroutines.launch
+import splitties.systemservices.accessibilityManager
 
 @OptIn(
     ExperimentalFoundationApi::class, ExperimentalLayoutApi::class,
@@ -37,7 +39,10 @@ fun MainPager(sharedVM: SharedViewModel) {
     val scope = rememberCoroutineScope()
 
     MigrationTips()
-    val scrollBehavior = BottomAppBarDefaults.exitAlwaysScrollBehavior()
+    val allyEnabled = remember { accessibilityManager.isTouchExplorationEnabled }
+    val scrollBehavior = BottomAppBarDefaults.exitAlwaysScrollBehavior(canScroll = {
+        !allyEnabled
+    })
 
     Scaffold(
         modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
@@ -45,7 +50,8 @@ fun MainPager(sharedVM: SharedViewModel) {
             val containerColor = NavigationBarDefaults.containerColor
             InitSystemNavigation(containerColor)
             BottomAppBar(
-                modifier = Modifier.fillMaxWidth(),
+                modifier = Modifier
+                    .fillMaxWidth(),
                 containerColor = containerColor,
                 scrollBehavior = scrollBehavior,
                 actions = {
@@ -53,7 +59,7 @@ fun MainPager(sharedVM: SharedViewModel) {
                         val isSelected = pagerState.currentPage == destination.index
                         NavigationBarItem(
                             selected = isSelected,
-                            alwaysShowLabel = false,
+                            alwaysShowLabel = allyEnabled,
                             onClick = {
                                 scope.launch {
                                     pagerState.animateScrollToPage(destination.index)
