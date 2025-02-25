@@ -98,7 +98,7 @@ fun FloatingAddConfigButtonGroup(
     ) {
         FloatingActionButtonMenuItem(
             onClick = {
-                addBgm()
+                addLocal()
                 expended = false
             },
             text = { Text(stringResource(R.string.add_local_tts)) },
@@ -107,7 +107,7 @@ fun FloatingAddConfigButtonGroup(
         Spacer(Modifier.height(2.dp))
         FloatingActionButtonMenuItem(
             onClick = {
-                addLocal()
+                addPlugin()
                 expended = false
             },
             text = { Text(stringResource(R.string.systts_add_plugin_tts)) },
@@ -115,9 +115,8 @@ fun FloatingAddConfigButtonGroup(
         )
         Spacer(Modifier.height(2.dp))
         FloatingActionButtonMenuItem(
-
             onClick = {
-                addPlugin()
+                addBgm()
                 expended = false
             },
             text = { Text(stringResource(R.string.add_bgm_tts)) },
