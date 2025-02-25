@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.material3.NavigationBar
+import androidx.compose.material3.NavigationBarDefaults
 import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
@@ -14,6 +15,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
+import com.github.jing332.compose.widgets.InitSystemNavigation
 import com.github.jing332.tts_server_android.compose.forwarder.systts.SystemTtsForwarderScreen
 import com.github.jing332.tts_server_android.compose.settings.SettingsScreen
 import com.github.jing332.tts_server_android.compose.systts.MigrationTips
@@ -31,7 +33,9 @@ fun MainPager(sharedVM: SharedViewModel) {
 
     Scaffold(
         bottomBar = {
-            NavigationBar {
+            val containerColor = NavigationBarDefaults.containerColor
+            InitSystemNavigation(containerColor)
+            NavigationBar(containerColor = containerColor) {
                 for (destination in PagerDestination.routes) {
                     val isSelected = pagerState.currentPage == destination.index
                     NavigationBarItem(

@@ -1,7 +1,6 @@
 package com.github.jing332.tts_server_android.compose.systts.list
 
 import androidx.activity.compose.BackHandler
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.height
 import androidx.compose.material.icons.Icons
@@ -55,14 +54,7 @@ fun FloatingAddConfigButtonGroup(
 
     val context = LocalContext.current
     FloatingActionButtonMenu(
-        modifier = modifier
-//            .background(
-//                if (expended) MaterialTheme.colorScheme.surface.copy(alpha = 0.5f) else Color.Unspecified,
-//                shape = MaterialTheme.shapes.medium
-//            )
-            .clickable(null, null, expended) {
-                expended = false
-            },
+        modifier = modifier,
         expanded = expended,
         button = {
             ToggleFloatingActionButton(

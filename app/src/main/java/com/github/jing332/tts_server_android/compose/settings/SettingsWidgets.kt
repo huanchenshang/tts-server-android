@@ -8,9 +8,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.defaultMinSize
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material.ripple.rememberRipple
 import androidx.compose.material3.DropdownMenu
-import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.LocalTextStyle
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Switch
@@ -31,14 +29,16 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
-import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.role
 import androidx.compose.ui.semantics.semantics
-import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import com.github.jing332.tts_server_android.R
 import com.github.jing332.compose.widgets.AppDialog
 import com.github.jing332.compose.widgets.LabelSlider
+import com.github.jing332.tts_server_android.R
+
+internal val horizontalPadding: Dp = 16.dp
+internal val verticalPadding: Dp = 12.dp
 
 @Composable
 internal fun DropdownPreference(
@@ -48,7 +48,7 @@ internal fun DropdownPreference(
     icon: @Composable () -> Unit,
     title: @Composable () -> Unit,
     subTitle: @Composable () -> Unit,
-    actions: @Composable ColumnScope. () -> Unit = {}
+    actions: @Composable ColumnScope. () -> Unit = {},
 ) {
     BasePreferenceWidget(modifier = modifier, icon = icon, onClick = {
         onExpandedChange(true)
@@ -64,17 +64,20 @@ internal fun DropdownPreference(
 
 @Composable
 internal fun DividerPreference(title: @Composable () -> Unit) {
-    Column(Modifier.padding(top = 4.dp)) {
-        HorizontalDivider(thickness = 0.5.dp)
+    Column(
+        Modifier
+            .padding(horizontal = horizontalPadding)
+            .padding(top = verticalPadding + 4.dp)
+    ) {
+
         Row(
             Modifier
                 .padding(vertical = 8.dp)
-                .align(Alignment.CenterHorizontally)
+                .align(Alignment.Start)
         ) {
             CompositionLocalProvider(
-                LocalTextStyle provides MaterialTheme.typography.titleMedium.copy(
-                    color = MaterialTheme.colorScheme.primary,
-                    fontWeight = FontWeight.Bold
+                LocalTextStyle provides MaterialTheme.typography.titleSmall.copy(
+                    color = MaterialTheme.colorScheme.primary
                 ),
             ) {
                 title()
@@ -92,7 +95,7 @@ internal fun SwitchPreference(
     icon: @Composable () -> Unit = {},
 
     checked: Boolean,
-    onCheckedChange: (Boolean) -> Unit
+    onCheckedChange: (Boolean) -> Unit,
 ) {
     BasePreferenceWidget(
         modifier = modifier.semantics(mergeDescendants = true) {
@@ -131,7 +134,7 @@ internal fun BasePreferenceWidget(
         ) {
             onClick()
         }
-        .padding(8.dp)
+        .padding(horizontal = horizontalPadding, vertical = verticalPadding)
     ) {
         Column(
             Modifier.align(Alignment.CenterVertically)

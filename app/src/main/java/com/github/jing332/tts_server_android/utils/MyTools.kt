@@ -27,6 +27,14 @@ import java.math.BigDecimal
 object MyTools {
     const val TAG = "MyTools"
 
+    fun Context.isIgnoringBatteryOptimizations(): Boolean{
+        return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            powerManager.isIgnoringBatteryOptimizations(packageName)
+        } else {
+            true
+        }
+    }
+
     @SuppressLint("BatteryLife")
      fun Context.killBattery() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {

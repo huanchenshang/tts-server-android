@@ -9,6 +9,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.MenuOpen
 import androidx.compose.material.icons.filled.AccessTime
 import androidx.compose.material.icons.filled.ArrowCircleUp
+import androidx.compose.material.icons.filled.BatteryFull
 import androidx.compose.material.icons.filled.ColorLens
 import androidx.compose.material.icons.filled.FileOpen
 import androidx.compose.material.icons.filled.Groups
@@ -25,7 +26,6 @@ import androidx.compose.material.icons.filled.StackedLineChart
 import androidx.compose.material.icons.filled.Tag
 import androidx.compose.material.icons.filled.TextFields
 import androidx.compose.material.icons.filled.Waves
-import androidx.compose.material3.DrawerState
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -36,6 +36,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
@@ -51,6 +52,8 @@ import com.github.jing332.tts_server_android.compose.theme.setAppTheme
 import com.github.jing332.tts_server_android.conf.AppConfig
 import com.github.jing332.tts_server_android.conf.SystemTtsConfig
 import com.github.jing332.tts_server_android.constant.FilePickerMode
+import com.github.jing332.tts_server_android.utils.MyTools.isIgnoringBatteryOptimizations
+import com.github.jing332.tts_server_android.utils.MyTools.killBattery
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -79,6 +82,17 @@ fun SettingsScreen() {
                 .verticalScroll(rememberScrollState())
         ) {
             DividerPreference { Text(stringResource(id = R.string.app_name)) }
+
+            val showBatteryOptimization =
+                rememberUpdatedState(!context.isIgnoringBatteryOptimizations())
+
+            if (showBatteryOptimization.value)
+                BasePreferenceWidget(
+                    onClick = { context.killBattery() },
+                    title = { Text(stringResource(id = R.string.battery_optimization_whitelist)) },
+                    subTitle = { Text(stringResource(R.string.battery_optimization_whitelist_desc))},
+                    icon = { Icon(Icons.Default.BatteryFull, null) }
+                )
 
             BasePreferenceWidget(
                 icon = {
@@ -407,6 +421,9 @@ fun SettingsScreen() {
                     Icon(Icons.Default.Groups, contentDescription = null)
                 }
             )
+
+
+            OtherSettingsScreen()
         }
     }
 }

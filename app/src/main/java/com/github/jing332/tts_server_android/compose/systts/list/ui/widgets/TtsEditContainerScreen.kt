@@ -13,6 +13,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.tooling.preview.Preview
 import com.github.jing332.common.utils.toast
+import com.github.jing332.compose.widgets.InitSystemNavigation
 import com.github.jing332.database.entities.systts.EmptyConfiguration
 import com.github.jing332.database.entities.systts.SystemTtsV2
 import com.github.jing332.database.entities.systts.TtsConfigurationDTO
@@ -39,7 +40,7 @@ fun TtsEditContainerScreen(
         }
         return
     }
-
+    InitSystemNavigation()
     val callbacks = rememberSaveCallBacks()
     val scope = rememberCoroutineScope()
     CompositionLocalProvider(LocalSaveCallBack provides callbacks) {

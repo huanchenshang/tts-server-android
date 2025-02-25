@@ -10,6 +10,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.dokar.sheets.BottomSheetValue
 import com.dokar.sheets.m3.BottomSheet
+import com.dokar.sheets.m3.BottomSheetDefaults
 import com.dokar.sheets.rememberBottomSheetState
 
 
@@ -41,10 +42,17 @@ fun AppBottomSheet(
         label = "cornerRadius"
     )
 
+    val backgroundColor = BottomSheetDefaults.backgroundColor
     BottomSheet(
         modifier = Modifier.fillMaxSize(),
         state = state,
         content = content,
+        behaviors = BottomSheetDefaults.dialogSheetBehaviors(
+            extendsIntoStatusBar = false,
+            extendsIntoNavigationBar = false,
+            navigationBarColor = backgroundColor,
+        ),
         shape = RoundedCornerShape(cornerRadius.dp),
-    )
+
+        )
 }
