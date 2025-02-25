@@ -60,7 +60,7 @@ fun QuickEditBottomSheet(
         Column(
             Modifier
                 .padding(top = 12.dp)
-                .padding(horizontal = 4.dp)
+                .padding(horizontal = 8.dp)
                 .verticalScroll(rememberScrollState())
         ) {
             if (ui.showSpeechEdit)

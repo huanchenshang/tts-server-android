@@ -56,9 +56,7 @@ import com.github.jing332.compose.widgets.LabelSlider
 import com.github.jing332.database.entities.systts.BgmConfiguration
 import com.github.jing332.database.entities.systts.SystemTtsV2
 import com.github.jing332.tts_server_android.R
-import com.github.jing332.tts_server_android.compose.systts.list.IntSlider
 import com.github.jing332.tts_server_android.compose.systts.list.ui.widgets.BasicInfoEditScreen
-import com.github.jing332.tts_server_android.compose.systts.list.ui.widgets.SpeechRuleEditScreen
 import com.github.jing332.tts_server_android.compose.systts.list.ui.widgets.TtsTopAppBar
 import com.github.jing332.tts_server_android.ui.AppActivityResultContracts
 import com.github.jing332.tts_server_android.ui.ExoPlayerActivity
@@ -78,7 +76,7 @@ class BgmConfigUI : IConfigUI() {
         systemTts: SystemTtsV2,
         onSystemTtsChange: (SystemTtsV2) -> Unit,
         onSave: () -> Unit,
-        onCancel: () -> Unit
+        onCancel: () -> Unit,
     ) {
         val config = systemTts.config as BgmConfiguration
 
@@ -141,14 +139,20 @@ class BgmConfigUI : IConfigUI() {
                 }
             )
         }) { paddingValues ->
-            Column(Modifier.padding(paddingValues)) {
+            Column(
+                Modifier
+                    .padding(paddingValues)
+                    .padding(8.dp)
+            ) {
                 BasicInfoEditScreen(
                     modifier = Modifier,
                     systemTts = systemTts,
                     onSystemTtsChange = onSystemTtsChange
                 )
+
                 ParamsEditScreen(
-                    modifier = Modifier.fillMaxWidth(),
+                    modifier = Modifier
+                        .fillMaxWidth(),
                     systemTts = systemTts,
                     onSystemTtsChange = onSystemTtsChange
                 )
@@ -227,7 +231,7 @@ class BgmConfigUI : IConfigUI() {
     override fun ParamsEditScreen(
         modifier: Modifier,
         systemTts: SystemTtsV2,
-        onSystemTtsChange: (SystemTtsV2) -> Unit
+        onSystemTtsChange: (SystemTtsV2) -> Unit,
     ) {
         val config = systemTts.config as BgmConfiguration
 
@@ -237,7 +241,7 @@ class BgmConfigUI : IConfigUI() {
                 if (config.volume == 0f) stringResource(id = R.string.follow) else config.volume.toString()
             )
         LabelSlider(
-            modifier = Modifier.padding(top = 8.dp),
+            modifier = modifier.padding(vertical = 12.dp),
             text = volStr, value = config.volume.toFloat(),
             onValueChange = {
                 onSystemTtsChange(systemTts.copy(config = config.copy(volume = it.toScale(2))))
