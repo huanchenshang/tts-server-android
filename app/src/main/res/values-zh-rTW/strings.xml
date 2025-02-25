@@ -457,4 +457,5 @@
     <string name="collapsed">已收起</string>
     <string name="no_new_version">无新版本</string>
     <string name="battery_optimization_whitelist_desc">非常重要，后台保活必要设置</string>
+    <string name="forwarder">转发器</string>
 </resources>

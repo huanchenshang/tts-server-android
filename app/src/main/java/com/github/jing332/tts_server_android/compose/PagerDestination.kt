@@ -4,7 +4,6 @@ import androidx.annotation.StringRes
 import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.TextSnippet
-import androidx.compose.material.icons.filled.ArrowCircleUp
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.Icon
 import androidx.compose.runtime.Composable
@@ -44,9 +43,10 @@ sealed class PagerDestination(
         )
     })
 
-    object SystemTtsForwarder: PagerDestination(2, R.string.forwarder_systts, {
+    object SystemTtsForwarder : PagerDestination(2, R.string.forwarder, {
         Icon(
-            Icons.Default.ArrowCircleUp,
+            modifier = Modifier.size(24.dp),
+            painter = painterResource(R.drawable.ic_app_notification),
             contentDescription = null
         )
     })
