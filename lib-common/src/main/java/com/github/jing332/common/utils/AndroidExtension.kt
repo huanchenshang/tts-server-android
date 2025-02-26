@@ -1,5 +1,6 @@
 package com.github.jing332.common.utils
 
+import android.annotation.SuppressLint
 import android.app.Activity
 import android.app.ForegroundServiceStartNotAllowedException
 import android.app.Notification
@@ -26,11 +27,13 @@ import android.webkit.CookieManager
 import android.webkit.WebStorage
 import android.webkit.WebView
 import androidx.activity.OnBackPressedCallback
+import androidx.core.app.NotificationManagerCompat
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.LifecycleOwner
+import io.github.oshai.kotlinlogging.KotlinLogging
 import kotlin.jvm.Throws
 
-fun Context.clearWebViewData(){
+fun Context.clearWebViewData() {
     WebView(this).apply {
         clearCache(true)
         clearFormData()
@@ -44,19 +47,43 @@ fun Context.clearWebViewData(){
     WebStorage.getInstance().deleteAllData()
 }
 
+private val logger = KotlinLogging.logger("AndroidExtension")
+
+@SuppressLint("MissingPermission")
 @Throws(ForegroundServiceStartNotAllowedException::class)
 fun Service.startForegroundCompat(
     notificationId: Int,
     notification: Notification,
 ) {
     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) { // A14
-        startForeground(
-            notificationId,
-            notification,
-            ServiceInfo.FOREGROUND_SERVICE_TYPE_MEDIA_PLAYBACK
-        )
+        try {
+            startForeground(
+                notificationId,
+                notification,
+                ServiceInfo.FOREGROUND_SERVICE_TYPE_MEDIA_PLAYBACK
+            )
+        } catch (e: Exception) {
+            logger.error(e) { "startForegroundCompat" }
+            NotificationManagerCompat.from(this)
+                .notify(notificationId, notification)
+        }
     } else {
         startForeground(notificationId, notification)
+    }
+}
+
+fun Context.startForegroundServiceCompat(intent: Intent) {
+    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) { // A12
+        try {
+            startForegroundService(intent)
+        } catch (e: ForegroundServiceStartNotAllowedException/* S */) {
+            logger.error(e) { "startForegroundServiceCompat" }
+            startService(intent)
+        }
+    } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) { //A8
+        startForegroundService(intent)
+    } else {
+        startService(intent)
     }
 }
 

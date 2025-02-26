@@ -19,6 +19,7 @@ material = "1.12.0"
 material3 = "1.4.0-alpha08"
 
 immersionbar = "3.2.2"
+webkit = "1.12.1"
 accompanist = "0.33.0-alpha"
 composeBom = "2025.01.01"
 lifecyle = "2.8.7"
@@ -77,6 +78,7 @@ accompanist-systemuicontroller = { module = "com.google.accompanist:accompanist-
 accompanist-nativation-animation = { module = "com.google.accompanist:accompanist-navigation-animation", version.ref = "accompanist" }
 accompanist-webview = { module = "com.google.accompanist:accompanist-webview", version.ref = "accompanist" }
 accompanist-permissions = { module = "com.google.accompanist:accompanist-permissions", version.ref = "accompanist" }
+webkit = { module = "androidx.webkit:webkit", version.ref = "webkit" }
 
 immersionbar = { group = "com.geyifeng.immersionbar", name = "immersionbar", version.ref = "immersionbar" }
 immersionbar-ktx = { group = "com.geyifeng.immersionbar", name = "immersionbar-ktx", version.ref = "immersionbar" }

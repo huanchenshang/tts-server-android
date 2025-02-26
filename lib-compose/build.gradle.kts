@@ -6,7 +6,7 @@ plugins {
 
 android {
     namespace = "com.github.jing332.compose"
-    compileSdk = 34
+    compileSdk = libs.versions.compileSdk.get().toInt()
 
     defaultConfig {
         minSdk = 21
@@ -59,6 +59,7 @@ dependencies {
     api(libs.bundles.compose)
     api(libs.bundles.compose.floatingx)
     api(libs.bundles.compose.material3)
+    api(libs.webkit)
 
     androidTestApi("androidx.compose.ui:ui-test-junit4")
     debugApi("androidx.compose.ui:ui-test-manifest")

@@ -115,11 +115,13 @@ class SysTtsForwarderService(
 
 
         })
-        mServer?.start(true, onStarted = {
-            notifiStarted()
-        }, onShutdown = {
-            notifiClosed()
-        })
+        mServer?.start(true,
+            onStarted = {
+                notifiStarted()
+            }, onStopped = {
+                notifiClosed()
+            }
+        )
     }
 
     override fun closeServer() {

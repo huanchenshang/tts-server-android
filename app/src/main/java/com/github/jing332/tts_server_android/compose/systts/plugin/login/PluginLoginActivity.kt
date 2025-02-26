@@ -5,13 +5,10 @@ import android.content.Intent
 import android.graphics.Bitmap
 import android.os.Bundle
 import android.webkit.CookieManager
-import android.webkit.JsResult
 import android.webkit.ValueCallback
-import android.webkit.WebResourceRequest
-import android.webkit.WebSettings
 import android.webkit.WebView
+import androidx.activity.compose.BackHandler
 import androidx.activity.compose.setContent
-import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -32,8 +29,6 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
-import androidx.compose.material3.pulltorefresh.PullToRefreshBox
-import androidx.compose.material3.pulltorefresh.rememberPullToRefreshState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -42,7 +37,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.lifecycleScope
@@ -50,13 +44,13 @@ import com.drake.net.utils.withIO
 import com.drake.net.utils.withMain
 import com.github.jing332.common.utils.fromCookie
 import com.github.jing332.common.utils.longToast
+import com.github.jing332.compose.widgets.AppWebView
 import com.github.jing332.compose.widgets.AsyncCircleImage
 import com.github.jing332.tts_server_android.R
+import com.github.jing332.tts_server_android.compose.ComposeActivity
 import com.github.jing332.tts_server_android.compose.theme.AppTheme
-import com.google.accompanist.web.AccompanistWebChromeClient
-import com.google.accompanist.web.AccompanistWebViewClient
 import com.google.accompanist.web.LoadingState
-import com.google.accompanist.web.WebView
+import com.google.accompanist.web.WebViewState
 import com.google.accompanist.web.rememberWebViewNavigator
 import com.google.accompanist.web.rememberWebViewState
 import io.github.oshai.kotlinlogging.KotlinLogging
@@ -65,7 +59,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
 import org.apache.commons.text.StringEscapeUtils
 
-class PluginLoginActivity : AppCompatActivity() {
+class PluginLoginActivity : ComposeActivity() {
     companion object {
         private const val TAG = "PluginLoginActivity"
         private val logger = KotlinLogging.logger(TAG)
@@ -169,9 +163,14 @@ class PluginLoginActivity : AppCompatActivity() {
         var webview: WebView? = null
 
         setContent {
+            val state = rememberWebViewState(
+                loginUrl,
+                if (userAgent.isBlank()) emptyMap() else mapOf("User-Agent" to userAgent)
+            )
             AppTheme {
                 var title by remember { mutableStateOf(getString(R.string.login)) }
                 var icon by remember { mutableStateOf<Bitmap?>(null) }
+
                 Scaffold(topBar = {
                     TopAppBar(
                         title = {
@@ -195,12 +194,11 @@ class PluginLoginActivity : AppCompatActivity() {
                             }
                         },
                         actions = {
-                            IconButton(onClick = {
+                            IconButton(enabled = state.loadingState == LoadingState.Finished, onClick = {
                                 webview?.reload()
                             }) {
                                 Icon(Icons.Default.Refresh, stringResource(R.string.reload))
                             }
-
 
                             IconButton(onClick = {
                                 lifecycleScope.launch {
@@ -216,8 +214,8 @@ class PluginLoginActivity : AppCompatActivity() {
                 }) { padding ->
                     LoginScreen(
                         modifier = Modifier.padding(padding),
-                        loginUrl = loginUrl,
-                        userAgent = userAgent,
+                        state = state,
+                         userAgent = userAgent,
                         onTitleUpdate = { title = it },
                         onIconUpdate = { icon = it },
                         onCreated = { webview = it }
@@ -233,88 +231,19 @@ class PluginLoginActivity : AppCompatActivity() {
     @Composable
     fun LoginScreen(
         modifier: Modifier = Modifier,
-        loginUrl: String,
+        state: WebViewState,
         userAgent: String = "",
         onTitleUpdate: (String) -> Unit,
         onIconUpdate: (Bitmap) -> Unit,
         onCreated: (WebView) -> Unit,
     ) {
-        val state = rememberWebViewState(
-            loginUrl,
-            if (userAgent.isBlank()) emptyMap() else mapOf("User-Agent" to userAgent)
-        )
         val navigator = rememberWebViewNavigator()
 
-        val context = LocalContext.current
-        val chromeClient = remember {
-            object : AccompanistWebChromeClient() {
-                override fun onJsConfirm(
-                    view: WebView?,
-                    url: String?,
-                    message: String?,
-                    result: JsResult?,
-                ): Boolean {
-                    if (result == null) return false
-                    context.longToast(message)
-                    return super.onJsConfirm(view, url, message, result)
-                }
-
-                override fun onJsAlert(
-                    view: WebView?,
-                    url: String?,
-                    message: String?,
-                    result: JsResult?,
-                ): Boolean {
-                    context.longToast(message)
-
-                    return super.onJsAlert(view, url, message, result)
-                }
-            }
-        }
-
-
-        val client = remember {
-            object : AccompanistWebViewClient() {
-                override fun onPageStarted(view: WebView, url: String?, favicon: Bitmap?) {
-                    super.onPageStarted(view, url, favicon)
-                }
-
-                override fun onPageFinished(view: WebView, url: String?) {
-                    val regex = Regex("android|mobile", RegexOption.IGNORE_CASE)
-                    val isMobile = userAgent.isBlank() || regex.containsMatchIn(userAgent)
-                    if (!isMobile)
-                        view.evaluateJavascript(
-                            """document.querySelector('meta[name="viewport"]').setAttribute('content', 'width=1024px, height=auto, initial-scale=' + (document.documentElement.clientWidth / 1024));""",
-                            null
-                        );
-
-                    super.onPageFinished(view, url)
-
-                    onTitleUpdate(view.title ?: "")
-                    onIconUpdate(view.favicon ?: return)
-                }
-
-                override fun shouldOverrideUrlLoading(
-                    view: WebView?,
-                    request: WebResourceRequest?,
-                ): Boolean {
-                    runCatching {
-                        if (request?.url?.scheme?.startsWith("http") == false) {
-                            val intent = Intent(Intent.ACTION_VIEW, request.url)
-                            context.startActivity(
-                                Intent.createChooser(
-                                    intent,
-                                    request.url.toString()
-                                )
-                            )
-                            return true
-                        }
-                    }.onFailure {
-                        context.longToast("跳转APP失败: ${request?.url}")
-                    }
-
-                    return super.shouldOverrideUrlLoading(view, request)
-                }
+        BackHandler(navigator.canGoBack || state.isLoading) {
+            if (navigator.canGoBack) {
+                navigator.navigateBack()
+            } else {
+                navigator.stopLoading()
             }
         }
 
@@ -333,41 +262,18 @@ class PluginLoginActivity : AppCompatActivity() {
                 onIconUpdate(state.pageIcon ?: return@LaunchedEffect)
             }
 
-            val refreshState = rememberPullToRefreshState()
-
-            PullToRefreshBox(
-                state.loadingState != LoadingState.Finished,
-                state = refreshState,
-                onRefresh = {},
-            ) {
-                WebView(
-                    state = state,
-                    modifier = Modifier.fillMaxSize(),
-                    navigator = navigator,
-                    onCreated = {
-                        it.setScrollBarStyle(WebView.SCROLLBARS_OUTSIDE_OVERLAY);
-                        it.setScrollbarFadingEnabled(true);
-                        it.settings.apply {
-                            javaScriptEnabled = true
-                            domStorageEnabled = true
-
-                            databaseEnabled = true
-                            userAgentString = userAgent
-
-                            loadWithOverviewMode = true;
-                            layoutAlgorithm = WebSettings.LayoutAlgorithm.NORMAL;
-                            loadWithOverviewMode = true;
-                            useWideViewPort = true;
-                            setSupportZoom(true)
-                            builtInZoomControls = true
-                        }
-
-                        onCreated(it)
-                    },
-                    client = client,
-                    chromeClient = chromeClient,
-                )
+            LaunchedEffect(state.pageTitle) {
+                onTitleUpdate(state.pageTitle ?: return@LaunchedEffect)
             }
+
+            AppWebView(
+                modifier = Modifier.fillMaxSize(),
+                captureBackPresses = false,
+                state = state, navigator = navigator,
+                userAgent = userAgent,
+                onCreated = onCreated
+            )
+
         }
 
     }

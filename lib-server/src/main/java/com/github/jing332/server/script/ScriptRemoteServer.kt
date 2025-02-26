@@ -6,7 +6,7 @@ import com.github.jing332.server.Server
 import com.github.jing332.server.installPlugins
 import io.ktor.http.ContentType
 import io.ktor.server.application.ApplicationStarted
-import io.ktor.server.engine.addShutdownHook
+import io.ktor.server.application.ApplicationStopped
 import io.ktor.server.engine.embeddedServer
 import io.ktor.server.netty.Netty
 import io.ktor.server.request.receiveText
@@ -60,18 +60,20 @@ class ScriptRemoteServer(
 
 
     @Throws(BindException::class)
-    override fun start(wait: Boolean, onStarted: () -> Unit, onShutdown: () -> Unit) {
+    override fun start(wait: Boolean, onStarted: () -> Unit, onStopped: () -> Unit) {
         ktor.environment.log.info("Start script sync server on port $port")
-        ktor.addShutdownHook(onShutdown)
         ktor.application.monitor.subscribe(ApplicationStarted) { application ->
             onStarted()
+        }
+        ktor.application.monitor.subscribe(ApplicationStopped) { application ->
+            onStopped()
         }
         ktor.start(wait)
 
     }
 
     override fun stop() {
-        ktor.stop(1)
+        ktor.stop(100, 500)
     }
 
     interface Callback : BaseCallback {

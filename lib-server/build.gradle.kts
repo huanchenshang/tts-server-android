@@ -7,7 +7,7 @@ plugins {
 
 android {
     namespace = "com.github.jing332.server"
-    compileSdk = 34
+    compileSdk = libs.versions.compileSdk.get().toInt()
 
     defaultConfig {
         minSdk = 21

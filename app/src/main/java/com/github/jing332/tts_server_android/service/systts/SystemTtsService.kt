@@ -308,7 +308,6 @@ class SystemTtsService : TextToSpeechService(), IEventDispatcher {
         return Ok(null)
     }
 
-    @Synchronized
     override fun onSynthesizeText(
         request: SynthesisRequest,
         callback: android.speech.tts.SynthesisCallback,
@@ -335,6 +334,7 @@ class SystemTtsService : TextToSpeechService(), IEventDispatcher {
             var cfgId: Long? = getConfigIdFromVoiceName(request.voiceName ?: "").onFailure {
                 longToast(R.string.voice_name_bad_format)
                 callback.error(TextToSpeech.ERROR_INVALID_REQUEST)
+                callback.done()
                 return@runBlocking
             }.value
             synthesizerJob = mScope.launch {
@@ -377,7 +377,8 @@ class SystemTtsService : TextToSpeechService(), IEventDispatcher {
                             callback.error(TextToSpeech.ERROR_INVALID_REQUEST)
                         }
                     }
-                } ?: callback.error(TextToSpeech.ERROR_SYNTHESIS)
+                    callback.done()
+                }
             }
             synthesizerJob?.join()
 
@@ -436,14 +437,8 @@ class SystemTtsService : TextToSpeechService(), IEventDispatcher {
                 mNotificationManager.createNotificationChannel(chan)
             }
             val notifi = getNotification()
-            try {
-                startForegroundCompat(SystemNotificationConst.ID_SYSTEM_TTS, notifi)
-            } catch (e: ForegroundServiceStartNotAllowedException) {
-                logger.debug { "startForeground error, use notify" }
-                NotificationManagerCompat.from(this)
-                    .notify(SystemNotificationConst.ID_SYSTEM_TTS, notifi)
-            }
 
+            startForegroundCompat(SystemNotificationConst.ID_SYSTEM_TTS, notifi)
             mNotificationDisplayed = true
         }
     }
