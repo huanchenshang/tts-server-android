@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.defaultMinSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.selection.toggleable
 import androidx.compose.material3.DropdownMenu
@@ -68,11 +69,13 @@ internal fun DividerPreference(title: @Composable () -> Unit) {
     val context = LocalContext.current
     Column(
         Modifier
+            .fillMaxWidth()
             .padding(horizontal = horizontalPadding)
             .padding(top = verticalPadding + 4.dp)
             .semantics(true) {
                 contentDescription = context.getString(R.string.divider_preference_desc)
             }
+            .minimumInteractiveComponentSize()
     ) {
         Row(
             Modifier
@@ -138,7 +141,12 @@ internal fun BasePreferenceWidget(
         .minimumInteractiveComponentSize()
         .defaultMinSize(minHeight = 64.dp)
         .clip(MaterialTheme.shapes.extraSmall)
-        .clickable(enabled = onClick != null, role = role, onClick = onClick ?: {})
+        .then(
+            if (onClick == null) Modifier else Modifier.clickable(
+                role = role,
+                onClick = onClick
+            )
+        )
         .then(modifier)
         .padding(horizontal = horizontalPadding, vertical = verticalPadding)
         .semantics(true) {}

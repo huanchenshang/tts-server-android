@@ -227,6 +227,7 @@ class PluginLoginActivity : AppCompatActivity() {
         }
     }
 
+    @Suppress("DEPRECATION")
     @OptIn(ExperimentalMaterial3Api::class)
     @SuppressLint("SetJavaScriptEnabled")
     @Composable
@@ -349,7 +350,6 @@ class PluginLoginActivity : AppCompatActivity() {
                         it.settings.apply {
                             javaScriptEnabled = true
                             domStorageEnabled = true
-
 
                             databaseEnabled = true
                             userAgentString = userAgent

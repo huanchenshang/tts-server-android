@@ -22,10 +22,27 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.view.WindowInsets
+import android.webkit.CookieManager
+import android.webkit.WebStorage
+import android.webkit.WebView
 import androidx.activity.OnBackPressedCallback
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.LifecycleOwner
 import kotlin.jvm.Throws
+
+fun Context.clearWebViewData(){
+    WebView(this).apply {
+        clearCache(true)
+        clearFormData()
+        clearSslPreferences()
+        destroy()
+    }
+    CookieManager.getInstance().apply {
+        removeAllCookies(null)
+        flush()
+    }
+    WebStorage.getInstance().deleteAllData()
+}
 
 @Throws(ForegroundServiceStartNotAllowedException::class)
 fun Service.startForegroundCompat(

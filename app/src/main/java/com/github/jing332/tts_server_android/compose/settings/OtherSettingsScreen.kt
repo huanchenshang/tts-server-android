@@ -4,6 +4,7 @@ import android.content.Intent
 import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.HelpOutline
+import androidx.compose.material.icons.filled.CleaningServices
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material3.Icon
@@ -13,17 +14,17 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
+import com.github.jing332.common.utils.clearWebViewData
+import com.github.jing332.common.utils.toast
 import com.github.jing332.tts_server_android.R
 import com.github.jing332.tts_server_android.compose.AboutDialog
 import com.github.jing332.tts_server_android.compose.LocalUpdateCheckTrigger
 import com.github.jing332.tts_server_android.ui.AppHelpDocumentActivity
 
 @Composable
-internal fun ColumnScope.OtherSettingsScreen(modifier: Modifier = Modifier) {
-
+internal fun ColumnScope.OtherSettingsScreen() {
     DividerPreference { Text(stringResource(R.string.other)) }
     var showAboutDialog by rememberSaveable { mutableStateOf(false) }
     if (showAboutDialog)
@@ -61,6 +62,18 @@ internal fun ColumnScope.OtherSettingsScreen(modifier: Modifier = Modifier) {
         title = { Text(stringResource(R.string.check_update)) },
         icon = {
             Icon(Icons.Default.Refresh, null)
+        }
+    )
+
+
+    BasePreferenceWidget(
+        onClick = {
+            context.clearWebViewData()
+            context.toast(R.string.clear_cache_ok)
+        },
+        title = { Text(stringResource(R.string.clear_web_data)) },
+        icon = {
+            Icon(Icons.Default.CleaningServices, null)
         }
     )
 }

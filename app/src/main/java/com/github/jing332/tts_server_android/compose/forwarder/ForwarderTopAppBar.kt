@@ -1,13 +1,9 @@
 package com.github.jing332.tts_server_android.compose.forwarder
 
 import android.content.Intent
-import android.webkit.CookieManager
-import android.webkit.WebStorage
-import android.webkit.WebView
 import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AddBusiness
-import androidx.compose.material.icons.filled.CleaningServices
 import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material3.DropdownMenu
@@ -25,10 +21,9 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.core.net.toUri
+import com.github.jing332.compose.widgets.CheckedMenuItem
 import com.github.jing332.tts_server_android.R
 import com.github.jing332.tts_server_android.compose.nav.NavTopAppBar
-import com.github.jing332.compose.widgets.CheckedMenuItem
-import com.github.jing332.common.utils.toast
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -72,29 +67,6 @@ internal fun ForwarderTopAppBar(
                         onClick = onWakeLockEnabledChange,
                         leadingIcon = {
                             Icon(Icons.Default.Lock, null)
-                        }
-                    )
-                    DropdownMenuItem(
-                        text = { Text(stringResource(id = R.string.clear_web_data)) },
-                        onClick = {
-                            showOptions = false
-                            if (onClearWebData == null) {
-                                WebView(context).apply {
-                                    clearCache(true)
-                                    clearFormData()
-                                    clearSslPreferences()
-                                }
-                                CookieManager.getInstance().apply {
-                                    removeAllCookies(null)
-                                    flush()
-                                }
-                                WebStorage.getInstance().deleteAllData()
-                                context.toast(R.string.cleared)
-                            } else
-                                onClearWebData.invoke()
-                        },
-                        leadingIcon = {
-                            Icon(Icons.Default.CleaningServices, null)
                         }
                     )
 

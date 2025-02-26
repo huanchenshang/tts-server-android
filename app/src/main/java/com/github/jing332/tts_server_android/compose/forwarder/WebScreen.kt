@@ -36,6 +36,7 @@ import com.google.accompanist.web.WebViewState
 import com.google.accompanist.web.rememberWebViewNavigator
 import com.google.accompanist.web.rememberWebViewState
 
+@Suppress("DEPRECATION")
 @SuppressLint("SetJavaScriptEnabled")
 @Composable
 internal fun WebScreen(
@@ -76,7 +77,7 @@ internal fun WebScreen(
                 view: WebView?,
                 url: String?,
                 message: String?,
-                result: JsResult?
+                result: JsResult?,
             ): Boolean {
                 if (result == null) return false
                 showAlertDialog = Triple(url ?: "", message ?: "", result)
@@ -87,7 +88,7 @@ internal fun WebScreen(
                 view: WebView?,
                 url: String?,
                 message: String?,
-                result: JsResult?
+                result: JsResult?,
             ): Boolean {
                 if (result == null) return false
                 showAlertDialog = Triple(url ?: "", message ?: "", result)
@@ -101,7 +102,7 @@ internal fun WebScreen(
         object : AccompanistWebViewClient() {
             override fun shouldOverrideUrlLoading(
                 view: WebView?,
-                request: WebResourceRequest?
+                request: WebResourceRequest?,
             ): Boolean {
                 kotlin.runCatching {
                     if (request?.url?.scheme?.startsWith("http") == false) {
