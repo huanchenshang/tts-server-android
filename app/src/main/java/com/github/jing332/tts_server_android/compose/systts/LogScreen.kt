@@ -44,6 +44,7 @@ import com.github.jing332.common.LogEntry
 import com.github.jing332.common.toArgb
 import com.github.jing332.common.toLogLevelChar
 import com.github.jing332.compose.ComposeExtensions.toAnnotatedString
+import com.github.jing332.compose.widgets.ControlBottomBarVisibility
 import com.github.jing332.tts_server_android.R
 import com.github.jing332.tts_server_android.compose.LocalBottomBarBehavior
 import kotlinx.coroutines.launch
@@ -55,13 +56,7 @@ fun LogScreen(
     list: List<LogEntry>,
     listState: LazyListState = rememberLazyListState(),
 ) {
-    val bottomBarBehavior = LocalBottomBarBehavior.current
-    LaunchedEffect(listState.canScrollBackward || listState.canScrollForward) {
-        if (!(listState.canScrollBackward || listState.canScrollForward)) {
-            bottomBarBehavior.state.heightOffset = 0f
-        }
-    }
-
+    ControlBottomBarVisibility(listState, LocalBottomBarBehavior.current)
     val scope = rememberCoroutineScope()
     val view = LocalView.current
     val context = LocalContext.current

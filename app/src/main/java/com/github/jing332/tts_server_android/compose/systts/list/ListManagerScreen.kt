@@ -34,6 +34,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.drake.net.utils.withIO
 import com.github.jing332.common.utils.longToast
 import com.github.jing332.common.utils.toast
+import com.github.jing332.compose.widgets.ControlBottomBarVisibility
 import com.github.jing332.compose.widgets.LazyListIndexStateSaver
 import com.github.jing332.compose.widgets.ShadowedDraggableItem
 import com.github.jing332.compose.widgets.TextFieldDialog
@@ -272,13 +273,7 @@ internal fun ListManagerScreen(
         },
     ) { paddingValues ->
         Box(Modifier.padding(top = paddingValues.calculateTopPadding())) {
-            val bottomBarBehavior = LocalBottomBarBehavior.current
-            LaunchedEffect(listState.canScrollBackward || listState.canScrollForward) {
-                if (!(listState.canScrollBackward || listState.canScrollForward)) {
-                    bottomBarBehavior.state.heightOffset = 0f
-                }
-            }
-
+            ControlBottomBarVisibility(listState, LocalBottomBarBehavior.current)
             LazyColumn(
                 Modifier
                     .fillMaxSize()
