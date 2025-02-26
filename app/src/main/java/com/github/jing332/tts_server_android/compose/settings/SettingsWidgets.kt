@@ -1,13 +1,14 @@
 package com.github.jing332.tts_server_android.compose.settings
 
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.focusable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.defaultMinSize
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.selection.toggleable
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.LocalTextStyle
 import androidx.compose.material3.MaterialTheme
@@ -15,7 +16,6 @@ import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.minimumInteractiveComponentSize
-import androidx.compose.material3.ripple
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
@@ -26,10 +26,11 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
-import androidx.compose.ui.semantics.role
+import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
@@ -64,12 +65,15 @@ internal fun DropdownPreference(
 
 @Composable
 internal fun DividerPreference(title: @Composable () -> Unit) {
+    val context = LocalContext.current
     Column(
         Modifier
             .padding(horizontal = horizontalPadding)
             .padding(top = verticalPadding + 4.dp)
+            .semantics(true) {
+                contentDescription = context.getString(R.string.divider_preference_desc)
+            }
     ) {
-
         Row(
             Modifier
                 .padding(vertical = 8.dp)
@@ -98,18 +102,23 @@ internal fun SwitchPreference(
     onCheckedChange: (Boolean) -> Unit,
 ) {
     BasePreferenceWidget(
-        modifier = modifier.semantics(mergeDescendants = true) {
-            role = Role.Switch
-        },
-        onClick = { onCheckedChange(!checked) },
+        modifier = modifier
+            .focusable()
+            .toggleable(
+                role = Role.Switch,
+                value = checked,
+                enabled = true,
+                onValueChange = { onCheckedChange(!checked) }),
+
         title = title,
         subTitle = subTitle,
         icon = icon,
         content = {
             Switch(
                 checked = checked,
-                onCheckedChange = onCheckedChange,
+                onCheckedChange = null,
                 modifier = Modifier.align(Alignment.CenterVertically)
+
             )
         }
     )
@@ -118,23 +127,21 @@ internal fun SwitchPreference(
 @Composable
 internal fun BasePreferenceWidget(
     modifier: Modifier = Modifier,
-    onClick: () -> Unit,
+    role: Role? = null,
+    onClick: (() -> Unit)? = null,
     title: @Composable () -> Unit,
     subTitle: @Composable () -> Unit = {},
     icon: @Composable () -> Unit = {},
     content: @Composable RowScope.() -> Unit = {},
 ) {
-    Row(modifier = modifier
+    Row(modifier = Modifier
         .minimumInteractiveComponentSize()
         .defaultMinSize(minHeight = 64.dp)
         .clip(MaterialTheme.shapes.extraSmall)
-        .clickable(
-            interactionSource = remember { MutableInteractionSource() },
-            indication = ripple()
-        ) {
-            onClick()
-        }
+        .clickable(enabled = onClick != null, role = role, onClick = onClick ?: {})
+        .then(modifier)
         .padding(horizontal = horizontalPadding, vertical = verticalPadding)
+        .semantics(true) {}
     ) {
         Column(
             Modifier.align(Alignment.CenterVertically)
@@ -157,7 +164,10 @@ internal fun BasePreferenceWidget(
             }
         }
 
-        Row(Modifier.align(Alignment.CenterVertically)) {
+        Row(
+            Modifier
+                .align(Alignment.CenterVertically)
+        ) {
             content()
         }
     }

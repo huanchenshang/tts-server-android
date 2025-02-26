@@ -2,6 +2,7 @@ package com.github.jing332.compose.widgets
 
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.background
+import androidx.compose.foundation.focusable
 import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -16,7 +17,6 @@ import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.foundation.text.selection.SelectionContainer
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.Icon
@@ -39,11 +39,10 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.LocalClipboardManager
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
-import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.selected
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.style.TextAlign
@@ -66,22 +65,18 @@ fun AppSelectionDialog(
     searchEnabled: Boolean = values.size > 5,
 
     itemContent: @Composable RowScope.(Boolean, String, Any?, Any) -> Unit = { isSelected, entry, icon, _ ->
-        val clip = LocalClipboardManager.current
-        val context = LocalContext.current
         if (icon != null)
             AsyncCircleImage(
                 modifier = Modifier.size(32.dp),
                 model = icon,
                 contentDescription = null
             )
-        SelectionContainer {
-            Text(
-                entry,
-                style = MaterialTheme.typography.titleMedium,
-                modifier = Modifier.padding(8.dp),
-                fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal,
-            )
-        }
+        Text(
+            entry,
+            style = MaterialTheme.typography.titleMedium,
+            modifier = Modifier.padding(8.dp),
+            fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal,
+        )
     },
 
     buttons: @Composable BoxScope.() -> Unit = {
@@ -91,8 +86,7 @@ fun AppSelectionDialog(
     onValueSame: (Any, Any) -> Boolean = { a, b -> a == b },
     onClick: (Any, String) -> Unit,
 ) {
-    val context = LocalContext.current
-    val view = LocalView.current
+
     var showSearch by remember { mutableStateOf(false) }
 
     val focusRequester = remember { FocusRequester() }
@@ -100,8 +94,10 @@ fun AppSelectionDialog(
 
     LaunchedEffect(showSearch) {
         if (showSearch) {
-            focusRequester.requestFocus()
-            keyboardController?.show()
+            runCatching {
+                focusRequester.requestFocus()
+                keyboardController?.show()
+            }
         }
     }
     AppDialog(
@@ -202,7 +198,12 @@ fun AppSelectionDialog(
                                     .clickableRipple(
                                         onClick = { onClick(current, entry) }
                                     )
-                                    .minimumInteractiveComponentSize(),
+                                    .minimumInteractiveComponentSize()
+                                    .focusable()
+                                    .semantics(mergeDescendants = true) {
+                                        selected = isSelected
+
+                                    },
                                 verticalAlignment = Alignment.CenterVertically
                             ) {
                                 itemContent(isSelected, entry, icon, value)

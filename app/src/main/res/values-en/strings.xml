@@ -469,4 +469,5 @@
     <string name="no_new_version">无新版本</string>
     <string name="battery_optimization_whitelist_desc">非常重要，后台保活必要设置</string>
     <string name="forwarder">转发器</string>
+    <string name="divider_preference_desc">以下为子设置</string>
 </resources>
