@@ -66,7 +66,7 @@ fun Context.asActivity(): Activity {
 }
 
 
-class MainActivity : AppCompatActivity() {
+class MainActivity : ComposeActivity() {
     companion object {
         private const val TAG = "MainActivity"
         private val logger = KotlinLogging.logger(TAG)

@@ -33,7 +33,7 @@
         android:requestLegacyExternalStorage="true"
         android:roundIcon="@mipmap/ic_app_launcher_round"
         android:supportsRtl="true"
-        android:theme="@style/Theme.TtsServer"
+        android:theme="@style/Theme.TtsServer.NoActionBar"
         android:usesCleartextTraffic="true"
         tools:ignore="UnusedAttribute">
         <activity
@@ -46,8 +46,7 @@
         <activity
             android:name=".compose.systts.replace.ReplaceManagerActivity"
             android:exported="true"
-            android:label="@string/replace_rule_manager"
-            android:windowSoftInputMode="adjustResize" />
+            android:label="@string/replace_rule_manager" />
         <activity
             android:name=".compose.systts.directlink.LinkUploadRuleActivity"
             android:exported="true"
@@ -101,8 +100,7 @@
         <activity
             android:name=".compose.systts.plugin.PluginManagerActivity"
             android:exported="true"
-            android:label="@string/plugin_manager"
-            android:taskAffinity="com.github.jing332.tts_server_android.plugin" />
+            android:label="@string/plugin_manager" />
         <activity
             android:name=".ui.ImportConfigActivity"
             android:exported="true"

@@ -5,9 +5,14 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.imePadding
+import androidx.compose.foundation.layout.isImeVisible
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
@@ -66,7 +71,7 @@ import kotlinx.coroutines.launch
 
 fun CodeEditor.string(): String = this.text.toString()
 
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
 @Composable
 fun CodeEditorScreen(
     title: @Composable () -> Unit,
@@ -133,6 +138,7 @@ fun CodeEditorScreen(
     }
 
     Scaffold(
+        contentWindowInsets = WindowInsets(0,0,0,0),
         topBar = {
             TopAppBar(title = title, navigationIcon = {
                 IconButton(onClick = onBack) {
@@ -279,9 +285,9 @@ fun CodeEditorScreen(
                             startColumn: Int,
                             endLine: Int,
                             endColumn: Int,
-                            insertedContent: CharSequence
+                            insertedContent: CharSequence,
                         ) {
-                         }
+                        }
 
                         override fun afterDelete(
                             content: Content,
@@ -289,9 +295,9 @@ fun CodeEditorScreen(
                             startColumn: Int,
                             endLine: Int,
                             endColumn: Int,
-                            deletedContent: CharSequence
+                            deletedContent: CharSequence,
                         ) {
-                         }
+                        }
                     })
                     codeEditor = it
 
@@ -322,7 +328,14 @@ fun CodeEditorScreen(
             }
 
             HorizontalDivider(thickness = 1.dp)
-            LazyRow(Modifier.background(MaterialTheme.colorScheme.background)) {
+            LazyRow(
+                Modifier
+                    .background(MaterialTheme.colorScheme.background)
+                    .imePadding()
+                    .then(
+                        if (WindowInsets.isImeVisible) Modifier else Modifier.navigationBarsPadding()
+                    )
+            ) {
                 items(symbolMap.toList()) {
                     Box(
                         Modifier

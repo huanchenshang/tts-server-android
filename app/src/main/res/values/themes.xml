@@ -1,13 +1,15 @@
 <resources xmlns:tools="http://schemas.android.com/tools">
     <!--基本样式-->
     <style name="BaseTheme.TtsServer" parent="Theme.Material3.DayNight">
-        <item name="bottomSheetDialogTheme">@style/ThemeOverlay.TtsServer.BottomSheetDialog</item>
-        <item name="android:windowTranslucentStatus">false</item>
+         <item name="android:windowTranslucentStatus">true</item>
         <item name="android:windowDrawsSystemBarBackgrounds">true</item>
         <item name="android:statusBarColor">@android:color/transparent</item>
         <!--        <item name="android:navigationBarColor">@android:color/transparent</item>-->
         <item name="windowActionBar">false</item>
         <item name="windowNoTitle">true</item>
+        <item name="android:navigationBarColor">@android:color/transparent</item>
+        <item name="android:windowTranslucentNavigation">true</item>  <!-- 尝试这个 -->
+<!--        <item name="android:enforceNavigationBarContrast">false</item> &lt;!&ndash; API 29+ &ndash;&gt;-->
     </style>
 
     <style name="TtsServer.Base.Light" parent="BaseTheme.TtsServer">
@@ -82,7 +84,7 @@
         <item name="tint">@color/white</item>
     </style>
 
-    <style name="Theme.TtsServer.NoActionBar">
+    <style name="Theme.TtsServer.NoActionBar" parent="BaseTheme.TtsServer">
         <item name="windowActionBar">false</item>
         <item name="windowNoTitle">true</item>
     </style>

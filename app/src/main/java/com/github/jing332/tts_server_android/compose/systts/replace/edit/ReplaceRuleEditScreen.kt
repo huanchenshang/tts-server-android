@@ -6,9 +6,16 @@ import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.ime
+import androidx.compose.foundation.layout.imePadding
+import androidx.compose.foundation.layout.isImeVisible
+import androidx.compose.foundation.layout.navigationBars
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -22,6 +29,7 @@ import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Headset
 import androidx.compose.material.icons.filled.Save
 import androidx.compose.material3.AlertDialogDefaults
+import androidx.compose.material3.BottomAppBar
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
@@ -44,6 +52,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.onFocusChanged
+import androidx.compose.ui.graphics.BlendMode.Companion.Screen
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.text
@@ -54,6 +64,7 @@ import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import cn.hutool.core.collection.CollUtil.group
 import com.github.jing332.compose.widgets.AppSpinner
 import com.github.jing332.compose.widgets.TextCheckBox
 import com.github.jing332.database.dbm
@@ -64,6 +75,7 @@ import com.github.jing332.tts_server_android.R
 import com.github.jing332.tts_server_android.compose.LocalNavController
 import com.github.jing332.tts_server_android.compose.systts.AuditionDialog
 import com.github.jing332.tts_server_android.conf.ReplaceRuleConfig
+import com.github.jing332.tts_server_android.ui.view.ErrorDialogActivity.Companion.vm
 import androidx.compose.material3.AlertDialog as AlertDialog1
 
 
@@ -91,7 +103,7 @@ fun PreviewRuleEditScreen() {
     )
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
 @Composable
 fun RuleEditScreen(
     rule: ReplaceRule,
@@ -147,70 +159,69 @@ fun RuleEditScreen(
                 }) {
                     Icon(Icons.Filled.Save, stringResource(id = R.string.save))
                 }
-
-//                IconButton(onClick = {}) {
-//                    Icon(
-//                        Icons.Filled.MoreVert, stringResource(id = R.string.more_options)
-//                    )
-//                }
             })
     }, bottomBar = {
-        SoftKeyboardInputToolbar(symbols = toolBarSymbols, onClick = {
-            inputKeyState.value = it
-        }, onSettings = {
-            showToolbarSettingsDialog = true
-        })
-    }, content = { paddingValues ->
-        Surface(
+        SoftKeyboardInputToolbar(
             modifier = Modifier
-                .padding(paddingValues)
-                .verticalScroll(rememberScrollState())
-        ) {
-            Screen(
-                inputKeyState,
-                group = group,
-                groupKeys = groups,
-                groupValues = groups.map { it.name },
-                onGroupChange = {
-                    onRuleChange.invoke(rule.copy(groupId = it.id))
-                },
+                .imePadding()
+                .then(
+                    if (WindowInsets.isImeVisible) Modifier else Modifier.navigationBarsPadding()
+                ),
+            symbols = toolBarSymbols,
+            onClick = {
+                inputKeyState.value = it
+            },
+            onSettings = {
+                showToolbarSettingsDialog = true
+            }
+        )
+    }, content = { paddingValues ->
 
-                name = rule.name,
-                onNameChange = {
-                    onRuleChange.invoke(rule.copy(name = it))
-                },
+        Screen(
+            modifier = Modifier
+                .padding(paddingValues),
+            insertKeyState = inputKeyState,
+            group = group,
+            groupKeys = groups,
+            groupValues = groups.map { it.name },
+            onGroupChange = {
+                onRuleChange.invoke(rule.copy(groupId = it.id))
+            },
 
-                patternValue = rule.pattern,
-                onReplaceValueChange = {
-                    onRuleChange.invoke(rule.copy(pattern = it))
-                },
+            name = rule.name,
+            onNameChange = {
+                onRuleChange.invoke(rule.copy(name = it))
+            },
 
-                replacementValue = rule.replacement,
-                onReplacementValueChange = {
-                    onRuleChange.invoke(rule.copy(replacement = it))
-                },
+            patternValue = rule.pattern,
+            onReplaceValueChange = {
+                onRuleChange.invoke(rule.copy(pattern = it))
+            },
 
-                isRegex = rule.isRegex,
-                onIsRegexChange = {
-                    onRuleChange.invoke(rule.copy(isRegex = it))
-                },
+            replacementValue = rule.replacement,
+            onReplacementValueChange = {
+                onRuleChange.invoke(rule.copy(replacement = it))
+            },
 
-                sampleText = rule.sampleText,
-                onSampleTextChange = {
-                    onRuleChange.invoke(rule.copy(sampleText = it))
-                },
+            isRegex = rule.isRegex,
+            onIsRegexChange = {
+                onRuleChange.invoke(rule.copy(isRegex = it))
+            },
 
-                onTest = {
-                    (try {
-                        vm.doReplace(rule, it)
-                    } catch (e: Exception) {
-                        e.message ?: ""
-                    })
-                },
-            )
-        }
-    }
-    )
+            sampleText = rule.sampleText,
+            onSampleTextChange = {
+                onRuleChange.invoke(rule.copy(sampleText = it))
+            },
+
+            onTest = {
+                (try {
+                    vm.doReplace(rule, it)
+                } catch (e: Exception) {
+                    e.message ?: ""
+                })
+            },
+        )
+    })
 }
 
 private object InputFieldID {
@@ -232,6 +243,7 @@ fun TextFieldValue.newValueOfInsertText(
 
 @Composable
 private fun Screen(
+    modifier: Modifier,
     insertKeyState: MutableState<String>,
     group: ReplaceRuleGroup,
     groupKeys: List<ReplaceRuleGroup>,
@@ -259,9 +271,10 @@ private fun Screen(
     })
 
     Column(
-        modifier = Modifier
+        modifier = modifier
+            .padding(horizontal = 8.dp)
             .fillMaxSize()
-            .padding(horizontal = 8.dp),
+            .verticalScroll(rememberScrollState()),
         verticalArrangement = Arrangement.spacedBy(8.dp)
     ) {
         AppSpinner(

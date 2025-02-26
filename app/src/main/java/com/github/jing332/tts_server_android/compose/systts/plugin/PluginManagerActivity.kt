@@ -3,7 +3,6 @@ package com.github.jing332.tts_server_android.compose.systts.plugin
 import android.content.Intent
 import android.os.Bundle
 import androidx.activity.compose.setContent
-import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -16,13 +15,13 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.github.jing332.database.dbm
 import com.github.jing332.database.entities.plugin.Plugin
+import com.github.jing332.tts_server_android.compose.ComposeActivity
 import com.github.jing332.tts_server_android.compose.LocalNavController
 import com.github.jing332.tts_server_android.compose.SharedViewModel
 import com.github.jing332.tts_server_android.compose.theme.AppTheme
 
-class PluginManagerActivity : AppCompatActivity() {
+class PluginManagerActivity : ComposeActivity() {
     private var jsCode by mutableStateOf("")
-
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)

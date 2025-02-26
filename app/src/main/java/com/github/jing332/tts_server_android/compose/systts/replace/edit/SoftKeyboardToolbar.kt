@@ -33,12 +33,13 @@ import com.github.jing332.tts_server_android.R
 
 @Composable
 fun SoftKeyboardInputToolbar(
+    modifier: Modifier,
     symbols: LinkedHashMap<String, String>,
     onClick: (chars: String) -> Unit,
 
     onSettings: () -> Unit = {},
 ) {
-    Column {
+    Column(modifier = modifier) {
         HorizontalDivider(Modifier.fillMaxWidth())
         LazyRow(modifier = Modifier.fillMaxWidth()) {
             itemsIndexed(symbols.toList()) { index, entry ->

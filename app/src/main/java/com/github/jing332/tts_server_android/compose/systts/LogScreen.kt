@@ -10,6 +10,7 @@ import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
@@ -46,6 +47,7 @@ import com.github.jing332.common.toLogLevelChar
 import com.github.jing332.compose.ComposeExtensions.toAnnotatedString
 import com.github.jing332.compose.widgets.ControlBottomBarVisibility
 import com.github.jing332.tts_server_android.R
+import com.github.jing332.tts_server_android.compose.AppDefaultProperties
 import com.github.jing332.tts_server_android.compose.LocalBottomBarBehavior
 import kotlinx.coroutines.launch
 
@@ -116,6 +118,9 @@ fun LogScreen(
                         if (index < list.size - 1)
                             HorizontalDivider(thickness = 0.3.dp)
                     }
+                }
+                item {
+                    Spacer(Modifier.padding(bottom = AppDefaultProperties.LIST_END_PADDING))
                 }
             }
         }

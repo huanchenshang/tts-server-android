@@ -4,6 +4,8 @@ import android.content.Intent
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -51,6 +53,7 @@ import com.github.jing332.database.entities.replace.GroupWithReplaceRule
 import com.github.jing332.database.entities.replace.ReplaceRule
 import com.github.jing332.database.entities.replace.ReplaceRuleGroup
 import com.github.jing332.tts_server_android.R
+import com.github.jing332.tts_server_android.compose.AppDefaultProperties
 import com.github.jing332.tts_server_android.compose.LocalNavController
 import com.github.jing332.tts_server_android.compose.SharedViewModel
 import com.github.jing332.tts_server_android.compose.systts.sizeToToggleableState
@@ -125,6 +128,7 @@ internal fun ReplaceRuleManagerScreen(
 
     val models by vm.list.collectAsStateWithLifecycle()
     Scaffold(
+        contentWindowInsets = WindowInsets(0),
         modifier = Modifier.fillMaxSize(),
         topBar = {
             TopAppBar(
@@ -230,13 +234,7 @@ internal fun ReplaceRuleManagerScreen(
         }
     ) { paddingValues ->
         val listState = rememberLazyListState()
-        LazyListIndexStateSaver(
-            models = models,
-            listState = listState,
-            onIndexUpdate = { index, offset ->
-                listState.scrollToItem(index, offset)
-            }
-        )
+        LazyListIndexStateSaver(models = models, listState = listState)
 
         val reorderState =
             rememberReorderableLazyListState(listState = listState, onMove = { from, to ->
@@ -340,6 +338,10 @@ internal fun ReplaceRuleManagerScreen(
                     }
                 }
 
+            }
+
+            item {
+                Spacer(Modifier.padding(bottom = AppDefaultProperties.LIST_END_PADDING))
             }
         }
     }

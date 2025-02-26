@@ -1,21 +1,21 @@
 package com.github.jing332.tts_server_android.compose.theme
 
 import android.content.Context
-import android.view.WindowManager
 import androidx.activity.ComponentActivity
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material3.ColorScheme
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalView
-import com.github.jing332.compose.widgets.SetupSystemBars
 import com.github.jing332.tts_server_android.conf.AppConfig
-import com.gyf.immersionbar.ImmersionBar
+import com.google.accompanist.systemuicontroller.rememberSystemUiController
 
 /**
  * 获取当前主题
@@ -86,17 +86,17 @@ fun AppTheme(
     val targetTheme = appTheme(themeType = themeTypeState.value)
     val activity = LocalView.current.context as ComponentActivity
 
-    //沉浸式状态栏
-    ImmersionBar.with(activity)
-        .transparentStatusBar()
-//        .transparentNavigationBar() // BottomSheet 会有问题 多padding了一个输入法的高度
-        .statusBarDarkFont(!darkTheme)
-        .navigationBarDarkIcon(!darkTheme)
-        .keyboardEnable(true)
-        .keyboardMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE)
-        .init()
+    val systemUiController = rememberSystemUiController()
+    val useDarkIcons = !isSystemInDarkTheme()
 
-    SetupSystemBars()
+    DisposableEffect(systemUiController, useDarkIcons) {
+        systemUiController.setSystemBarsColor(
+            color = Color.Transparent,
+            darkIcons = useDarkIcons
+        )
+
+        onDispose {}
+    }
 
     MaterialTheme(
         colorScheme = themeAnimation(targetTheme = targetTheme),

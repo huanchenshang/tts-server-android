@@ -4,7 +4,6 @@ import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
@@ -49,6 +48,7 @@ import com.github.jing332.database.entities.systts.source.LocalTtsSource
 import com.github.jing332.database.entities.systts.source.PluginTtsSource
 import com.github.jing332.tts_server_android.AppLocale
 import com.github.jing332.tts_server_android.R
+import com.github.jing332.tts_server_android.compose.AppDefaultProperties
 import com.github.jing332.tts_server_android.compose.LocalBottomBarBehavior
 import com.github.jing332.tts_server_android.compose.LocalDrawerState
 import com.github.jing332.tts_server_android.compose.LocalNavController
@@ -387,7 +387,7 @@ internal fun ListManagerScreen(
                 }
 
                 item {
-                    Spacer(Modifier.height(100.dp))
+                    Spacer(Modifier.padding(bottom = AppDefaultProperties.LIST_END_PADDING))
                 }
             }
 
