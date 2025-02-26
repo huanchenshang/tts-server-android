@@ -8,8 +8,10 @@ import io.ktor.http.ContentType
 import io.ktor.http.HttpStatusCode
 import io.ktor.http.decodeURLQueryComponent
 import io.ktor.server.application.ApplicationCallPipeline
+import io.ktor.server.application.ApplicationStarted
 import io.ktor.server.application.call
 import io.ktor.server.application.log
+import io.ktor.server.engine.addShutdownHook
 import io.ktor.server.engine.embeddedServer
 import io.ktor.server.http.content.staticResources
 import io.ktor.server.netty.Netty
@@ -118,12 +120,16 @@ class SystemTtsForwardServer(val port: Int, val callback: Callback) : Server {
         }
     }
 
-    override fun start(wait: Boolean) {
+    override fun start(wait: Boolean, onStarted: () -> Unit, onShutdown: () -> Unit) {
+        ktor.addShutdownHook(onShutdown)
+        ktor.application.monitor.subscribe(ApplicationStarted) { application ->
+            onStarted()
+        }
         ktor.start(wait)
     }
 
     override fun stop() {
-        ktor.stop(100)
+        ktor.stop(100, 500)
     }
 
     interface Callback : BaseCallback {

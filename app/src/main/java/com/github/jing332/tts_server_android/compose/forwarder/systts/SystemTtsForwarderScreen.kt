@@ -54,11 +54,11 @@ fun SystemTtsForwarderScreen(cfgVM: ConfigViewModel = viewModel()) {
                 intentFilter = IntentFilter().apply {
                     addAction(SysTtsForwarderService.ACTION_ON_LOG)
                     addAction(SysTtsForwarderService.ACTION_ON_CLOSED)
-                    addAction(SysTtsForwarderService.ACTION_ON_STARTING)
+                    addAction(SysTtsForwarderService.ACTION_ON_STARTED)
                 },
                 actionOnLog = SysTtsForwarderService.ACTION_ON_LOG,
                 actionOnClosed = SysTtsForwarderService.ACTION_ON_CLOSED,
-                actionOnStarting = SysTtsForwarderService.ACTION_ON_STARTING,
+                actionOnStarted = SysTtsForwarderService.ACTION_ON_STARTED,
                 isRunning = isRunning,
                 onRunningChange = { isRunning = it },
                 switch = { context.switchSysTtsForwarder() },

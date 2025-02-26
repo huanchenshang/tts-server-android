@@ -28,7 +28,7 @@ internal fun BasicConfigScreen(
     intentFilter: IntentFilter,
     actionOnLog: String,
     actionOnClosed: String,
-    actionOnStarting: String,
+    actionOnStarted: String,
     isRunning: Boolean,
     onRunningChange: (Boolean) -> Unit,
     switch: () -> Unit,
@@ -50,7 +50,7 @@ internal fun BasicConfigScreen(
                 vm.logs.add(LogEntry(level = LogLevel.INFO, message = "服务已关闭"))
             }
 
-            actionOnStarting -> {
+            actionOnStarted -> {
                 onRunningChange(true)
                 vm.logs.add(LogEntry(level = LogLevel.INFO, message = "服务已启动"))
             }

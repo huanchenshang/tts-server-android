@@ -15,15 +15,19 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import com.github.jing332.compose.widgets.LocalBroadcastReceiver
 import com.github.jing332.tts_server_android.R
+import com.github.jing332.tts_server_android.service.forwarder.ForwarderServiceManager.startSysTtsForwarder
 import com.github.jing332.tts_server_android.service.forwarder.system.SysTtsForwarderService
+import com.google.accompanist.web.WebContent
+import com.google.accompanist.web.rememberSaveableWebViewState
 import com.google.accompanist.web.rememberWebViewNavigator
-import com.google.accompanist.web.rememberWebViewState
 import kotlinx.coroutines.launch
 
 @OptIn(
@@ -39,6 +43,7 @@ internal fun BasicForwarderScreen(
     val pages = remember { listOf(R.string.log, R.string.web) }
     val state = rememberPagerState { pages.size }
     val scope = rememberCoroutineScope()
+    val context = LocalContext.current
 
     Scaffold(
         contentWindowInsets = WindowInsets(0),
@@ -57,6 +62,10 @@ internal fun BasicForwarderScreen(
                 })
             }
         }) { paddingValues ->
+        val webState = rememberSaveableWebViewState().apply {
+            content = WebContent.Url(onGetUrl())
+        }
+        val navigator = rememberWebViewNavigator()
         HorizontalPager(
             modifier = Modifier
                 .padding(paddingValues)
@@ -67,10 +76,12 @@ internal fun BasicForwarderScreen(
             when (it) {
                 0 -> configScreen()
                 1 -> {
-                    val webState = rememberWebViewState(url = onGetUrl())
-                    val navigator = rememberWebViewNavigator()
-                    LocalBroadcastReceiver(intentFilter = IntentFilter(SysTtsForwarderService.ACTION_ON_STARTING)) {
+                    LocalBroadcastReceiver(intentFilter = IntentFilter(SysTtsForwarderService.ACTION_ON_STARTED)) {
                         navigator.loadUrl(onGetUrl())
+                    }
+
+                    LaunchedEffect(SysTtsForwarderService.isRunning) {
+                        if (!SysTtsForwarderService.isRunning) context.startSysTtsForwarder()
                     }
 
                     WebScreen(

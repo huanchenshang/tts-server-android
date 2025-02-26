@@ -39,12 +39,12 @@ abstract class AbsForwarderService(
     private val name: String,
     private val id: Int,
     private val actionLog: String,
-    private val actionStarting: String,
+    private val actionStarted: String,
     private val actionClosed: String,
     private val notificationChanId: String,
     @StringRes val notificationChanTitle: Int,
     @StringRes val notificationTitle: Int,
-    @DrawableRes val notificationIcon: Int
+    @DrawableRes val notificationIcon: Int,
 ) : IntentService(name) {
     private val notificationActionCopyUrl = "ACTION_NOTIFICATION_COPY_URL_$name"
     private val notificationActionClose = "ACTION_NOTIFICATION_CLOSE_$name"
@@ -97,22 +97,20 @@ abstract class AbsForwarderService(
 
     override fun onHandleIntent(intent: Intent?) {
         synchronized(this) {
-            notifiStarted()
             kotlin.runCatching {
                 startServer()
             }.onFailure {
                 sendLog(LogLevel.ERROR, it.localizedMessage ?: it.toString())
             }
-            notifiClosed()
         }
     }
 
-    private fun notifiStarted() {
-        val intent = Intent(actionStarting)
+    protected fun notifiStarted() {
+        val intent = Intent(actionStarted)
         AppConst.localBroadcast.sendBroadcast(intent)
     }
 
-    private fun notifiClosed() {
+    protected fun notifiClosed() {
         val intent = Intent(actionClosed)
         AppConst.localBroadcast.sendBroadcast(intent)
     }

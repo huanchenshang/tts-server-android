@@ -1,18 +1,18 @@
 package com.github.jing332.server.script
 
-import android.app.Application
 import com.github.jing332.common.LogEntry
 import com.github.jing332.server.BaseCallback
 import com.github.jing332.server.Server
 import com.github.jing332.server.installPlugins
 import io.ktor.http.ContentType
+import io.ktor.server.application.ApplicationStarted
+import io.ktor.server.engine.addShutdownHook
 import io.ktor.server.engine.embeddedServer
 import io.ktor.server.netty.Netty
 import io.ktor.server.request.receiveText
 import io.ktor.server.response.respond
 import io.ktor.server.response.respondText
 import io.ktor.server.routing.RoutingContext
-import io.ktor.server.routing.accept
 import io.ktor.server.routing.get
 import io.ktor.server.routing.post
 import io.ktor.server.routing.routing
@@ -60,9 +60,14 @@ class ScriptRemoteServer(
 
 
     @Throws(BindException::class)
-    override fun start(wait: Boolean) {
+    override fun start(wait: Boolean, onStarted: () -> Unit, onShutdown: () -> Unit) {
         ktor.environment.log.info("Start script sync server on port $port")
+        ktor.addShutdownHook(onShutdown)
+        ktor.application.monitor.subscribe(ApplicationStarted) { application ->
+            onStarted()
+        }
         ktor.start(wait)
+
     }
 
     override fun stop() {

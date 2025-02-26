@@ -5,18 +5,15 @@ import android.content.Intent
 import android.webkit.JsResult
 import android.webkit.WebResourceRequest
 import android.webkit.WebView
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.LinearProgressIndicator
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
-import androidx.compose.material3.pullrefresh.PullRefreshIndicator
-import androidx.compose.material3.pullrefresh.pullRefresh
-import androidx.compose.material3.pullrefresh.rememberPullRefreshState
+import androidx.compose.material3.pulltorefresh.PullToRefreshBox
+import androidx.compose.material3.pulltorefresh.rememberPullToRefreshState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -36,6 +33,7 @@ import com.google.accompanist.web.WebViewState
 import com.google.accompanist.web.rememberWebViewNavigator
 import com.google.accompanist.web.rememberWebViewState
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Suppress("DEPRECATION")
 @SuppressLint("SetJavaScriptEnabled")
 @Composable
@@ -123,29 +121,17 @@ internal fun WebScreen(
         val process =
             if (state.loadingState is LoadingState.Loading) (state.loadingState as LoadingState.Loading).progress else 0f
 
-        if (process > 0)
-            LinearProgressIndicator(
-                progress = { process },
-                modifier = Modifier.fillMaxWidth(),
-            )
-
         var lastTitle by remember { mutableStateOf("") }
-        val refreshState = rememberPullRefreshState(refreshing = state.isLoading, onRefresh = {
-            navigator.reload()
-        })
+        val refreshState = rememberPullToRefreshState()
         Text(
             modifier = Modifier
-                .align(Alignment.CenterHorizontally)
-                .pullRefresh(refreshState),
+                .align(Alignment.CenterHorizontally),
             text = state.pageTitle?.apply { lastTitle = this } ?: lastTitle,
             maxLines = 1,
             style = MaterialTheme.typography.titleMedium,
         )
 
-        Box(
-            modifier = Modifier
-                .fillMaxSize()
-        ) {
+        PullToRefreshBox(state.isLoading, state = refreshState, onRefresh = { }) {
             WebView(
                 modifier = Modifier.fillMaxSize(),
                 state = state,
@@ -159,13 +145,14 @@ internal fun WebScreen(
                 chromeClient = chromeClient,
             )
 
-            Column(Modifier.fillMaxWidth()) {
-                PullRefreshIndicator(
-                    modifier = Modifier.align(Alignment.CenterHorizontally),
-                    refreshing = refreshState.refreshing,
-                    state = refreshState
-                )
-            }
+//            Column(Modifier.fillMaxWidth()) {
+//                PullREF
+//                PullRefreshIndicator(
+//                    modifier = Modifier.align(Alignment.CenterHorizontally),
+//                    refreshing = refreshState.refreshing,
+//                    state = refreshState
+//                )
+//            }
         }
     }
 }

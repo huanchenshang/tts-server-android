@@ -5,8 +5,6 @@ import android.content.Intent
 import com.github.jing332.tts_server_android.service.forwarder.system.SysTtsForwarderService
 
 object ForwarderServiceManager {
-
-
     fun Context.switchSysTtsForwarder() {
         if (SysTtsForwarderService.isRunning) {
             closeSysTtsForwarder()

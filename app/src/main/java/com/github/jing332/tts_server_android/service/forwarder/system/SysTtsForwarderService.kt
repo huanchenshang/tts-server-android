@@ -5,12 +5,10 @@ package com.github.jing332.tts_server_android.service.forwarder.system
 import android.speech.tts.TextToSpeech
 import com.github.jing332.database.entities.systts.AudioParams
 import com.github.jing332.database.entities.systts.source.LocalTtsParameter
-import com.github.jing332.database.entities.systts.source.LocalTtsSource
 import com.github.jing332.server.forwarder.Engine
 import com.github.jing332.server.forwarder.SystemTtsForwardServer
 import com.github.jing332.server.forwarder.TtsParams
 import com.github.jing332.server.forwarder.Voice
-import com.github.jing332.tts.CachedEngineManager
 import com.github.jing332.tts.speech.local.AndroidTtsEngine
 import com.github.jing332.tts.speech.local.LocalTtsProvider
 import com.github.jing332.tts_server_android.App
@@ -30,7 +28,7 @@ class SysTtsForwarderService(
     "SysTtsForwarderService",
     id = 1221,
     actionLog = ACTION_ON_LOG,
-    actionStarting = ACTION_ON_STARTING,
+    actionStarted = ACTION_ON_STARTED,
     actionClosed = ACTION_ON_CLOSED,
     notificationChanId = "systts_forwarder_status",
     notificationChanTitle = R.string.forwarder_systts,
@@ -40,7 +38,7 @@ class SysTtsForwarderService(
     companion object {
         const val TAG = "SysTtsServerService"
         const val ACTION_ON_CLOSED = "ACTION_ON_CLOSED"
-        const val ACTION_ON_STARTING = "ACTION_ON_STARTING"
+        const val ACTION_ON_STARTED = "ACTION_ON_STARTED"
         const val ACTION_ON_LOG = "ACTION_ON_LOG"
 
         private val logger = KotlinLogging.logger(TAG)
@@ -60,14 +58,6 @@ class SysTtsForwarderService(
     override fun onCreate() {
         super.onCreate()
         instance = this
-    }
-
-    private fun getEngine(name: String): LocalTtsProvider {
-        val cacheEngine = CachedEngineManager.getEngine(
-            this@SysTtsForwarderService,
-            LocalTtsSource(engine = name)
-        ) ?: throw IllegalArgumentException("Engine not found: $name")
-        return cacheEngine as LocalTtsProvider
     }
 
     override fun initServer() {
@@ -125,7 +115,11 @@ class SysTtsForwarderService(
 
 
         })
-        mServer?.start(wait = true)
+        mServer?.start(true, onStarted = {
+            notifiStarted()
+        }, onShutdown = {
+            notifiClosed()
+        })
     }
 
     override fun closeServer() {

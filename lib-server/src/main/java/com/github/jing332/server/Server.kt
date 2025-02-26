@@ -12,7 +12,7 @@ import io.ktor.server.response.respondText
 import kotlinx.serialization.json.Json
 
 interface Server {
-    fun start(wait: Boolean)
+    fun start(wait: Boolean, onStarted: () -> Unit = {}, onShutdown: () -> Unit = {})
     fun stop()
 }
 
