@@ -6,7 +6,6 @@ import android.content.Intent
 import android.content.IntentFilter
 import android.os.Bundle
 import androidx.activity.compose.setContent
-import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
@@ -35,6 +34,7 @@ import com.github.jing332.database.entities.systts.source.PluginTtsSource
 import com.github.jing332.tts_server_android.AppLocale
 import com.github.jing332.tts_server_android.JsConsoleManager
 import com.github.jing332.tts_server_android.R
+import com.github.jing332.tts_server_android.compose.ComposeActivity
 import com.github.jing332.tts_server_android.compose.LoggerFloatingManager
 import com.github.jing332.tts_server_android.compose.systts.list.ui.PluginTtsUI
 import com.github.jing332.tts_server_android.compose.theme.AppTheme
@@ -44,7 +44,7 @@ import com.github.jing332.tts_server_android.ui.view.ErrorDialogActivity
 import io.github.oshai.kotlinlogging.KotlinLogging
 
 @Suppress("DEPRECATION")
-class PluginPreviewActivity : AppCompatActivity() {
+class PluginPreviewActivity : ComposeActivity() {
     companion object {
         const val KEY_SOURCE = "source"
         const val KEY_PLUGIN = "plugin"

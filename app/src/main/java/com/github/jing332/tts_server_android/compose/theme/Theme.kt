@@ -7,15 +7,12 @@ import androidx.compose.material3.ColorScheme
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalView
 import com.github.jing332.tts_server_android.conf.AppConfig
-import com.google.accompanist.systemuicontroller.rememberSystemUiController
 
 /**
  * 获取当前主题
@@ -85,18 +82,6 @@ fun AppTheme(
     //获取当前主题
     val targetTheme = appTheme(themeType = themeTypeState.value)
     val activity = LocalView.current.context as ComponentActivity
-
-    val systemUiController = rememberSystemUiController()
-    val useDarkIcons = !isSystemInDarkTheme()
-
-    DisposableEffect(systemUiController, useDarkIcons) {
-        systemUiController.setSystemBarsColor(
-            color = Color.Transparent,
-            darkIcons = useDarkIcons
-        )
-
-        onDispose {}
-    }
 
     MaterialTheme(
         colorScheme = themeAnimation(targetTheme = targetTheme),

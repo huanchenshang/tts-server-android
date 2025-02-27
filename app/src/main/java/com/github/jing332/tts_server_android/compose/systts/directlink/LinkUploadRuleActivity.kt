@@ -2,7 +2,6 @@ package com.github.jing332.tts_server_android.compose.systts.directlink
 
 import android.os.Bundle
 import androidx.activity.compose.setContent
-import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.Text
@@ -16,6 +15,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.res.stringResource
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.github.jing332.tts_server_android.R
+import com.github.jing332.tts_server_android.compose.ComposeActivity
 import com.github.jing332.tts_server_android.compose.codeeditor.CodeEditorScreen
 import com.github.jing332.tts_server_android.compose.codeeditor.LoggerBottomSheet
 import com.github.jing332.tts_server_android.compose.theme.AppTheme
@@ -26,7 +26,7 @@ import io.github.rosemoe.sora.widget.CodeEditor
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
-class LinkUploadRuleActivity : AppCompatActivity() {
+class LinkUploadRuleActivity : ComposeActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 

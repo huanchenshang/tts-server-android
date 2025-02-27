@@ -46,12 +46,13 @@ import com.github.jing332.common.utils.NetworkUtils
 import com.github.jing332.common.utils.longToast
 import com.github.jing332.common.utils.rootCause
 import com.github.jing332.common.utils.toast
+import com.github.jing332.tts_server_android.compose.ComposeActivity
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import java.util.UUID
 
 @Suppress("DEPRECATION")
-class ErrorDialogActivity : AppCompatActivity() {
+class ErrorDialogActivity : ComposeActivity() {
     companion object {
         const val ACTION_FINISH =
             "com.github.jing332.tts_server_android.ui.view.ErrorDialogActivity.ACTION_FINISH"

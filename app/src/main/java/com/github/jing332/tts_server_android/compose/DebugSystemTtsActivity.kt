@@ -26,7 +26,7 @@ import com.github.jing332.common.utils.SyncLock
 import com.github.jing332.common.utils.toast
 import kotlinx.coroutines.launch
 
-class DebugSystemTtsActivity : AppCompatActivity() {
+class DebugSystemTtsActivity : ComposeActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 

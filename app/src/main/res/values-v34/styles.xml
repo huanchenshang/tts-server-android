@@ -1,0 +1,6 @@
+<resources>
+    <style name="BaseTheme.TtsServer" parent="Theme.AppCompat.DayNight">
+        <item name="android:windowTranslucentStatus">false</item>
+        <item name="android:windowTranslucentNavigation">false</item>
+    </style>
+</resources>
