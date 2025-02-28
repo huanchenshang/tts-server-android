@@ -8,6 +8,7 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TopAppBarScrollBehavior
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -19,14 +20,15 @@ import com.github.jing332.tts_server_android.R
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun TtsTopAppBar(
+    scrollBehavior: TopAppBarScrollBehavior? = null,
     title: @Composable () -> Unit,
     onBackAction: () -> Unit,
     onSaveAction: () -> Unit,
     moreOptions: (@Composable (dismiss: () -> Unit) -> Unit)? = null,
 ) {
     TopAppBar(
+        scrollBehavior = scrollBehavior,
         title = title,
-        scrollBehavior = null,
         navigationIcon = {
             IconButton(onClick = onBackAction) {
                 Icon(Icons.AutoMirrored.Default.ArrowBack, stringResource(id = R.string.nav_back))
