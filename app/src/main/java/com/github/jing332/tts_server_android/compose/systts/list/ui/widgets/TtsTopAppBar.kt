@@ -1,7 +1,7 @@
 package com.github.jing332.tts_server_android.compose.systts.list.ui.widgets
 
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.filled.Save
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -22,14 +22,14 @@ fun TtsTopAppBar(
     title: @Composable () -> Unit,
     onBackAction: () -> Unit,
     onSaveAction: () -> Unit,
-
-    moreOptions: (@Composable (dismiss: () -> Unit) -> Unit)? = null
+    moreOptions: (@Composable (dismiss: () -> Unit) -> Unit)? = null,
 ) {
     TopAppBar(
         title = title,
+        scrollBehavior = null,
         navigationIcon = {
             IconButton(onClick = onBackAction) {
-                Icon(Icons.Default.ArrowBack, stringResource(id = R.string.nav_back))
+                Icon(Icons.AutoMirrored.Default.ArrowBack, stringResource(id = R.string.nav_back))
             }
         },
         actions = {

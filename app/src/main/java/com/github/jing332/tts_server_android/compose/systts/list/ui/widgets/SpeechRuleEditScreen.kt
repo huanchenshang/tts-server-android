@@ -309,7 +309,7 @@ fun SpeechRuleEditScreen(
             }
 
             AnimatedVisibility(visible = config.speechRule.target == SpeechTarget.TAG) {
-                Row(Modifier.padding(top = 4.dp)) {
+                Row(Modifier) {
                     AppSpinner(
                         modifier = Modifier
                             .weight(1f)

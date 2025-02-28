@@ -77,6 +77,7 @@ class BgmConfigUI : IConfigUI() {
         onSystemTtsChange: (SystemTtsV2) -> Unit,
         onSave: () -> Unit,
         onCancel: () -> Unit,
+        content: @Composable () -> Unit,
     ) {
         val config = systemTts.config as BgmConfiguration
 

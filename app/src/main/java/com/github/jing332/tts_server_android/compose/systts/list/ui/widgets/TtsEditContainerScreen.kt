@@ -1,6 +1,7 @@
 package com.github.jing332.tts_server_android.compose.systts.list.ui.widgets
 
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
@@ -12,8 +13,8 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.dp
 import com.github.jing332.common.utils.toast
-import com.github.jing332.compose.widgets.InitSystemNavigation
 import com.github.jing332.database.entities.systts.EmptyConfiguration
 import com.github.jing332.database.entities.systts.SystemTtsV2
 import com.github.jing332.database.entities.systts.TtsConfigurationDTO
@@ -40,13 +41,20 @@ fun TtsEditContainerScreen(
         }
         return
     }
-    InitSystemNavigation()
+
     val callbacks = rememberSaveCallBacks()
     val scope = rememberCoroutineScope()
     CompositionLocalProvider(LocalSaveCallBack provides callbacks) {
         ui.FullEditScreen(
-            modifier,
+            modifier = modifier,
             systemTts = systts,
+            content = {
+                SpeechRuleEditScreen(
+                    Modifier.padding(8.dp),
+                    systts,
+                    onSysttsChange = onSysttsChange
+                )
+            },
             onSystemTtsChange = onSysttsChange,
             onSave = {
                 scope.launch {

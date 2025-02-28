@@ -6,8 +6,6 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.HelpOutline
 import androidx.compose.material3.AlertDialog
@@ -15,7 +13,6 @@ import androidx.compose.material3.Checkbox
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.minimumInteractiveComponentSize
@@ -24,7 +21,6 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -51,7 +47,6 @@ import com.github.jing332.tts_server_android.compose.systts.AuditionDialog
 import com.github.jing332.tts_server_android.compose.systts.list.ui.widgets.AuditionTextField
 import com.github.jing332.tts_server_android.compose.systts.list.ui.widgets.BasicInfoEditScreen
 import com.github.jing332.tts_server_android.compose.systts.list.ui.widgets.SaveActionHandler
-import com.github.jing332.tts_server_android.compose.systts.list.ui.widgets.TtsTopAppBar
 import com.github.jing332.tts_server_android.ui.view.AppDialogs.displayErrorDialog
 
 class LocalTtsUI() : IConfigUI() {
@@ -169,32 +164,22 @@ class LocalTtsUI() : IConfigUI() {
         onSystemTtsChange: (SystemTtsV2) -> Unit,
         onSave: () -> Unit,
         onCancel: () -> Unit,
+        content: @Composable () -> Unit,
     ) {
-        val scope = rememberCoroutineScope()
-        Scaffold(
-            topBar = {
-                TtsTopAppBar(
-                    title = { Text(stringResource(id = R.string.edit_local_tts)) },
-                    onBackAction = onCancel,
-                    onSaveAction = {
-                        onSave()
-                    }
-                )
-            }
-        ) { paddingValues ->
-            Content(
-                modifier = Modifier
-                    .padding(paddingValues)
-                    .verticalScroll(rememberScrollState()),
-                systts = systemTts,
-                onSysttsChange = onSystemTtsChange,
-            )
+        DefaultFullEditScreen(
+            modifier,
+            title = stringResource(id = R.string.edit_local_tts),
+            onCancel = onCancel,
+            onSave = onSave,
+        ) {
+            content()
+            Content(systts = systemTts, onSysttsChange = onSystemTtsChange)
         }
     }
 
     @Composable
     private fun Content(
-        modifier: Modifier,
+        modifier: Modifier = Modifier,
         systts: SystemTtsV2,
         onSysttsChange: (SystemTtsV2) -> Unit,
         vm: LocalTtsViewModel = viewModel(),
@@ -259,7 +244,7 @@ class LocalTtsUI() : IConfigUI() {
                             value = source.engine,
                             values = vm.engines.map { it.name },
                             entries = vm.engines.map { it.label },
-                            icons = vm.engines.map { PackageDrawable(it.name, it.icon)},
+                            icons = vm.engines.map { PackageDrawable(it.name, it.icon) },
                             onSelectedChange = { k, name ->
                                 onSysttsChange(systts.copySource(source.copy(engine = k as String)))
                                 displayName = name
@@ -271,7 +256,7 @@ class LocalTtsUI() : IConfigUI() {
                             label = { Text(stringResource(id = R.string.label_language)) },
                             value = source.locale,
                             values = vm.locales.map { it.toLanguageTag() },
-                            entries =  vm.locales.map { it.country.toCountryFlagEmoji() + " " + it.displayName },
+                            entries = vm.locales.map { it.country.toCountryFlagEmoji() + " " + it.displayName },
                             onSelectedChange = { loc, _ ->
                                 onSysttsChange(systts.copySource(source.copy(locale = loc as String)))
 
