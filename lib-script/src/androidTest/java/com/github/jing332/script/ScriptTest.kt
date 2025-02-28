@@ -83,7 +83,7 @@ class ScriptTest {
 
     @Test
     fun http() {
-        evalFromAsset("http")
+        evalFromAsset("http_get")
     }
 
     @Test

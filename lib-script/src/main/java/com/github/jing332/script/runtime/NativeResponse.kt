@@ -13,6 +13,7 @@ import org.mozilla.javascript.Scriptable
 import org.mozilla.javascript.ScriptableObject
 import org.mozilla.javascript.Undefined
 import org.mozilla.javascript.json.JsonParser
+import org.mozilla.javascript.typedarrays.NativeBuffer
 
 class NativeResponse private constructor(val rawResponse: Response? = null) :
     ScriptableObject() {
@@ -124,7 +125,7 @@ class NativeResponse private constructor(val rawResponse: Response? = null) :
                 val bytes = checkResponse(force).body?.bytes() ?: ByteArray(0)
                 val buffer = bytes.toNativeArrayBuffer()
 
-                cx.newObject(scope, "Uint8Array", arrayOf(buffer, 0, buffer.length))
+                NativeBuffer.of(cx, scope, buffer)
             }
     }
 }

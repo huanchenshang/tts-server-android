@@ -2,6 +2,7 @@ package com.github.jing332.tts.speech.plugin.engine
 
 import android.content.Context
 import com.drake.net.Net
+import com.github.jing332.common.utils.limitLength
 import com.github.jing332.database.entities.plugin.Plugin
 import com.github.jing332.database.entities.systts.source.PluginTtsSource
 import com.github.jing332.script.engine.RhinoScriptEngine
@@ -14,6 +15,7 @@ import com.github.jing332.tts.speech.EmptyInputStream
 import kotlinx.coroutines.runInterruptible
 import kotlinx.coroutines.sync.Mutex
 import okhttp3.Response
+import okhttp3.ResponseBody
 import org.mozilla.javascript.Callable
 import org.mozilla.javascript.Scriptable
 import org.mozilla.javascript.ScriptableObject
@@ -24,6 +26,7 @@ import java.io.ByteArrayInputStream
 import java.io.InputStream
 import java.io.PipedInputStream
 import java.io.PipedOutputStream
+import java.lang.IllegalArgumentException
 
 open class TtsPluginEngineV2(val context: Context, var plugin: Plugin) {
     companion object {
@@ -108,6 +111,15 @@ open class TtsPluginEngineV2(val context: Context, var plugin: Plugin) {
         }
     }
 
+    private fun ResponseBody.check(): ResponseBody {
+        val type = contentType()?.toString() ?: return this
+        if (type.startsWith("text") || type.startsWith("application/json")) {
+            throw IllegalStateException("Unexpected Response: ${this.string().limitLength(500)}")
+        }
+
+        return this
+    }
+
     private fun handleAudioResult(result: Any?): InputStream? {
         if (result == null) return null
         return when (result) {
@@ -121,20 +133,19 @@ open class TtsPluginEngineV2(val context: Context, var plugin: Plugin) {
                 return pis
             }
 
-            is NativeResponse -> result.rawResponse?.body?.byteStream()
+            is NativeResponse -> result.rawResponse?.body?.check()?.byteStream()
             is CharSequence -> {
                 val str = result.toString()
-
                 if (str.startsWith("http://") || str.startsWith("https://")) {
                     val resp: Response = Net.get(str).execute()
-                    return resp.body?.byteStream()
+                    return resp.body?.check()?.byteStream()
                 } else
-                    throw org.mozilla.javascript.Context.reportRuntimeError(str)
+                    throw IllegalStateException(str)
             }
 
             is Undefined -> null
 
-            else -> throw org.mozilla.javascript.Context.reportRuntimeError("getAudio() return type not support: ${result.javaClass.name}")
+            else -> throw IllegalArgumentException("getAudio() return type not support: ${result.javaClass.name}")
         }
     }
 
