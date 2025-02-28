@@ -33,7 +33,7 @@
         android:requestLegacyExternalStorage="true"
         android:roundIcon="@mipmap/ic_app_launcher_round"
         android:supportsRtl="true"
-        android:theme="@style/Theme.TtsServer.NoActionBar"
+        android:theme="@style/Theme.TtsServer"
         android:usesCleartextTraffic="true"
         tools:ignore="UnusedAttribute">
         <activity
