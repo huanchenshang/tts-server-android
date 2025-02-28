@@ -33,7 +33,6 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
-import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
@@ -74,9 +73,6 @@ internal fun DividerPreference(title: @Composable () -> Unit) {
             .fillMaxWidth()
             .padding(horizontal = horizontalPadding)
             .padding(top = verticalPadding + 4.dp)
-            .semantics(true) {
-                contentDescription = context.getString(R.string.divider_preference_desc)
-            }
             .minimumInteractiveComponentSize()
     ) {
         Row(
