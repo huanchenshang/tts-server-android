@@ -109,7 +109,7 @@ class LocalTtsUI() : IConfigUI() {
             Row {
                 var sampleRateStr by remember { mutableStateOf(config.audioFormat.sampleRate.toString()) }
                 DenseOutlinedField(
-                    label = { Text(stringResource(id = R.string.systts_sample_rate)) },
+                    label = { Text(stringResource(R.string.systts_sample_rate)) },
                     modifier = Modifier
                         .weight(1f)
                         .padding(8.dp),
@@ -240,7 +240,7 @@ class LocalTtsUI() : IConfigUI() {
 
                         AppSpinner(
                             modifier = Modifier.padding(vertical = 2.dp),
-                            label = { Text(stringResource(id = R.string.label_tts_engine)) },
+                            labelText = stringResource(id = R.string.label_tts_engine),
                             value = source.engine,
                             values = vm.engines.map { it.name },
                             entries = vm.engines.map { it.label },
@@ -253,7 +253,7 @@ class LocalTtsUI() : IConfigUI() {
 
                         AppSpinner(
                             modifier = Modifier.padding(vertical = 2.dp),
-                            label = { Text(stringResource(id = R.string.label_language)) },
+                            labelText = stringResource(id = R.string.label_language),
                             value = source.locale,
                             values = vm.locales.map { it.toLanguageTag() },
                             entries = vm.locales.map { it.country.toCountryFlagEmoji() + " " + it.displayName },
@@ -266,7 +266,7 @@ class LocalTtsUI() : IConfigUI() {
 
                         AppSpinner(
                             modifier = Modifier.padding(vertical = 2.dp),
-                            label = { Text(stringResource(id = R.string.label_voice)) },
+                            labelText = stringResource(id = R.string.label_voice),
                             value = source.voice,
                             values = vm.voices.map { it.name },
                             entries = vm.voices.map {

@@ -14,10 +14,10 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.Input
 import androidx.compose.material.icons.filled.ContentCopy
 import androidx.compose.material.icons.filled.FileCopy
 import androidx.compose.material.icons.filled.FileOpen
-import androidx.compose.material.icons.filled.Input
 import androidx.compose.material.icons.filled.Link
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -144,9 +144,11 @@ fun ConfigImportBottomSheet(
                         style = MaterialTheme.typography.titleMedium
                     )
 
-                    SingleChoiceSegmentedButtonRow(Modifier
-                        .fillMaxWidth()
-                        .padding(8.dp)) {
+                    SingleChoiceSegmentedButtonRow(
+                        Modifier
+                            .fillMaxWidth()
+                            .padding(8.dp)
+                    ) {
                         val items = remember {
                             listOf(
                                 R.string.clipboard to Icons.Default.ContentCopy,
@@ -156,7 +158,7 @@ fun ConfigImportBottomSheet(
                         }
                         items.forEachIndexed { index, item ->
                             SegmentedButton(
-                                 selected = source == index,
+                                selected = source == index,
                                 onClick = { source = index },
                                 shape = SegmentedButtonDefaults.itemShape(
                                     index = index,
@@ -188,9 +190,7 @@ fun ConfigImportBottomSheet(
                                 modifier = Modifier.fillMaxWidth(),
                                 value = url,
                                 onValueChange = { url = it },
-                                label = {
-                                    Text(stringResource(id = R.string.url_net))
-                                },
+                                label = { Text(stringResource(R.string.url_net)) },
                             )
 
                             ImportSource.FILE -> {
@@ -206,9 +206,7 @@ fun ConfigImportBottomSheet(
                                     modifier = Modifier.fillMaxWidth(),
                                     value = path,
                                     onValueChange = { path = it },
-                                    label = {
-                                        Text(stringResource(id = R.string.file))
-                                    },
+                                    label = { Text(stringResource(R.string.file)) },
                                     trailingIcon = {
                                         IconButton(onClick = {
                                             filePicker.launch(
@@ -251,7 +249,7 @@ fun ConfigImportBottomSheet(
                         }
                     }) {
                     Row {
-                        Icon(Icons.Default.Input, null)
+                        Icon(Icons.AutoMirrored.Default.Input, null)
                         Text(stringResource(id = R.string.import_config))
                     }
                 }

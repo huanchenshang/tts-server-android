@@ -314,7 +314,7 @@ fun SpeechRuleEditScreen(
                         modifier = Modifier
                             .weight(1f)
                             .padding(end = 4.dp),
-                        label = { Text(stringResource(id = R.string.speech_rule_script)) },
+                        labelText = stringResource(R.string.speech_rule_script),
                         value = config.speechRule.tagRuleId,
                         values = speechRules.map { it.ruleId },
                         entries = speechRules.map { it.name },
@@ -337,7 +337,7 @@ fun SpeechRuleEditScreen(
                             modifier = Modifier
                                 .weight(1f)
                                 .padding(start = 4.dp),
-                            label = { Text(stringResource(id = R.string.tag)) },
+                            labelText = stringResource(R.string.tag),
                             value = config.speechRule.tag,
                             values = speechRule.tags.keys.toList(),
                             entries = speechRule.tags.values.toList(),
@@ -430,7 +430,7 @@ private fun CustomTagScreen(
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(top = 4.dp),
-                    label = { Text(label) },
+                    labelText =  label ,
                     value = value.ifEmpty { defaultValue },
                     values = itemsMap.keys.toList(),
                     entries = itemsMap.values.toList(),

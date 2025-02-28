@@ -33,7 +33,7 @@ internal fun BasicConfigScreen(
     onRunningChange: (Boolean) -> Unit,
     switch: () -> Unit,
     port: Int,
-    onPortChange: (Int) -> Unit
+    onPortChange: (Int) -> Unit,
 ) {
     val context = LocalContext.current
     LocalBroadcastReceiver(intentFilter = intentFilter) { intent ->
@@ -64,7 +64,7 @@ internal fun BasicConfigScreen(
 
         Row(Modifier.align(Alignment.CenterHorizontally)) {
             DenseOutlinedField(
-                label = { Text(stringResource(id = R.string.listen_port)) },
+                label = { Text(stringResource(R.string.listen_port)) },
                 modifier = Modifier.align(Alignment.CenterVertically),
                 value = port.toString(), onValueChange = {
                     kotlin.runCatching {

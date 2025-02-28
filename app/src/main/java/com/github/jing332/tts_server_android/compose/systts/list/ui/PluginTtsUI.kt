@@ -6,7 +6,6 @@ import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -217,7 +216,7 @@ class PluginTtsUI : IConfigUI() {
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .padding(top = 4.dp),
-                            label = { Text(stringResource(id = R.string.language)) },
+                            labelText = stringResource(R.string.language),
                             value = tts.locale,
                             values = vm.locales.map { it.first },
                             entries = vm.locales.map { it.second },
@@ -237,7 +236,7 @@ class PluginTtsUI : IConfigUI() {
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .padding(top = 4.dp),
-                            label = { Text(stringResource(id = R.string.label_voice)) },
+                            labelText = stringResource(R.string.label_voice),
                             value = tts.voice,
                             values = vm.voices.map { it.id },
                             entries = vm.voices.map { it.name },

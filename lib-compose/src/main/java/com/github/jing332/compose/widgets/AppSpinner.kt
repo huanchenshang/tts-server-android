@@ -4,8 +4,12 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExposedDropdownMenuDefaults
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
@@ -24,16 +28,23 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalTextInputService
 import androidx.compose.ui.platform.LocalTextToolbar
 import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.editableText
+import androidx.compose.ui.semantics.isEditable
+import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.semantics.text
+import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.tooling.preview.Preview
 import com.github.jing332.compose.ComposeWidgetSettings
 import kotlin.math.max
 
+@Suppress("DEPRECATION")
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun TextFieldSelectionDialog(
     modifier: Modifier,
 
-    label: @Composable () -> Unit = {},
+    labelText: String = "",
+    label: @Composable () -> Unit = { Text(labelText) },
     leadingIcon: @Composable (() -> Unit)? = null,
 
     value: Any,
@@ -83,7 +94,13 @@ private fun TextFieldSelectionDialog(
             LocalTextToolbar provides EmptyTextToolbar,
         ) {
             OutlinedTextField(
-                modifier = Modifier.fillMaxWidth(),
+                modifier = Modifier
+                    .semantics(true) {
+                        isEditable = false
+                        text = AnnotatedString("")
+                        editableText = AnnotatedString("$labelText, $selectedText")
+                    }
+                    .fillMaxWidth(),
                 enabled = false,
                 colors = if (enabled) OutlinedTextFieldDefaults.colors(
                     disabledContainerColor = Color.Transparent,
@@ -118,7 +135,8 @@ private fun TextFieldSelectionDialog(
 @Composable
 fun AppSpinner(
     modifier: Modifier = Modifier,
-    label: @Composable (() -> Unit),
+    labelText: String = "",
+    label: @Composable (() -> Unit) = { Text(labelText) },
     leadingIcon: @Composable (() -> Unit)? = null,
 
     value: Any,
@@ -145,13 +163,14 @@ fun AppSpinner(
             {
                 AsyncCircleImage(icon)
             }
-        } else null
+        } else leadingIcon
     }
 
     if (maxDropDownCount > 0 && values.size > maxDropDownCount) {
         TextFieldSelectionDialog(
             modifier = modifier,
             label = label,
+            labelText = labelText,
             leadingIcon = leading(),
             value = value,
             values = values,
@@ -165,6 +184,7 @@ fun AppSpinner(
         DropdownTextField(
             modifier = modifier,
             label = label,
+            labelText = labelText,
             leadingIcon = leading(),
             value = value,
             values = values,
@@ -174,14 +194,6 @@ fun AppSpinner(
             onSelectedChange = onSelectedChange,
             onValueSame = onValueSame,
         )
-
-//    LaunchedEffect(keys) {
-//        keys.getOrNull(values.indexOf(selectedText))?.let {
-//            onSelectedChange.invoke(it, selectedText)
-//        }
-//    }
-
-
 }
 
 
@@ -191,11 +203,18 @@ private fun ExposedDropTextFieldPreview() {
     var key by remember { mutableIntStateOf(1) }
     val list = 0.rangeTo(10).toList()
     AppSpinner(
-        label = { Text("所属分组") },
+        labelText = "所属分组",
         value = key,
         values = list,
         entries = list.map { it.toString() },
-        maxDropDownCount = 2
+        maxDropDownCount = 11,
+        leadingIcon = {
+            IconButton(
+                onClick = {}
+            ) {
+                Icon(Icons.Default.Add, "添加", tint = Color.Blue)
+            }
+        }
     ) { k, _ ->
         key = k as Int
     }

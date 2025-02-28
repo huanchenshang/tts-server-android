@@ -12,18 +12,18 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
-import com.github.jing332.tts_server_android.R
 import com.github.jing332.compose.widgets.AppDialog
 import com.github.jing332.compose.widgets.TextCheckBox
 import com.github.jing332.database.constants.ReplaceExecution
 import com.github.jing332.database.entities.replace.ReplaceRuleGroup
+import com.github.jing332.tts_server_android.R
 
 @Composable
 internal fun GroupEditDialog(
     onDismissRequest: () -> Unit,
     group: ReplaceRuleGroup,
     onGroupChange: (ReplaceRuleGroup) -> Unit,
-    onConfirm: () -> Unit
+    onConfirm: () -> Unit,
 ) {
     AppDialog(onDismissRequest = onDismissRequest,
         title = { Text(stringResource(id = R.string.group)) },
@@ -33,7 +33,7 @@ internal fun GroupEditDialog(
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(8.dp),
-                    label = { Text(stringResource(id = R.string.group_name)) },
+                    label = { Text(stringResource(R.string.group_name)) },
                     value = group.name,
                     onValueChange = {
                         onGroupChange(group.copy(name = it))

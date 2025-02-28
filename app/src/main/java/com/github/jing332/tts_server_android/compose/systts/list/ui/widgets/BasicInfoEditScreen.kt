@@ -37,7 +37,7 @@ fun BasicInfoEditScreen(
     Column(modifier) {
         AppSpinner(
             modifier = Modifier.fillMaxWidth(),
-            label = { Text(stringResource(id = R.string.group)) },
+            labelText = stringResource(id = R.string.group),
             value = group,
             values = groups,
             onValueSame = { current, new -> (current as SystemTtsGroup).id == (new as SystemTtsGroup).id },
@@ -47,7 +47,7 @@ fun BasicInfoEditScreen(
             }
         )
         OutlinedTextField(
-            label = { Text(stringResource(id = R.string.display_name)) },
+            label = { Text(stringResource(R.string.display_name)) },
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(top = 4.dp),

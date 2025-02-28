@@ -5,7 +5,6 @@ package com.github.jing332.tts.speech.plugin.engine.type.ui
 import android.annotation.SuppressLint
 import android.content.Context
 import android.widget.FrameLayout
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
@@ -14,7 +13,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.platform.ComposeView
 import androidx.compose.ui.res.stringResource
 import com.github.jing332.compose.widgets.AppSpinner
-import com.github.jing332.tts.speech.plugin.engine.type.ui.Item
 import kotlin.math.max
 
 @Suppress("MemberVisibilityCanBePrivate")
@@ -69,7 +67,7 @@ class JSpinner(context: Context, val hint: CharSequence) : FrameLayout(context) 
         val item = mItems.getOrElse(mSelectedPosition) { mItems.getOrNull(0) } ?: Item("null", Unit)
         if (mItems.isEmpty()) {
             AppSpinner(
-                label = { Text(hint.toString()) },
+                labelText =  hint.toString(),
                 value = item.value,
                 values = listOf(Unit),
                 entries = listOf(stringResource(id = com.github.jing332.compose.R.string.empty_list)),
@@ -78,7 +76,7 @@ class JSpinner(context: Context, val hint: CharSequence) : FrameLayout(context) 
             )
         } else
             AppSpinner(
-                label = { Text(hint.toString()) },
+                labelText =  hint.toString(),
                 value = item.value,
                 values = mItems.map { it.value },
                 entries = mItems.map { it.name.toString() },

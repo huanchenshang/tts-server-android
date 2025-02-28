@@ -127,9 +127,7 @@ fun AnimatedContentScope.MainPager(sharedVM: SharedViewModel) {
                                         }
                                     },
                                     icon = destination.icon,
-                                    label = {
-                                        Text(stringResource(id = destination.strId))
-                                    }
+                                    label = { Text(stringResource(destination.strId)) }
                                 )
                             }
                         }
