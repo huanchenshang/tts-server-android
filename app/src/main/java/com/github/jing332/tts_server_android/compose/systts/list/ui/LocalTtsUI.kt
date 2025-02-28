@@ -186,19 +186,12 @@ class LocalTtsUI() : IConfigUI() {
         onSysttsChange: (SystemTtsV2) -> Unit,
         vm: LocalTtsViewModel = viewModel(),
     ) {
-        var displayName by remember { mutableStateOf("") }
         val systts by rememberUpdatedState(newValue = systts)
 
         val config = systts.config as TtsConfigurationDTO
         val source = config.source as LocalTtsSource
 
         SaveActionHandler {
-            if (systts.displayName.isBlank())
-                onSysttsChange(
-                    systts.copy(
-                        displayName = displayName,
-                    )
-                )
 
             true
         }
@@ -248,8 +241,14 @@ class LocalTtsUI() : IConfigUI() {
                             entries = vm.engines.map { it.label },
                             icons = vm.engines.map { PackageDrawable(it.name, it.icon) },
                             onSelectedChange = { k, name ->
-                                onSysttsChange(systts.copySource(source.copy(engine = k as String)))
-                                displayName = name
+                                val lastName = vm.engines.find { it.name == source.engine }?.label ?: ""
+                                onSysttsChange(
+                                    systts.copySource(source.copy(engine = k as String)).run {
+                                        if (systts.displayName.isBlank() || lastName == systts.displayName)
+                                            copy(displayName = name)
+                                        else this
+                                    }
+                                )
                             }
                         )
 
