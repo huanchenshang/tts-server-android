@@ -33,11 +33,6 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.semantics.Role
-import androidx.compose.ui.semantics.clearAndSetSemantics
-import androidx.compose.ui.semantics.contentDescription
-import androidx.compose.ui.semantics.role
-import androidx.compose.ui.semantics.selected
 import com.github.jing332.compose.widgets.ControlBottomBarVisibility
 import com.github.jing332.compose.widgets.rememberA11TouchEnabled
 import com.github.jing332.tts_server_android.compose.forwarder.systts.SystemTtsForwarderScreen
@@ -124,13 +119,8 @@ fun AnimatedContentScope.MainPager(sharedVM: SharedViewModel) {
                             for (destination in PagerDestination.routes) {
                                 val isSelected = pagerState.currentPage == destination.index
                                 NavigationBarItem(
-                                    modifier = Modifier.clearAndSetSemantics {
-                                        role = Role.Tab
-                                        selected = isSelected
-                                        contentDescription = context.getString(destination.strId)
-                                    },
                                     selected = isSelected,
-                                    alwaysShowLabel = false,
+                                    alwaysShowLabel = a11yTouchEnabled,
                                     onClick = {
                                         scope.launch {
                                             pagerState.animateScrollToPage(destination.index)
