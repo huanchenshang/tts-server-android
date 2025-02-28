@@ -31,6 +31,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -40,6 +41,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
@@ -125,13 +127,16 @@ internal fun ReplaceRuleManagerScreen(
         )
     }
 
-
+    val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior()
     val models by vm.list.collectAsStateWithLifecycle()
     Scaffold(
         contentWindowInsets = WindowInsets(0),
-        modifier = Modifier.fillMaxSize(),
+        modifier = Modifier
+            .fillMaxSize()
+            .nestedScroll(scrollBehavior.nestedScrollConnection),
         topBar = {
             TopAppBar(
+                scrollBehavior = scrollBehavior,
                 title = {
                     LaunchedEffect(vm.searchText, vm.searchType) {
                         vm.updateSearchResult()
@@ -139,7 +144,7 @@ internal fun ReplaceRuleManagerScreen(
                     Row(
                         modifier = Modifier
                             .clip(CircleShape)
-                            .background(MaterialTheme.colorScheme.surfaceContainer),
+                            .background(MaterialTheme.colorScheme.surfaceContainerLow),
                         verticalAlignment = Alignment.CenterVertically,
                     ) {
                         SearchTextField(

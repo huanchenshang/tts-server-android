@@ -15,6 +15,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -25,6 +26,7 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
@@ -50,7 +52,6 @@ import com.github.jing332.tts_server_android.AppLocale
 import com.github.jing332.tts_server_android.R
 import com.github.jing332.tts_server_android.compose.AppDefaultProperties
 import com.github.jing332.tts_server_android.compose.LocalBottomBarBehavior
-import com.github.jing332.tts_server_android.compose.LocalDrawerState
 import com.github.jing332.tts_server_android.compose.LocalNavController
 import com.github.jing332.tts_server_android.compose.SharedViewModel
 import com.github.jing332.tts_server_android.compose.nav.NavRoutes
@@ -85,7 +86,6 @@ internal fun ListManagerScreen(
     val navController = LocalNavController.current
     val scope = rememberCoroutineScope()
     val context = LocalContext.current
-    val drawerState = LocalDrawerState.current
 
     var showSortDialog by remember { mutableStateOf<List<SystemTtsV2>?>(null) }
     if (showSortDialog != null) SortDialog(
@@ -255,21 +255,24 @@ internal fun ListManagerScreen(
     }
 
     var showOptions by rememberSaveable { mutableStateOf(false) }
-
+    val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior()
     Scaffold(
+        modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
         topBar = {
-            NavTopAppBar(drawerState = drawerState, title = {
-                Text(stringResource(id = R.string.system_tts))
-            }, actions = {
-                IconButton(onClick = { showOptions = true }) {
-                    Icon(Icons.Default.MoreVert, stringResource(id = R.string.more_options))
-                    MenuMoreOptions(
-                        expanded = showOptions,
-                        onDismissRequest = { showOptions = false },
-                        onExportAll = { showGroupExportSheet = models },
-                    )
-                }
-            })
+            NavTopAppBar(
+                scrollBehavior = scrollBehavior,
+                title = {
+                    Text(stringResource(id = R.string.system_tts))
+                }, actions = {
+                    IconButton(onClick = { showOptions = true }) {
+                        Icon(Icons.Default.MoreVert, stringResource(id = R.string.more_options))
+                        MenuMoreOptions(
+                            expanded = showOptions,
+                            onDismissRequest = { showOptions = false },
+                            onExportAll = { showGroupExportSheet = models },
+                        )
+                    }
+                })
         },
     ) { paddingValues ->
         Box(Modifier.padding(top = paddingValues.calculateTopPadding())) {

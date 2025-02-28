@@ -14,11 +14,14 @@ import androidx.compose.material3.PrimaryTabRow
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
+import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.material3.TopAppBarScrollBehavior
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import com.github.jing332.compose.widgets.LocalBroadcastReceiver
@@ -36,7 +39,7 @@ import kotlinx.coroutines.launch
 )
 @Composable
 internal fun BasicForwarderScreen(
-    topBar: @Composable () -> Unit,
+    topBar: @Composable (TopAppBarScrollBehavior) -> Unit,
     configScreen: @Composable () -> Unit,
     onGetUrl: () -> String,
 ) {
@@ -45,11 +48,13 @@ internal fun BasicForwarderScreen(
     val scope = rememberCoroutineScope()
     val context = LocalContext.current
 
+    val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior()
     Scaffold(
+        modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
         contentWindowInsets = WindowInsets(0),
         topBar = {
             Column {
-                topBar()
+                topBar(scrollBehavior)
                 PrimaryTabRow(selectedTabIndex = state.currentPage, tabs = {
                     pages.forEachIndexed { index, strId ->
                         val selected = state.currentPage == index

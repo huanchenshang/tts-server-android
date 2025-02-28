@@ -23,6 +23,7 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.minimumInteractiveComponentSize
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -31,6 +32,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import com.github.jing332.tts_server_android.AppLocale
@@ -59,11 +61,14 @@ fun SettingsScreen() {
             }
         )
 
+    val scrollBehaviour = TopAppBarDefaults.pinnedScrollBehavior()
     Scaffold(
         contentWindowInsets = WindowInsets(0),
+        modifier = Modifier.nestedScroll(scrollBehaviour.nestedScrollConnection),
         topBar = {
             NavTopAppBar(
                 title = { Text(stringResource(R.string.settings)) },
+                scrollBehavior = scrollBehaviour,
             )
         }
     ) { paddingValues ->
