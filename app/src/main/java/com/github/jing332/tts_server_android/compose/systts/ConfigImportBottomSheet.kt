@@ -14,14 +14,20 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ContentCopy
+import androidx.compose.material.icons.filled.FileCopy
 import androidx.compose.material.icons.filled.FileOpen
 import androidx.compose.material.icons.filled.Input
+import androidx.compose.material.icons.filled.Link
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.SegmentedButton
+import androidx.compose.material3.SegmentedButtonDefaults
+import androidx.compose.material3.SingleChoiceSegmentedButtonRow
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.minimumInteractiveComponentSize
@@ -38,24 +44,22 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.unit.dp
 import com.drake.net.Net
 import com.drake.net.okhttp.trustSSLCertificate
 import com.drake.net.utils.withMain
-import com.github.jing332.tts_server_android.R
-import com.github.jing332.compose.widgets.AppBottomSheet
-import com.github.jing332.compose.widgets.AppDialog
-import com.github.jing332.compose.widgets.RowToggleButtonGroup
-import com.github.jing332.tts_server_android.ui.AppActivityResultContracts
-import com.github.jing332.tts_server_android.ui.FilePickerActivity
-import com.github.jing332.tts_server_android.ui.view.AppDialogs.displayErrorDialog
 import com.github.jing332.common.utils.ClipboardUtils
 import com.github.jing332.common.utils.FileUtils.readAllText
 import com.github.jing332.common.utils.longToast
 import com.github.jing332.common.utils.toJsonListString
+import com.github.jing332.compose.widgets.AppBottomSheet
+import com.github.jing332.compose.widgets.AppDialog
+import com.github.jing332.tts_server_android.R
+import com.github.jing332.tts_server_android.ui.AppActivityResultContracts
+import com.github.jing332.tts_server_android.ui.FilePickerActivity
+import com.github.jing332.tts_server_android.ui.view.AppDialogs.displayErrorDialog
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -84,7 +88,7 @@ fun ConfigImportBottomSheet(
     suspend fun getConfig(
         src: Int,
         url: String? = null,
-        uri: Uri? = null
+        uri: Uri? = null,
     ): String {
         return when (src) {
             ImportSource.URL -> withContext(Dispatchers.IO) {
@@ -128,7 +132,10 @@ fun ConfigImportBottomSheet(
                     style = MaterialTheme.typography.displayMedium
                 )
 
-                Column(Modifier.fillMaxWidth()) {
+                Column(
+                    Modifier.fillMaxWidth(),
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
                     content()
 
                     Text(
@@ -137,20 +144,30 @@ fun ConfigImportBottomSheet(
                         style = MaterialTheme.typography.titleMedium
                     )
 
-                    RowToggleButtonGroup(
-                        selectionIndex = source,
-                        buttonCount = 3,
-                        onButtonClick = { source = it },
-                        buttonTexts = arrayOf(
-                            R.string.clipboard, R.string.file, R.string.url_net
-                        ).map { stringResource(id = it) }.toTypedArray(),
-                        buttonIcons = arrayOf(
-                            R.drawable.ic_baseline_select_all_24,
-                            R.drawable.ic_baseline_insert_drive_file_24,
-                            R.drawable.ic_web
-                        ).map { painterResource(id = it) }.toTypedArray(),
-                        modifier = Modifier.align(Alignment.CenterHorizontally)
-                    )
+                    SingleChoiceSegmentedButtonRow(Modifier
+                        .fillMaxWidth()
+                        .padding(8.dp)) {
+                        val items = remember {
+                            listOf(
+                                R.string.clipboard to Icons.Default.ContentCopy,
+                                R.string.file to Icons.Default.FileCopy,
+                                R.string.url_net to Icons.Default.Link
+                            )
+                        }
+                        items.forEachIndexed { index, item ->
+                            SegmentedButton(
+                                 selected = source == index,
+                                onClick = { source = index },
+                                shape = SegmentedButtonDefaults.itemShape(
+                                    index = index,
+                                    items.size
+                                ),
+                                icon = { Icon(item.second, null) }
+                            ) {
+                                Text(stringResource(item.first), maxLines = 1)
+                            }
+                        }
+                    }
 
                     if (LocalImportRemoteUrl.current.value.isNotBlank()) {
                         source = ImportSource.URL
@@ -247,14 +264,14 @@ data class ConfigModel(
     val isSelected: Boolean,
     val title: String,
     val subtitle: String,
-    val data: Any
+    val data: Any,
 )
 
 @Composable
 fun SelectImportConfigDialog(
     onDismissRequest: () -> Unit,
     models: List<ConfigModel>,
-    onSelectedList: (list: List<Any>) -> Int
+    onSelectedList: (list: List<Any>) -> Int,
 ) {
     val context = LocalContext.current
     val modelsState = remember { mutableStateListOf(*models.toTypedArray()) }

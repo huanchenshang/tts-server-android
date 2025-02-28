@@ -57,7 +57,7 @@ class SpeechRuleEditViewModel(val app: Application) : AndroidViewModel(app) {
                 getConsole().info("handleText()...")
 
                 val rules =
-                    dbm.systemTtsV2.getEnabledListForSort(SpeechTarget.CUSTOM_TAG).map {
+                    dbm.systemTtsV2.getEnabledListForSort(SpeechTarget.TAG).map {
                         (it.config as TtsConfigurationDTO).speechRule.apply { configId = it.id }
                     }
                 val list = mRuleEngine.handleText(text, rules)
