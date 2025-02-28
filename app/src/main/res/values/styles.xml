@@ -1,7 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <style name="Base.Theme.TtsServer" parent="Theme.AppCompat.DayNight.NoActionBar">
 
-    <style name="Theme.TtsServer" parent="Theme.AppCompat.DayNight.NoActionBar">
+    </style>
+
+
+    <style name="Theme.TtsServer" parent="Base.Theme.TtsServer">
         <item name="android:windowTranslucentStatus">true</item>
         <item name="android:windowTranslucentNavigation">true</item>
     </style>
@@ -12,7 +16,6 @@
 
     <style name="TranslucentTheme" parent="Theme.TtsServer">
         <item name="android:windowIsTranslucent">true</item>
-        <item name="android:windowActionBar">false</item>
     </style>
 
 
