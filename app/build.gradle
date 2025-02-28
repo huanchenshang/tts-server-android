@@ -163,14 +163,13 @@ dependencies {
 
     implementation libs.activityKtx
     implementation libs.bundles.andorid.base
-//    implementation 'androidx.constraintlayout:constraintlayout:2.1.4'
 
 
     implementation libs.kotlinx.coroutines.android
     implementation libs.kotlinx.serialization.json
 
     implementation(libs.bundles.markwon)
-    implementation(libs.bundles.ui)
+
 
     // Code Editor
     implementation(libs.bundles.codeEditor)

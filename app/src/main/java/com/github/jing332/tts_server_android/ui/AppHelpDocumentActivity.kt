@@ -8,6 +8,7 @@ import android.view.View
 import android.widget.LinearLayout
 import android.widget.TextView
 import androidx.activity.compose.setContent
+import androidx.appcompat.app.AlertDialog
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
@@ -29,7 +30,6 @@ import com.github.jing332.common.utils.toast
 import com.github.jing332.tts_server_android.R
 import com.github.jing332.tts_server_android.compose.ComposeActivity
 import com.github.jing332.tts_server_android.compose.theme.AppTheme
-import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import io.noties.markwon.AbstractMarkwonPlugin
 import io.noties.markwon.LinkResolverDef
 import io.noties.markwon.Markwon
@@ -71,7 +71,7 @@ class AppHelpDocumentActivity : ComposeActivity() {
                     builder.linkResolver(object : LinkResolverDef() {
                         override fun resolve(view: View, link: String) {
                             Log.d(TAG, "resolve: $link")
-                            MaterialAlertDialogBuilder(this@AppHelpDocumentActivity)
+                            AlertDialog.Builder(this@AppHelpDocumentActivity)
                                 .setTitle("是否跳转？")
                                 .setMessage("是否跳转到 $link ?")
                                 .setPositiveButton(android.R.string.ok) { _, _ ->

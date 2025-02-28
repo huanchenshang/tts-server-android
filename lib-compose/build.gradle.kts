@@ -60,6 +60,7 @@ dependencies {
     api(libs.bundles.compose.floatingx)
     api(libs.bundles.compose.material3)
     api(libs.webkit)
+    api(libs.localbroadcast)
 
     androidTestApi("androidx.compose.ui:ui-test-junit4")
     debugApi("androidx.compose.ui:ui-test-manifest")
@@ -68,7 +69,7 @@ dependencies {
 
     implementation(libs.coreKtx)
     implementation(libs.appcompat)
-    implementation(libs.material)
+
     testImplementation(libs.junit)
     androidTestImplementation(libs.ext.junit)
     androidTestImplementation(libs.espresso.core)

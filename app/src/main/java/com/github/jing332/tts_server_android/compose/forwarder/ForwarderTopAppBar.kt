@@ -6,6 +6,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AddBusiness
 import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material.icons.filled.MoreVert
+import androidx.compose.material.icons.filled.OpenInBrowser
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -18,7 +19,6 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.core.net.toUri
 import com.github.jing332.compose.widgets.CheckedMenuItem
@@ -47,8 +47,9 @@ internal fun ForwarderTopAppBar(
                     context.startActivity(Intent(Intent.ACTION_VIEW, url.toUri()))
                 }
             }) {
+
                 Icon(
-                    painter = painterResource(id = R.drawable.ic_web),
+                    Icons.Default.OpenInBrowser,
                     contentDescription = stringResource(
                         id = R.string.open_web
                     )

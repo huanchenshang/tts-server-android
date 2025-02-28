@@ -139,7 +139,7 @@ internal fun ListManagerScreen(
         val config = model.config as TtsConfigurationDTO
         if (config.speechRule.target == SpeechTarget.BGM) return
 
-        if (config.speechRule.target == SpeechTarget.CUSTOM_TAG) dbm.speechRuleDao.getByRuleId(
+        if (config.speechRule.target == SpeechTarget.TAG) dbm.speechRuleDao.getByRuleId(
             config.speechRule.tagRuleId
         )?.let { speechRule ->
             val keys = speechRule.tags.keys.toList()
@@ -169,7 +169,7 @@ internal fun ListManagerScreen(
         }
         else {
             dbm.speechRuleDao.getByRuleId(config.speechRule.tagRuleId)?.let {
-                config.speechRule.target = SpeechTarget.CUSTOM_TAG
+                config.speechRule.target = SpeechTarget.TAG
                 config.speechRule.tag = it.tags.keys.first()
             }
         }
