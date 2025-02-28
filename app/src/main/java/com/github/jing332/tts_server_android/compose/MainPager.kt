@@ -19,12 +19,12 @@ import androidx.compose.material3.BottomAppBarDefaults
 import androidx.compose.material3.BottomAppBarScrollBehavior
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.NavigationBarDefaults
 import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.compositionLocalOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.rememberCoroutineScope
@@ -32,13 +32,13 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.zIndex
 import com.github.jing332.compose.widgets.rememberA11TouchEnabled
 import com.github.jing332.tts_server_android.compose.forwarder.systts.SystemTtsForwarderScreen
 import com.github.jing332.tts_server_android.compose.settings.SettingsScreen
 import com.github.jing332.tts_server_android.compose.systts.MigrationTips
 import com.github.jing332.tts_server_android.compose.systts.TtsLogScreen
 import com.github.jing332.tts_server_android.compose.systts.list.ListManagerScreen
+import com.github.jing332.tts_server_android.conf.AppConfig
 import kotlinx.coroutines.launch
 
 
@@ -54,7 +54,14 @@ val LocalOverlayController =
 )
 @Composable
 fun AnimatedContentScope.MainPager(sharedVM: SharedViewModel) {
-    val pagerState = rememberPagerState { PagerDestination.routes.size }
+    val pagerState =
+        rememberPagerState(initialPage = AppConfig.fragmentIndex.value) { PagerDestination.routes.size }
+    DisposableEffect(pagerState) {
+        onDispose {
+            AppConfig.fragmentIndex.value = pagerState.currentPage
+        }
+    }
+
     val scope = rememberCoroutineScope()
     MigrationTips()
 
@@ -69,7 +76,7 @@ fun AnimatedContentScope.MainPager(sharedVM: SharedViewModel) {
         LocalBottomBarBehavior provides scrollBehavior,
         LocalOverlayController provides overlayController,
     ) {
-        Box {
+        Box(Modifier.fillMaxSize()) {
             val backgroundColor by animateColorAsState(
                 targetValue = if (overlayController.visible) {
                     MaterialTheme.colorScheme.onSurface.copy(alpha = 0.2f)
@@ -84,7 +91,6 @@ fun AnimatedContentScope.MainPager(sharedVM: SharedViewModel) {
                 Modifier
                     .fillMaxSize()
                     .background(backgroundColor)
-                    .zIndex(0.1f)
                     .then(
                         if (overlayController.visible) {
                             Modifier.clickable(
@@ -101,11 +107,9 @@ fun AnimatedContentScope.MainPager(sharedVM: SharedViewModel) {
             Scaffold(
                 modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
                 bottomBar = {
-                    val containerColor = NavigationBarDefaults.containerColor
                     BottomAppBar(
                         modifier = Modifier
                             .fillMaxWidth(),
-                        containerColor = containerColor,
                         scrollBehavior = scrollBehavior,
                         actions = {
                             for (destination in PagerDestination.routes) {
@@ -134,7 +138,7 @@ fun AnimatedContentScope.MainPager(sharedVM: SharedViewModel) {
                         .padding(bottom = paddingValues.calculateBottomPadding())
                         .fillMaxSize(),
                     state = pagerState,
-                    userScrollEnabled = true
+                    userScrollEnabled = false,
                 ) { index ->
                     when (index) {
                         PagerDestination.SystemTts.index -> ListManagerScreen(sharedVM)
