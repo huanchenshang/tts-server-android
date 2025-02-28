@@ -31,7 +31,14 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.nestedscroll.nestedScroll
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.clearAndSetSemantics
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.role
+import androidx.compose.ui.semantics.selected
+import com.github.jing332.compose.widgets.ControlBottomBarVisibility
 import com.github.jing332.compose.widgets.rememberA11TouchEnabled
 import com.github.jing332.tts_server_android.compose.forwarder.systts.SystemTtsForwarderScreen
 import com.github.jing332.tts_server_android.compose.settings.SettingsScreen
@@ -62,6 +69,7 @@ fun AnimatedContentScope.MainPager(sharedVM: SharedViewModel) {
         }
     }
 
+    val context = LocalContext.current
     val scope = rememberCoroutineScope()
     MigrationTips()
 
@@ -69,6 +77,7 @@ fun AnimatedContentScope.MainPager(sharedVM: SharedViewModel) {
     val scrollBehavior = BottomAppBarDefaults.exitAlwaysScrollBehavior(canScroll = {
         !a11yTouchEnabled
     })
+    ControlBottomBarVisibility(a11yTouchEnabled, scrollBehavior)
 
     val overlayController = rememberOverlayController()
 
@@ -115,8 +124,13 @@ fun AnimatedContentScope.MainPager(sharedVM: SharedViewModel) {
                             for (destination in PagerDestination.routes) {
                                 val isSelected = pagerState.currentPage == destination.index
                                 NavigationBarItem(
+                                    modifier = Modifier.clearAndSetSemantics {
+                                        role = Role.Tab
+                                        selected = isSelected
+                                        contentDescription = context.getString(destination.strId)
+                                    },
                                     selected = isSelected,
-                                    alwaysShowLabel = a11yTouchEnabled,
+                                    alwaysShowLabel = false,
                                     onClick = {
                                         scope.launch {
                                             pagerState.animateScrollToPage(destination.index)

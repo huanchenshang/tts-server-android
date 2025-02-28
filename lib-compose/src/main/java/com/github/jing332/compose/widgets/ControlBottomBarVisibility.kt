@@ -13,6 +13,36 @@ import androidx.compose.runtime.remember
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ControlBottomBarVisibility(
+    state: Boolean,
+    bottomBarBehavior: BottomAppBarScrollBehavior,
+) {
+    val bottomAppBarState = bottomBarBehavior.state
+
+    val heightOffset =
+        remember { androidx.compose.animation.core.Animatable(1f) }
+
+    LaunchedEffect(heightOffset.value) {
+        bottomAppBarState.heightOffset = heightOffset.value
+    }
+
+    LaunchedEffect(state) {
+        if (state) {
+            heightOffset.snapTo(bottomAppBarState.heightOffset)
+            heightOffset.animateTo(
+                targetValue = 0f,
+                animationSpec = tween(
+                    durationMillis = 300,
+                    easing = FastOutSlowInEasing
+                )
+            )
+        }
+    }
+
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun ControlBottomBarVisibility(
     listState: LazyListState,
     bottomBarBehavior: BottomAppBarScrollBehavior,
 ) {
