@@ -2,11 +2,11 @@ package com.github.jing332.tts_server_android.compose.systts.list.ui.widgets
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
-import androidx.compose.runtime.compositionLocalOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.staticCompositionLocalOf
 
 internal val LocalSaveCallBack =
-    compositionLocalOf<MutableList<SaveCallBack>> { error("No save callbacks") }
+    staticCompositionLocalOf<MutableList<SaveCallBack>> { mutableListOf() }
 
 internal fun interface SaveCallBack {
     suspend fun onSave(): Boolean

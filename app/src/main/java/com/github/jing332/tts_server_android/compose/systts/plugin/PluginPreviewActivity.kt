@@ -102,6 +102,7 @@ class PluginPreviewActivity : ComposeActivity() {
                         )
                     )
                 }
+
                 PluginPreviewScreen(
                     plugin = plugin,
                     systts = systts,
@@ -110,7 +111,8 @@ class PluginPreviewActivity : ComposeActivity() {
                         intent.putExtra(KEY_SOURCE, systts.ttsConfig.source as PluginTtsSource)
                         setResult(RESULT_OK, intent)
                         finish()
-                    })
+                    }
+                )
             }
         }
     }
