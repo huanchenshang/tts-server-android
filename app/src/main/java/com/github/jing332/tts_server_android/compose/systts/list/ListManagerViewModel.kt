@@ -4,7 +4,6 @@ import android.content.Context
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.github.jing332.common.utils.FileUtils.readAllText
 import com.github.jing332.database.dbm
 import com.github.jing332.database.entities.AbstractListGroup.Companion.DEFAULT_GROUP_ID
 import com.github.jing332.database.entities.systts.GroupWithSystemTts
@@ -12,11 +11,9 @@ import com.github.jing332.database.entities.systts.SystemTtsV2
 import com.github.jing332.database.entities.systts.TtsConfigurationDTO
 import com.github.jing332.tts_server_android.R
 import com.github.jing332.tts_server_android.conf.SystemTtsConfig
-import com.github.jing332.tts_server_android.constant.AppConst
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.conflate
 import kotlinx.coroutines.launch
 import org.burnoutcrew.reorderable.ItemPosition
@@ -36,16 +33,16 @@ class ListManagerViewModel : ViewModel() {
     init {
         viewModelScope.launch(Dispatchers.IO) {
             dbm.systemTtsV2.updateAllOrder()
-            dbm.systemTtsV2.flowAllGroupWithTts().conflate().collectLatest {
+            dbm.systemTtsV2.flowAllGroupWithTts().conflate().collect {
                 Log.d(TAG, "update list: ${it.size}")
-                _list.value = it
+                _list.tryEmit(it)
             }
         }
     }
 
     fun updateTtsEnabled(
         item: SystemTtsV2,
-        enabled: Boolean
+        enabled: Boolean,
     ) {
         if (!SystemTtsConfig.isVoiceMultipleEnabled.value && enabled) {
             val itemConfig = (item.config as? TtsConfigurationDTO)
@@ -70,7 +67,7 @@ class ListManagerViewModel : ViewModel() {
 
     fun updateGroupEnable(
         item: GroupWithSystemTts,
-        enabled: Boolean
+        enabled: Boolean,
     ) {
         if (!SystemTtsConfig.isGroupMultipleEnabled.value && enabled) {
             list.value.forEach {

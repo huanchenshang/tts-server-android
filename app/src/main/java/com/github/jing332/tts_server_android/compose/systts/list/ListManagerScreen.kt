@@ -120,9 +120,15 @@ internal fun ListManagerScreen(
             tagData = config.speechRule.tagData.toString(),
             onDismissRequest = { showTagClearDialog = null },
             onConfirm = {
-                config.speechRule.target = SpeechTarget.ALL
-                config.speechRule.resetTag()
-                dbm.systemTtsV2.update(systts)
+                dbm.systemTtsV2.update(
+                    systts.copy(
+                        config = config.copy(
+                            speechRule = config.speechRule.copy(
+                                target = SpeechTarget.ALL,
+                            ).apply { resetTag() },
+                        )
+                    )
+                )
                 if (systts.isEnabled) SystemTtsService.notifyUpdateConfig()
                 showTagClearDialog = null
             }
@@ -135,9 +141,9 @@ internal fun ListManagerScreen(
             context.longToast(R.string.systts_drag_tip_msg)
         }
 
-        val model = systts.copy()
-        val config = model.config as TtsConfigurationDTO
+        val config = systts.config as TtsConfigurationDTO
         if (config.speechRule.target == SpeechTarget.BGM) return
+        val ruleData = config.speechRule.copy()
 
         if (config.speechRule.target == SpeechTarget.TAG) dbm.speechRuleDao.getByRuleId(
             config.speechRule.tagRuleId
@@ -148,34 +154,34 @@ internal fun ListManagerScreen(
             val nextIndex = (idx + 1)
             val newTag = keys.getOrNull(nextIndex)
             if (newTag == null) {
-                if (config.speechRule.isTagDataEmpty()) {
-                    config.speechRule.target = SpeechTarget.ALL
-                    config.speechRule.resetTag()
+                if (ruleData.isTagDataEmpty()) {
+                    ruleData.target = SpeechTarget.ALL
+                    ruleData.resetTag()
                 } else {
-                    showTagClearDialog = model
+                    showTagClearDialog = systts
                     return
                 }
             } else {
-                config.speechRule.tag = newTag
+                ruleData.tag = newTag
                 runCatching {
-                    config.speechRule.tagName =
-                        SpeechRuleEngine.getTagName(context, speechRule, info = config.speechRule)
+                    ruleData.tagName =
+                        SpeechRuleEngine.getTagName(context, speechRule, info = ruleData)
                 }.onFailure {
-                    config.speechRule.tagName = ""
+                    ruleData.tagName = ""
                     context.displayErrorDialog(it)
                 }
 
             }
         }
         else {
-            dbm.speechRuleDao.getByRuleId(config.speechRule.tagRuleId)?.let {
-                config.speechRule.target = SpeechTarget.TAG
-                config.speechRule.tag = it.tags.keys.first()
+            dbm.speechRuleDao.getByRuleId(ruleData.tagRuleId)?.let {
+                ruleData.target = SpeechTarget.TAG
+                ruleData.tag = it.tags.keys.first()
             }
         }
 
-        dbm.systemTtsV2.update(model)
-        if (model.isEnabled) SystemTtsService.notifyUpdateConfig()
+        dbm.systemTtsV2.update(systts.copy(config = systts.ttsConfig.copy(speechRule = ruleData)))
+        if (systts.isEnabled) SystemTtsService.notifyUpdateConfig()
     }
 
     var deleteTts by remember { mutableStateOf<SystemTtsV2?>(null) }
