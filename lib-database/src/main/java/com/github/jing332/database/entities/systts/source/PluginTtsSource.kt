@@ -23,6 +23,12 @@ data class PluginTtsSource(
     @IgnoredOnParcel
     val plugin: Plugin? = null,
 ) : TextToSpeechSource() {
+    companion object{
+        const val SPEED_FOLLOW = 0f
+        const val PITCH_FOLLOW = 0f
+        const val VOLUME_FOLLOW = 0f
+    }
+
 
 
     override fun getKey(): String {

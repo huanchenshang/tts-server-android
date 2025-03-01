@@ -41,6 +41,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.unit.dp
 import com.github.jing332.common.utils.ClipboardUtils
+import com.github.jing332.common.utils.StringUtils
 import com.github.jing332.common.utils.longToast
 import com.github.jing332.common.utils.toast
 import com.github.jing332.compose.widgets.AppDialog
@@ -82,13 +83,14 @@ fun SpeechRuleEditScreen(
                 tagName =
                     SpeechRuleEngine.getTagName(context, speechRule!!, info = config.speechRule)
             }.onFailure {
-                context.displayErrorDialog(it, "获取标签名失败")
+                context.displayErrorDialog(it, context.getString(R.string.get_tag_name_failed))
+            }
+
+            tagName = tagName.ifBlank {
+                StringUtils.WARNING_EMOJI + speechRule?.tags[config.speechRule.tag]
             }
         }
 
-        tagName = tagName.ifBlank {
-            speechRule?.tags?.getOrDefault(config.speechRule.tag, "") ?: ""
-        }
         onSysttsChange(
             systts.copy(
                 config = config.copy(config.speechRule.copy(tagName = tagName))
@@ -430,7 +432,7 @@ private fun CustomTagScreen(
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(top = 4.dp),
-                    labelText =  label ,
+                    labelText = label,
                     value = value.ifEmpty { defaultValue },
                     values = itemsMap.keys.toList(),
                     entries = itemsMap.values.toList(),

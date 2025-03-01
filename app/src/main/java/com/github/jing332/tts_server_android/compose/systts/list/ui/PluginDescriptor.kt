@@ -12,13 +12,25 @@ class PluginDescriptor(val context: Context, val systemTts: SystemTtsV2) : ItemD
     private val source: PluginTtsSource = cfg.source as PluginTtsSource
 
     override val name: String = systemTts.displayName
-    override val desc: String = source.voice + "<br>" +
-            context.getString(
+    override val desc: String
+        get() {
+            val strFollow by lazy { context.getString(R.string.follow) }
+
+            val rateStr =
+                if (source.speed == PluginTtsSource.SPEED_FOLLOW) strFollow else source.speed
+            val pitchStr =
+                if (source.pitch == PluginTtsSource.PITCH_FOLLOW) strFollow else source.pitch
+            val volumeStr =
+                if (source.volume == PluginTtsSource.VOLUME_FOLLOW) strFollow else source.volume
+
+            return source.voice + "<br>" + context.getString(
                 R.string.systts_play_params_description,
-                "<b>${source.speed}</b>",
-                "<b>${source.volume}</b>",
-                "<b>${source.pitch}</b>"
+                "<b>${rateStr}</b>",
+                "<b>${volumeStr}</b>",
+                "<b>${pitchStr}</b>"
             )
+
+        }
 
     override val bottom: String = (systemTts.config as TtsConfigurationDTO).audioFormat.run {
         "${sampleRate}hz" + if (isNeedDecode) " | " + context.getString(R.string.decode) else ""

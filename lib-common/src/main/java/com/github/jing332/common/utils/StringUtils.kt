@@ -8,6 +8,8 @@ import kotlin.math.ln
 import kotlin.math.pow
 
 object StringUtils {
+    const val WARNING_EMOJI = """⚠️"""
+
     private val silentPattern by lazy { Pattern.compile("[\\s\\p{C}\\p{P}\\p{Z}\\p{S}]") }
     private val splitSentencesRegex by lazy { Pattern.compile("[。？?！!;；]") }
 
