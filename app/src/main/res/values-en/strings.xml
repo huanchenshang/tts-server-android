@@ -471,4 +471,6 @@
     <string name="forwarder">转发器</string>
     <string name="divider_preference_desc">以下为子设置</string>
     <string name="open_ra_tag_options">打开标签数据选项</string>
+    <string name="quick_edit">快捷编辑</string>
+    <string name="switch_tag">切换标签</string>
 </resources>

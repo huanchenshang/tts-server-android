@@ -47,8 +47,10 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.CustomAccessibilityAction
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.customActions
 import androidx.compose.ui.semantics.role
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.stateDescription
@@ -277,7 +279,27 @@ private fun Item(
     onDelete: () -> Unit,
 ) {
     val context = LocalContext.current
-    ElevatedCard(modifier = modifier, onClick = {
+    ElevatedCard(modifier = modifier.semantics {
+        customActions =
+            listOf(
+                CustomAccessibilityAction(
+                    context.getString(R.string.edit_desc, name)
+                ) { onEdit();true },
+                CustomAccessibilityAction(
+                    context.getString(R.string.plugin_set_vars, name)
+                ) { onSetVars();true },
+                CustomAccessibilityAction(
+                    context.getString(R.string.export_config)
+                ) { onExport();true },
+
+                CustomAccessibilityAction(
+                    context.getString(R.string.clear_cache, name)
+                ) { onClear();true },
+                CustomAccessibilityAction(
+                    context.getString(R.string.delete, name)
+                ) { onDelete();true },
+            )
+    }, onClick = {
         if (hasDefVars) onSetVars()
     }) {
         Box(modifier = Modifier.padding(4.dp)) {

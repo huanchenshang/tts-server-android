@@ -418,23 +418,23 @@
     <string name="descending">1</string>
     <string name="sort">1</string>
     <string name="created_time_id">1</string>
-    <string name="sorting_complete_msg">1</string>
-    <string name="tag_data_clear_warn">1</string>
-    <string name="keyboard_toolbar_settings">1</string>
-    <string name="keyboard_toolbar_settings_tips">1</string>
-    <string name="more_options_desc">1</string>
-    <string name="group_part_enabled">1</string>
-    <string name="group_all_enabled">1</string>
-    <string name="group_all_disabled">1</string>
-    <string name="edit_desc">1</string>
-    <string name="config_enabled_desc">پیکربندی فعال شد: %1$s</string>
-    <string name="config_disabled_desc">پیکربندی غیرفعال شده: %1$s</string>
-    <string name="plugin_enabled_desc">1</string>
-    <string name="plugin_disabled_desc">1</string>
-    <string name="rule_enabled_desc">1</string>
-    <string name="rule_disabled_desc">1</string>
-    <string name="paste">1</string>
-    <string name="tag_data">1</string>
+    <string name="sorting_complete_msg">Sorting complete, taking %1$sms</string>
+    <string name="tag_data_clear_warn">Do you want to continue with the current Tag data?</string>
+    <string name="keyboard_toolbar_settings">Keyboard toolbar</string>
+    <string name="keyboard_toolbar_settings_tips">Insert Value = Display Name \n⚠️Note there should be a space on both sides of the equal sign.</string>
+    <string name="more_options_desc">More options: %1$s</string>
+    <string name="group_part_enabled">Part enabled: %1$s</string>
+    <string name="group_all_enabled">All enabled: %1$s</string>
+    <string name="group_all_disabled">Not enabled：%1$s</string>
+    <string name="edit_desc">Edit：%1$s</string>
+    <string name="config_enabled_desc">Enabled：%1$s</string>
+    <string name="config_disabled_desc">Enabled：%1$s</string>
+    <string name="plugin_enabled_desc">Plugin enabled：%1$s</string>
+    <string name="plugin_disabled_desc">Plugin disabled：%1$s</string>
+    <string name="rule_enabled_desc">Rule enabled：%1$s</string>
+    <string name="rule_disabled_desc">Rule disabled：%1$s</string>
+    <string name="paste">Paste</string>
+    <string name="tag_data">Tag data</string>
     <string name="grant_permission_audio_file">اعطا [مجوز خواندن فایل صوتی]</string>
     <string name="grant_permission_storage_file">اعطا [مجوز خواندن فایل ذخیره‌سازی]</string>
     <string name="write_plugin_log_to_file">لاگ افزونه را در فایل بنویسید</string>
@@ -475,4 +475,6 @@
     <string name="forwarder">转发器</string>
     <string name="divider_preference_desc">以下为子设置</string>
     <string name="open_ra_tag_options">打开标签数据选项</string>
+    <string name="quick_edit">快捷编辑</string>
+    <string name="switch_tag">切换标签</string>
 </resources>
