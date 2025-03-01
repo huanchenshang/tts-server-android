@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.defaultMinSize
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.selection.toggleable
@@ -201,14 +202,16 @@ internal fun SliderPreference(
     var show by rememberSaveable { mutableStateOf(false) }
     if (show)
         ModalBottomSheet(onDismissRequest = { show = false }) {
-            Column(horizontalAlignment = Alignment.CenterHorizontally) {
+            Column(
+                horizontalAlignment = Alignment.CenterHorizontally,
+                modifier = Modifier.fillMaxHeight(0.4f)
+            ) {
                 CompositionLocalProvider(
                     LocalTextStyle provides MaterialTheme.typography.titleLarge
                 ) { title() }
                 LabelSlider(
                     modifier = Modifier
-                        .padding(vertical = 16.dp)
-                        .padding(bottom = 48.dp),
+                        .padding(vertical = 16.dp),
                     value = value,
                     onValueChange = onValueChange,
                     valueRange = valueRange,

@@ -19,6 +19,7 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
@@ -92,9 +93,9 @@ internal fun PluginEditorScreen(
         }
     }
 
-    var showVarsDialog by remember { mutableStateOf(false) }
+    var showVarsDialog by rememberSaveable { mutableStateOf(false) }
     if (showVarsDialog) {
-        var p by remember { mutableStateOf(vm.plugin) }
+        var p by rememberSaveable { mutableStateOf(vm.plugin) }
         PluginVarsBottomSheet(
             onDismissRequest = {
                 showVarsDialog = false

@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
@@ -24,6 +25,7 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.SegmentedButton
 import androidx.compose.material3.SegmentedButtonDefaults
@@ -54,7 +56,6 @@ import com.github.jing332.common.utils.ClipboardUtils
 import com.github.jing332.common.utils.FileUtils.readAllText
 import com.github.jing332.common.utils.longToast
 import com.github.jing332.common.utils.toJsonListString
-import com.github.jing332.compose.widgets.AppBottomSheet
 import com.github.jing332.compose.widgets.AppDialog
 import com.github.jing332.tts_server_android.R
 import com.github.jing332.tts_server_android.ui.AppActivityResultContracts
@@ -117,10 +118,12 @@ fun ConfigImportBottomSheet(
     var path by remember { mutableStateOf("") }
     var url by remember { mutableStateOf("") }
 
-    AppBottomSheet(
-        onDismissRequest = onDismissRequest
-    ) {
-        Column(Modifier.padding(horizontal = 8.dp)) {
+    ModalBottomSheet(onDismissRequest = onDismissRequest) {
+        Column(
+            Modifier
+                .padding(horizontal = 8.dp)
+                .fillMaxHeight()
+        ) {
             Column(
                 Modifier
                     .weight(weight = 1f, fill = false)

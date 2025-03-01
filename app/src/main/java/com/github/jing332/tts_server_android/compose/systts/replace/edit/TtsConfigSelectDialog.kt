@@ -2,12 +2,15 @@ package com.github.jing332.tts_server_android.compose.systts.replace.edit
 
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -20,13 +23,11 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import com.github.jing332.compose.ComposeExtensions.clickableRipple
+import com.github.jing332.database.dbm
+import com.github.jing332.database.entities.systts.SystemTtsV2
 import com.github.jing332.tts_server_android.R
 import com.github.jing332.tts_server_android.compose.theme.AppTheme
-import com.github.jing332.compose.widgets.AppBottomSheet
-import com.github.jing332.compose.widgets.HtmlText
-import com.github.jing332.database.dbm
- import  com.github.jing332.compose.ComposeExtensions.clickableRipple
-import com.github.jing332.database.entities.systts.SystemTtsV2
 
 @Preview
 @Composable
@@ -38,12 +39,21 @@ private fun PreviewTtsConfigSelectDialog() {
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 internal fun SysttsSelectBottomSheet(onDismissRequest: () -> Unit, onClick: (SystemTtsV2) -> Unit) {
     val items = remember { dbm.systemTtsV2.allEnabled }
-    AppBottomSheet(onDismissRequest = onDismissRequest) {
-        Column(Modifier.padding(8.dp), horizontalAlignment = Alignment.CenterHorizontally) {
-            Text(text = stringResource(id = R.string.choice_item, ""), style = MaterialTheme.typography.titleLarge)
+    ModalBottomSheet(onDismissRequest = onDismissRequest) {
+        Column(
+            Modifier
+                .padding(8.dp)
+                .fillMaxHeight(),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            Text(
+                text = stringResource(id = R.string.choice_item, ""),
+                style = MaterialTheme.typography.titleLarge
+            )
             Spacer(modifier = Modifier.height(8.dp))
             LazyColumn(Modifier.weight(1f)) {
                 itemsIndexed(items) { _, systts ->

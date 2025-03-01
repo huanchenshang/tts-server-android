@@ -9,6 +9,8 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.selection.SelectionContainer
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -28,19 +30,19 @@ import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.github.jing332.common.toArgb
-import com.github.jing332.compose.widgets.AppBottomSheet
 import com.github.jing332.script.runtime.console.Console
 import com.github.jing332.script.runtime.console.LogListener
 import com.github.jing332.script.runtime.console.LogListenerManager
 import com.github.jing332.tts_server_android.compose.theme.AppTheme
 
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun LoggerBottomSheet(
     registry: LogListenerManager,
     darkTheme: Boolean = isSystemInDarkTheme(),
     onDismissRequest: () -> Unit,
-    onLaunched: () -> Unit
+    onLaunched: () -> Unit,
 ) {
     var logText by remember { mutableStateOf(AnnotatedString("")) }
 
@@ -68,8 +70,12 @@ fun LoggerBottomSheet(
         }
     }
 
-    AppBottomSheet(onDismissRequest = onDismissRequest) {
-        SelectionContainer(modifier = Modifier.verticalScroll(rememberScrollState())) {
+    ModalBottomSheet(onDismissRequest = onDismissRequest) {
+        SelectionContainer(
+            modifier = Modifier
+                .fillMaxHeight()
+                .verticalScroll(rememberScrollState())
+        ) {
             Text(
                 logText, modifier = Modifier
                     .fillMaxHeight()
