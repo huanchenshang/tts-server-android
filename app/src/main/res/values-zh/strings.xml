@@ -468,4 +468,5 @@
     <string name="open_ra_tag_options">打开标签数据选项</string>
     <string name="quick_edit">快捷编辑</string>
     <string name="switch_tag">切换标签</string>
+    <string name="get_tag_name_failed">获取标签名失败</string>
 </resources>
