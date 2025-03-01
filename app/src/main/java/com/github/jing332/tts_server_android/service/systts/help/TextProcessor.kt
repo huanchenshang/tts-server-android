@@ -35,7 +35,6 @@ class TextProcessor : ITextProcessor {
     private lateinit var engine: SpeechRuleEngine
     private val textReplacer = TextReplacer()
 
-    private var singleVoice: TtsConfiguration? = null
     private var configs: List<TtsConfiguration> = emptyList()
     private var speechRules: List<SpeechRuleInfo> = emptyList()
     private val random by lazy { Random(System.currentTimeMillis()) }
@@ -58,10 +57,8 @@ class TextProcessor : ITextProcessor {
             speechRules = this.configs.map { it.speechInfo }
         } else {
             this.configs = configs.values.toList()
-            if (this.configs.isEmpty()) {
+            if (this.configs.isEmpty())
                 return Err(TextProcessorError.MissingConfig(ConfigType.SINGLE_VOICE))
-            } else
-                singleVoice = this.configs.random(random)
         }
 
         loadReplacer()
@@ -131,7 +128,7 @@ class TextProcessor : ITextProcessor {
                     // Exact match ID > random match in tag > random match in all
                     val config = configFromId
                         ?: sameTagList.randomOrNull(random)
-                        ?: singleVoice
+                        ?: configs.randomOrNull(random)
                         ?: return Err(
                             TextProcessorError.MissingConfig(
                                 ConfigType.TAG,
@@ -142,7 +139,7 @@ class TextProcessor : ITextProcessor {
                 }
             }
         } else {
-            val singleVoice = singleVoice ?: return Err(
+            val singleVoice = configs.randomOrNull(random) ?: return Err(
                 TextProcessorError.MissingConfig(
                     ConfigType.SINGLE_VOICE, "single voice"
                 )
