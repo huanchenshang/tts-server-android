@@ -47,7 +47,7 @@ fun Context.clearWebViewData() {
     WebStorage.getInstance().deleteAllData()
 }
 
-private val logger = KotlinLogging.logger("AndroidExtension")
+private val logger by lazy { KotlinLogging.logger("AndroidExtension") }
 
 @SuppressLint("MissingPermission")
 @Throws(ForegroundServiceStartNotAllowedException::class)

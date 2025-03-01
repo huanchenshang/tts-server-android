@@ -20,6 +20,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.util.fastRoundToInt
 import com.github.jing332.tts_server_android.R
 import com.github.jing332.tts_server_android.conf.AppConfig
 import com.github.jing332.tts_server_android.conf.SystemTtsConfig
@@ -75,8 +76,9 @@ internal fun ColumnScope.SysttsSettingsScreen(modifier: Modifier = Modifier) {
         title = { Text(stringResource(id = R.string.max_retry_count)) },
         subTitle = { Text(stringResource(id = R.string.max_retry_count_summary)) },
         value = maxRetry.toFloat(),
-        onValueChange = { maxRetry = it.toInt() },
+        onValueChange = { maxRetry = it.fastRoundToInt() },
         valueRange = 0f..10f,
+        steps = 9,
         icon = { Icon(Icons.Default.Repeat, null) },
         label = maxRetryValue,
     )
@@ -100,8 +102,9 @@ internal fun ColumnScope.SysttsSettingsScreen(modifier: Modifier = Modifier) {
         title = { Text(stringResource(id = R.string.systts_standby_triggered_retry_index)) },
         subTitle = { Text(stringResource(id = R.string.systts_standby_triggered_retry_index_summary)) },
         value = standbyTriggeredIndex.toFloat(),
-        onValueChange = { standbyTriggeredIndex = it.toInt() },
+        onValueChange = { standbyTriggeredIndex = it.fastRoundToInt() },
         valueRange = 0f..10f,
+        steps = 9,
         icon = { Icon(Icons.Default.Repeat, null) },
         label = standbyTriggeredIndexValue
     )

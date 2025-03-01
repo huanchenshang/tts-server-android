@@ -237,9 +237,7 @@ fun SettingsScreen() {
                 title = { Text(stringResource(id = R.string.spinner_drop_down_max_count)) },
                 subTitle = { Text(stringResource(id = R.string.spinner_drop_down_max_count_summary)) },
                 value = maxDropdownCount.toFloat(),
-                onValueChange = {
-                    maxDropdownCount = it.toInt()
-                },
+                onValueChange = { maxDropdownCount = it.toInt() },
                 label = if (maxDropdownCount == 0) stringResource(id = R.string.unlimited) else maxDropdownCount.toString(),
                 valueRange = 0f..50f,
                 icon = { Icon(Icons.AutoMirrored.Filled.MenuOpen, null) }
@@ -247,6 +245,7 @@ fun SettingsScreen() {
 
             SysttsSettingsScreen()
             OtherSettingsScreen()
+
 
             Spacer(Modifier.navigationBarsPadding())
         }
