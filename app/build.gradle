@@ -190,8 +190,6 @@ dependencies {
     implementation 'me.rosuh:AndroidFilePicker:1.0.1'
 
     implementation(libs.hanlp)
-    implementation(libs.immersionbar)
-    implementation(libs.immersionbar.ktx)
 
 
     implementation(libs.bundles.about)

@@ -58,10 +58,8 @@ fun TtsEditContainerScreen(
             onSystemTtsChange = onSysttsChange,
             onSave = {
                 scope.launch {
-                    val iterator = callbacks.listIterator(callbacks.size)
-                    while (iterator.hasPrevious()) {
-                        val element = iterator.previous()
-                        if (!element.onSave()) return@launch
+                    for (callBack in callbacks) {
+                        if (!callBack.onSave()) return@launch
                     }
 
                     onSave()
